@@ -143,3 +143,6 @@ void akuTreeWidget::showcrc(bool hide)
 {
   setColumnHidden(6, !hide);
 }
+
+
+

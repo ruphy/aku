@@ -398,24 +398,25 @@ void MainWindow::openDialog()
 
 void MainWindow::raropen ( QString filename, bool restrictions )
 {
+  globalRestrictions = restrictions;
   searchWidget -> searchLineEdit() ->clear();
   bf = "";
   namex = filename; //rendo globale il nome dell'archivio
   
-  rarProcessHandler *rarProc = new rarProcessHandler(this, archiver, QStringList() << "v" << "-c-" , namex );
-  connect(rarProc, SIGNAL(outputReady(QString)), this, SLOT(parseAndShow(QString)));
-  rarProc -> start();
+  newProcHandler = new rarProcessHandler(this, archiver, QStringList() << "v" << "-c-" , namex );
+  connect(newProcHandler, SIGNAL(outputReady(QString, bool)), this, SLOT(parseAndShow(QString, bool)));
+  newProcHandler -> start();
   
 }
 
-void MainWindow::parseAndShow(QString rarout)
+void MainWindow::parseAndShow(QString rarout, bool crypted)
 {
  //rarout = rarProc -> standardOutput();
-  /*if(rarProc -> isCrypted() == true)
-    globalArchivePassword = rarProc -> getArchivePassword();
+  if(crypted)
+    globalArchivePassword = newProcHandler -> getArchivePassword();
   else 
-    globalArchivePassword.clear();*/
-  bool restrictions = true;
+    globalArchivePassword.clear();
+
   puts("RAROUT RICAVATA!!: "+rarout.toAscii());
   if(rarout != "")
   { //se l'output non è nullo
@@ -438,7 +439,7 @@ void MainWindow::parseAndShow(QString rarout)
     rarList -> sortItems ( 1, Qt::AscendingOrder );
     rarList -> header() -> setResizeMode ( 0, QHeaderView::ResizeToContents );
     rarList -> header() -> setResizeMode(9, QHeaderView::ResizeToContents);
-    if(restrictions) handleRestrictions(namex);
+    if(globalRestrictions) handleRestrictions(namex);
     if ( fromNewArchive == true )   //ripristiniamo la gui se proveniamo da un new archive
     {
       closeNewArchiveGUI(false);
@@ -640,16 +641,16 @@ void MainWindow::singleExtractInit()
 void MainWindow::singleExtract()
 {
   QStringList pathToExtract;
-  //---------------------gestisce la selezione multipla-----------------//
+
   QList<QTreeWidgetItem*> selectedToExtract = rarList -> selectedItems();
   QStringList listToExtract;
-  //..................................................................//
+
   if(selectedToExtract.size() != 0)
   {
     for ( int i=0; i < selectedToExtract.size(); i++ )
     {
       QTreeWidgetItem * tmp;
-      QStringList pathlist; //file da estrarre dall'archivio
+      QStringList pathlist; // file da estrarre dall'archivio
       //pathlist << toextract -> text(0);
       pathlist << ( selectedToExtract[i] ) -> text ( 0 );
       //tmp = toextract -> parent();
@@ -725,25 +726,23 @@ void MainWindow::setInformation ( bool visible )
 void MainWindow::setFolderIcons()
 {
   for ( int i = 0; i < rarList -> topLevelItemCount(); i++ )
-  {
     if ( ( rarList -> topLevelItem ( i ) ) -> text ( 8 ) == "" )    //se non ho scritto il metodo è sicuramente una cartella
     {
       ( rarList -> topLevelItem ( i ) ) -> setIcon ( 0,KIcon ( "inode-directory" ) );
       recursiveFolderIcons ( rarList -> topLevelItem ( i ) );
     }
-  }
+
 }
 
 void MainWindow::recursiveFolderIcons ( QTreeWidgetItem *checkParent )
 {
   for ( int i = 0; i < checkParent -> childCount(); i++ )
-  {
     if ( ( checkParent -> child ( i ) ) -> text ( 8 ) =="" )
     {
       ( checkParent -> child ( i ) ) -> setIcon ( 0, KIcon ( "inode-directory" ) );
       recursiveFolderIcons ( checkParent -> child ( i ) );
     }
-  }
+  
 }
 
 void MainWindow::getMetaInfo ( QTreeWidgetItem *item ) //setta le informazioni della metabar
@@ -757,10 +756,9 @@ QStringList MainWindow::rebuildPathForNew ( dragTarget *listForNew ) //ricostrui
 {
   QStringList result;
   for ( int i = 0; i < listForNew -> topLevelItemCount(); i++ )
-  {
     result << recursiveRebuildForNew ( listForNew -> topLevelItem ( i ) );
     ////puts ( "elemento passato: "+listForNew -> topLevelItem ( i ) -> text ( 0 ).toAscii() );
-  }
+
   return result;
 }
 
@@ -772,9 +770,8 @@ QStringList MainWindow::recursiveRebuildForNew ( QTreeWidgetItem* item )
     QStringList subFolders = QDir ( item -> text ( 1 ) + item -> text ( 0 ) ).entryList ( QStringList() << "*.*",QDir::NoDotAndDotDot | QDir::AllDirs | QDir::Files ); //TODO: clean this function.. no need to distinguish between untouched and touched
     QStringList endList;
     for ( int j = 0; j < item -> childCount(); j++ )
-    {
       endList << recursiveRebuildForNew ( item -> child ( j ) );
-    }
+
     return endList;
   //}
   }
@@ -809,7 +806,8 @@ QStringList MainWindow::recursiveRebuildForNew ( QTreeWidgetItem* item )
     else //altrimenti no
     {
       //puts ( "Percorso ricostruito: "+QString ( item -> text ( 1 ) + item -> text ( 0 ) ).toAscii() );
-      return QStringList() << item -> text ( 1 ) + item -> text ( 0 );
+      if(!item->text(3).isEmpty()) return QStringList() << item -> text ( 1 ) + item -> text ( 0 );
+      else return QStringList();
     }
   }
 }
@@ -914,7 +912,7 @@ void MainWindow::setupForNew()
   commentDock -> setVisible(false);
   commentAction -> setVisible(false);
   showStatusInfo(false);
-  /***************************************************************/
+
   //usare un widget di base � un trick estetico per una migliore visualizzazione
   sourceDock = new QDockWidget ( this );
   sourceDock -> setGeometry ( x() + width() + 20,y(),400,600 );

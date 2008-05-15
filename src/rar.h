@@ -24,7 +24,7 @@
 
 class rar
 {
-public:
+  public:
   rar();
   ~rar();
 
@@ -37,7 +37,7 @@ public:
   KDateTime getSingleFileModificationTime(QString, QString);
   QStringList getListFromPath(QString, QString); //gets the content of a folder in the archive or returns the sinle file
 
-private:
+ private:
   QString ftext; //memorizzo il nome del file
   QStringList mimeTypes;
   QStringList cache; //cache idea by Francesco Grieco

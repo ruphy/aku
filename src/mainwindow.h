@@ -29,7 +29,6 @@
 #include <QDockWidget>
 #include <QDesktopServices>
 #include <QSplitter>
-#include <QProcess>
 #include <QLineEdit>
 #include <QTreeWidget>
 #include <QPoint>
@@ -43,12 +42,10 @@
 #include <KStandardAction>
 #include <KStatusBar>
 #include <KActionCollection>
-#include <KMenu>
 #include <KRecentFilesAction>
 #include <KIcon>
 #include <KUrl>
 #include <KXmlGuiWindow>
-#include <KMenuBar>
 #include <KProcess>
 #include <KConfig>
 #include <KConfigGroup>
@@ -170,7 +167,7 @@ private:
   bool deleteAll;
   akuRatioWidget *ratioBar;
   QWidget *statusWidget;
-
+  bool globalRestrictions;
 protected:
   void setupSearchUI();
   QString rebuildPath ( QTreeWidgetItem* );
@@ -193,7 +190,7 @@ protected slots:
   virtual void addFolderPwd();
   virtual void checkRarExe();
   virtual void showStatusInfo(bool);
-  virtual void parseAndShow(QString);
+  virtual void parseAndShow(QString, bool crypted=false);
 };
 
 

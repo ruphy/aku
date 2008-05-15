@@ -1,8 +1,8 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'mainwindow.h'
 **
-** Created: Fri Apr 11 19:25:37 2008
-**      by: The Qt Meta Object Compiler version 59 (Qt 4.4.0-snapshot-20080325)
+** Created: Wed May 14 19:45:53 2008
+**      by: The Qt Meta Object Compiler version 59 (Qt 4.4.0-rc1)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -11,7 +11,7 @@
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'mainwindow.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 59
-#error "This file was generated using the moc from 4.4.0-snapshot-20080325. It"
+#error "This file was generated using the moc from 4.4.0-rc1. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -23,7 +23,7 @@ static const uint qt_meta_data_MainWindow[] = {
        1,       // revision
        0,       // classname
        0,    0, // classinfo
-      47,   10, // methods
+      48,   10, // methods
        0,    0, // properties
        0,    0, // enums/sets
 
@@ -74,7 +74,8 @@ static const uint qt_meta_data_MainWindow[] = {
      829,   11,   11,   11, 0x09,
      844,   11,   11,   11, 0x09,
      858,   11,   11,   11, 0x09,
-     879,   11,   11,   11, 0x09,
+     888,  879,   11,   11, 0x09,
+     915,   11,   11,   11, 0x29,
 
        0        // eod
 };
@@ -104,7 +105,9 @@ static const char qt_meta_stringdata_MainWindow[] = {
     "completeRename(bool)\0completeDelete(bool)\0"
     "encryptArchive()\0addFilePwd()\0"
     "addFolderPwd()\0checkRarExe()\0"
-    "showStatusInfo(bool)\0parseAndShow(QString)\0"
+    "showStatusInfo(bool)\0,crypted\0"
+    "parseAndShow(QString,bool)\0"
+    "parseAndShow(QString)\0"
 };
 
 const QMetaObject MainWindow::staticMetaObject = {
@@ -178,9 +181,10 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 43: addFolderPwd(); break;
         case 44: checkRarExe(); break;
         case 45: showStatusInfo((*reinterpret_cast< bool(*)>(_a[1]))); break;
-        case 46: parseAndShow((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 46: parseAndShow((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< bool(*)>(_a[2]))); break;
+        case 47: parseAndShow((*reinterpret_cast< QString(*)>(_a[1]))); break;
         }
-        _id -= 47;
+        _id -= 48;
     }
     return _id;
 }

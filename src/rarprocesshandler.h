@@ -3,11 +3,9 @@
 
 #include "overwritedialog.h"
 #include "akuprogressdialog.h"
+#include "threadprocess.h"
 
-#include <QThread>
-#include <QString>
 #include <QStringList>
-#include <QWidget>
 #include <QProcess>
 #include <QDockWidget>
 #include <QTextEdit>
@@ -27,11 +25,11 @@
 #include <QPixmap>
 #include <KMessageBox>
 #include <knewpassworddialog.h>
-class rarProcessHandler : public QThread
+class rarProcessHandler : public QObject
 {
-Q_OBJECT
+ Q_OBJECT
 
-public:
+ public:
   rarProcessHandler(  QWidget* parent = 0,QString = "", QStringList = QStringList(), QString="", QStringList = QStringList(), QString="");
   ~rarProcessHandler();
   QString standardOutput();
@@ -41,19 +39,19 @@ public:
   bool isCrypted();
   QString getArchivePassword();
   void run();
-signals:
+ signals:
   void processCompleted(bool);
   void processCanceled();
-  void outputReady(QString);
-public slots:
+  void outputReady(QString, bool);
+ public slots:
   virtual void getError();
   virtual void showProgress();
   virtual void handleCancel();
-  //virtual void start();
+  virtual void start();
 
-private:
+ private:
   QWidget *parentWidget;
-  QProcess *rarProc;
+  threadProcess *rarProc;
   QTextEdit *errorEdit;
   QWidget *errorDock;
   QByteArray rarProcError;
@@ -79,8 +77,8 @@ private:
   int passwordRequests;
   QString globalArchiver;
   bool totalExtraction;
-       
-protected slots:
+  int pID;
+ protected slots:
   virtual void initProcess();
   virtual void handleProcess();
   virtual void handlePaused();

@@ -1,7 +1,7 @@
 #include "rarprocesshandler.h"
 #include "rar.h"
 
-rarProcessHandler::rarProcessHandler( QWidget *parent,QString archiver, QStringList parameters, QString archive, QStringList files, QString destination ) : QThread(parent)
+rarProcessHandler::rarProcessHandler( QWidget *parent,QString archiver, QStringList parameters, QString archive, QStringList files, QString destination ) : QObject(parent)
 { 
   if(parent != 0)
   {      
@@ -44,14 +44,8 @@ rarProcessHandler::rarProcessHandler( QWidget *parent,QString archiver, QStringL
     parentWidget = parent;
     globalArchiver = archiver;
   
-     /* QWidget *forFrancesco = new QWidget();  DEBUG ONLY
-    QGridLayout *lay = new QGridLayout(forFrancesco);
-    outPut = new QTextEdit(forFrancesco);
-    lay -> addWidget(outPut,1,1);
-    forFrancesco -> show();*/
   }
-    connect(this, SIGNAL(finished()), this, SLOT(startSignals()));
-    connect(this, SIGNAL(terminated()), this, SLOT(startSignals()));
+
 }
 
 rarProcessHandler::~rarProcessHandler()
@@ -59,32 +53,35 @@ rarProcessHandler::~rarProcessHandler()
   qDeleteAll(children());
 }
 
-/*void rarProcessHandler::start()
+void rarProcessHandler::start()
 {
   if(globalArchiver != "")
   {
-    rarProc = new QProcess(this);
+    //rarProc = new QProcess(this);
+    rarProc = new threadProcess(this);
     initProcess();
     showError(rarProcError);
+    emit outputReady(stdOutput, crypted);
   }
-}*/
+}
 
 void rarProcessHandler::run()
 {
    puts("running...");
    if(globalArchiver != "")
   {
-    rarProc = new QProcess();
+    //rarProc = new QProcess();
+    rarProc = new threadProcess(this);
     initProcess();
     showError(rarProcError);
-    exec();
+    //exec();
 
   }
 }
 void rarProcessHandler::startSignals()
 {
-  if(stdOutput.isEmpty()) puts("VUOTA"); else puts("PIENA!!");
-  emit outputReady(stdOutput);
+  //if(stdOutput.isEmpty()) puts("VUOTA"); else puts("PIENA!!");
+  //emit outputReady(stdOutput);
 }
 void rarProcessHandler::initProcess()
 {
@@ -111,7 +108,7 @@ void rarProcessHandler::initProcess()
       puts("TOC: "+globalTOC.toAscii());
       filesToHandle = aids.getFileList(globalTOC); //we get the archive file list here
       puts("extracting files:\n - "+ QString(filesToHandle.join("\n")).toAscii());
-      rarProcProgress = new akuProgressDialog(0, filesToHandle.size());
+      rarProcProgress = new akuProgressDialog(parentWidget, filesToHandle.size());
       connect(rarProcProgress, SIGNAL(canceled()), this, SLOT(handleCancel()));
       connect(rarProcProgress, SIGNAL(paused()), this, SLOT(handlePaused()));
       connect(rarProcProgress, SIGNAL(continued()), this, SLOT(handleContinued()));
@@ -120,7 +117,7 @@ void rarProcessHandler::initProcess()
       connect(rarProc, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
       if(pathTarget.isEmpty()) rarProc -> start(process, QStringList() << params << rarArchive);
          else rarProc -> start(process, QStringList() << params << rarArchive << pathTarget);
-       rarProc -> waitForFinished();
+       //rarProc -> waitForFinished();
     }
     else
     {
@@ -178,7 +175,6 @@ void rarProcessHandler::initProcess()
     rarProc->start(process, QStringList() << params << rarArchive);
     if(!hasPasswordParameter) rarProc->waitForFinished(1000); 
     else rarProc->waitForFinished(-1);
-
   }
   else if(params[0] == "rn")
   {
@@ -261,7 +257,7 @@ void rarProcessHandler::initProcess()
     rarProc->waitForFinished(-1);
   }
   puts("initProcess terminata");
-  terminate();
+  //terminate();
 }
 
 bool rarProcessHandler::completedCorrectly()
@@ -353,7 +349,7 @@ void rarProcessHandler::getError()
     targetFile.remove(forParsing-1, targetFile.length());
     targetFile.remove("\n");
     
-    overwriteDialog *oDialog = new overwriteDialog(rarProc, parentWidget); //chiamiamo l'overwrite dialog
+    overwriteDialog *oDialog = new overwriteDialog(rarProc -> proc(), parentWidget); //chiamiamo l'overwrite dialog
     if(toAll == false)
     {
       QFileInfo details(targetFile); //generiamo le informazioni sul file
@@ -383,8 +379,10 @@ void rarProcessHandler::getError()
   {
     crypted = true; //the archive is crypted;
     totalFileCount = 0;
-    qobject_cast<QProcess*>(sender()) -> kill();
-    qobject_cast<QProcess*>(sender()) -> close();
+    //qobject_cast<QProcess*>(sender()) -> kill();
+    //qobject_cast<QProcess*>(sender()) -> close();
+    qobject_cast<threadProcess*>(sender()) -> proc() -> kill();
+    qobject_cast<threadProcess*>(sender()) -> proc() -> close();
     disconnect(rarProc, SIGNAL(readyReadStandardError()), this, SLOT(getError()));
     disconnect(rarProc, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
     if(rarProcProgress != NULL) rarProcProgress -> cancel();
@@ -490,8 +488,9 @@ QByteArray rarProcessHandler::rawStandardOutput()
 
 void rarProcessHandler::showProgress() //gestiamo un progressdialog
 {
+  
   QByteArray gotOutput = rarProc -> readAllStandardOutput();
-  //puts(gotOutput);
+  puts("GOT OUTPUT:" + gotOutput);
   stdOutput.append(gotOutput);
   rawOutput.append(gotOutput);
   QStringList percentuale;
@@ -499,9 +498,15 @@ void rarProcessHandler::showProgress() //gestiamo un progressdialog
   if(QString(gotOutput).contains("Extracting") && !QString(gotOutput).contains("Extracting from"))
    {
     QStringList details = QString(gotOutput).split(" ", QString::SkipEmptyParts);
-    if(details.size() == 2) rarProcProgress -> setCurrentFileName(details[1]);
+    details.removeAt(details.size()-1);
+    details.removeAt(details.size()-1);
+    details.removeAt(0);
+    rarProcProgress -> setCurrentFileName(filesToHandle[totalFileCount]);
   }
-  if(QString(gotOutput).contains("OK") && !QString(gotOutput).contains("All OK")) rarProcProgress -> incrementOverall();
+  if(QString(gotOutput).contains("OK") && !QString(gotOutput).contains("All OK")){
+     rarProcProgress -> incrementOverall();
+     if(totalFileCount < filesToHandle.size()) totalFileCount++;
+  }
   if ( QString(gotOutput).contains ( "%" )  )
   {
     percentuale = QString(gotOutput).split ( " ", QString::SkipEmptyParts );
@@ -521,28 +526,18 @@ void rarProcessHandler::showProgress() //gestiamo un progressdialog
 
 void rarProcessHandler::handleCancel()
 {
-  processTimer -> stop();
-  rarProc -> terminate();
+  rarProc -> killProcess();
   rarProcProgress -> cancel();
   emit processCanceled();
 }
 
 void rarProcessHandler::handlePaused()
 {
-  processTimer -> stop();
-  rarProc -> terminate();
-  totalFileCount --; 
+  rarProc->pauseProcess();
 }
 
 void rarProcessHandler::handleContinued()
 {
-   //we try to remove the file that we were extracting to avoid overwrite
-  QString fileToDelete;
-  if(pathTarget.endsWith(QDir::separator())) fileToDelete.append(pathTarget);
-  else fileToDelete.append(pathTarget+QDir::separator());
-  fileToDelete.append(filesToHandle[totalFileCount]);
-  QFile file(fileToDelete);
-  file.remove();
-
-  processTimer -> start(30);
+  rarProc -> continueProcess();
 }
+
