@@ -417,7 +417,7 @@ void MainWindow::parseAndShow(QString rarout, bool crypted)
     globalArchivePassword.clear();
 
   puts("RAROUT RICAVATA!!: "+rarout.toAscii());
-  if(rarout != "")
+  if(!rarout.isEmpty())
   { //se l'output non è nullo
     setCursor(Qt::WaitCursor);
     rarList -> clear(); //ripulisco la lista
