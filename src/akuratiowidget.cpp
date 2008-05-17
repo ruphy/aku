@@ -32,3 +32,8 @@ void akuRatioWidget::paintEvent(QPaintEvent *)
   painter.setOpacity(1);
   painter.drawText(rect(), Qt::AlignCenter, QString().setNum(lunghezza)+"%");
 }
+
+QSize akuRatioWidget::sizeHint() const
+{
+ return QSize(100, 18);
+}

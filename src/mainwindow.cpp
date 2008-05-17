@@ -141,7 +141,6 @@ void MainWindow::setPopUpMenus()
   rarList -> setContextMenuPolicy ( Qt::ActionsContextMenu );
   invertSelection = new KAction ( i18n( "Invert Selection" ), rarList );
   rarList -> addAction ( invertSelection );
-  debug = new KAction ( "Debug", rarList );
   QAction *separator = new QAction ( rarList );
   separator -> setSeparator ( true );
   rarList -> addAction ( separator );
@@ -182,9 +181,9 @@ void MainWindow::setConnections()
 
 void MainWindow::debugging()
 {
- /**akuWaitDialog *waitDialog = new akuWaitDialog(this);
- waitDialog -> setLabelText(i18n("Debugging"));
- waitDialog -> exec();**/
+ akuProgressDialog *debug = new akuProgressDialog(this);
+ debug -> show();
+ debug->setCurrentFileProgress(50);
 }
 
 void MainWindow::addFilePwd()

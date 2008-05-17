@@ -1,8 +1,8 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'dragtarget.h'
 **
-** Created: Fri Apr 11 15:34:48 2008
-**      by: The Qt Meta Object Compiler version 59 (Qt 4.4.0-snapshot-20080325)
+** Created: Thu May 15 23:58:18 2008
+**      by: The Qt Meta Object Compiler version 59 (Qt 4.4.0)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -11,7 +11,7 @@
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'dragtarget.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 59
-#error "This file was generated using the moc from 4.4.0-snapshot-20080325. It"
+#error "This file was generated using the moc from 4.4.0. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif

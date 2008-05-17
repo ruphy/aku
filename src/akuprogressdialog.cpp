@@ -2,9 +2,12 @@
 
 akuProgressDialog::akuProgressDialog(QWidget* parent, int maximum) : QDialog(parent)
 {
+  tTip = new akuProgressTooltip();
+  tTip -> resize(200,200);
+  parentW = parent;
   setWindowTitle(i18n("Processing..."));
   isPaused = false;
-  setWindowModality(Qt::WindowModal);
+  //setWindowModality(Qt::WindowModal);
   setMaximumSize ( 500,350 );
   setMinimumSize ( 500,350 );
   //setGeometry(parent -> x() + parent -> width() / 4, parent -> y(), 300,300);
@@ -46,6 +49,10 @@ akuProgressDialog::akuProgressDialog(QWidget* parent, int maximum) : QDialog(par
   //progressBox = new QGroupBox(this);
   
   QGridLayout *baseLayout = new QGridLayout(this);
+  QToolButton *tButton = new QToolButton(this);
+  tButton -> setToolTip(i18n("Send aKu to tray"));
+  tButton -> setIcon(KIcon("arrow-down-double"));
+  tButton -> setAutoRaise(true);
   baseLayout -> addWidget(progressBox,1,1);
   
   QFrame *singleFileFrame = new QFrame(this);
@@ -74,6 +81,7 @@ akuProgressDialog::akuProgressDialog(QWidget* parent, int maximum) : QDialog(par
   QGridLayout *buttonsLayout = new QGridLayout();
   buttonsLayout -> addWidget(cancel,1,1);
   buttonsLayout -> addWidget(pause,1,2);
+  buttonsLayout -> addWidget(tButton,1,3);
   baseLayout -> addLayout(buttonsLayout,3,1);
   
   fileProgress -> setValue(0);
@@ -81,8 +89,22 @@ akuProgressDialog::akuProgressDialog(QWidget* parent, int maximum) : QDialog(par
   if (maximum == 0) maximum = 100;
   overallProgress -> setMaximum(maximum);
   fileProgress -> setMaximum(99);
+  
+  tray = new KSystemTrayIcon(KIcon("folder-downloads"), parent);
+
+  helpFilter *filter = new helpFilter(tTip,this);
+  tray->installEventFilter(filter);
+  actionPause = new KAction(KIcon("edit-clear-history"), i18n("Pause"), this);
+  tray->contextMenu()->addAction(actionPause);
+  connect(actionPause, SIGNAL(triggered()), this, SLOT(pauseClicked()));
+  connect(tray, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(showInfoOnTray(QSystemTrayIcon::ActivationReason)));
   connect(cancel, SIGNAL(clicked()), this, SLOT(cancelPressed()));
   connect(pause, SIGNAL(clicked()), this, SLOT(pauseClicked()));
+  connect(tButton, SIGNAL(clicked()), this, SLOT(sendToTray()));
+  connect(fileProgress, SIGNAL(valueChanged(int)), this, SLOT(updateTooltip(int)));
+  connect(overallProgress, SIGNAL(valueChanged(int)), this, SLOT(updateTooltip(int)));
+
+
 }
 
 akuProgressDialog::~akuProgressDialog()
@@ -107,11 +129,11 @@ void akuProgressDialog::cancelPressed()
 
 void akuProgressDialog::pauseClicked()
 {
-  if (isPaused == false)
+  if (!isPaused)
   {
     isPaused = true;
     pause -> setText(i18n("Continue"));
-    pause-> setIcon(KIcon("legalmoves"));
+    pause-> setIcon(KIcon("media-playback-start"));
     emit paused();
   }
   else
@@ -121,6 +143,8 @@ void akuProgressDialog::pauseClicked()
     pause-> setIcon(KIcon("edit-clear-history"));
     emit continued();
   }
+    actionPause->setIcon(pause->icon());
+    actionPause->setText(pause->text());
 }
 
 void akuProgressDialog::cancel()
@@ -131,6 +155,7 @@ void akuProgressDialog::cancel()
 void akuProgressDialog::setArchiveName(QString name)
 {
   archiveName -> setText(name);
+  tTip->setArchiveName(name);
 }
 
 void akuProgressDialog::setCurrentFileName(QString name)
@@ -140,6 +165,7 @@ void akuProgressDialog::setCurrentFileName(QString name)
   KIcon icon(mime);
   QPixmap pixmap = icon.pixmap(64,64);
   currentFileIcon -> setPixmap(pixmap);
+  tTip->setCurrentFileName(name);
 }
 
 void akuProgressDialog::setCurrentFileSize(QString size)
@@ -166,6 +192,34 @@ void akuProgressDialog::setCurrentFileProgressToMaximum()
 
 void akuProgressDialog::closeEvent(QCloseEvent *event)
 {
+  tray->hide();
+  //delete tray;
   cancelPressed();
   event -> accept();
 }
+
+void akuProgressDialog::sendToTray()
+{
+ puts("traying");
+ tray -> show();
+ setVisible(false);
+ parentW->setVisible(false);
+}
+
+void akuProgressDialog::showInfoOnTray(QSystemTrayIcon::ActivationReason reason)
+{
+ if(reason == QSystemTrayIcon::Trigger)
+ {
+  setVisible(!isVisible());
+  tray->hide();
+ }
+}
+
+void akuProgressDialog::updateTooltip(int)
+{
+ tTip->setCurrentFileProgress(fileProgress->value());
+ int overall = (100*overallProgress->value())/overallProgress->maximum();
+ tTip->setArchiveProgress(overall);
+ puts("overall: "+QString().setNum(overall).toAscii());
+}
+

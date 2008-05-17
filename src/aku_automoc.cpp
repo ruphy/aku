@@ -13,6 +13,7 @@
 #include "moc_akuratiowidget.cpp"
 #include "moc_rarprocesshandler.cpp"
 #include "moc_akucompressionwidget.cpp"
+#include "moc_akuprogresstooltip.cpp"
 #include "moc_overwritedialog.cpp"
 #include "moc_mainwindow.cpp"
 #include "moc_threadprocess.cpp"

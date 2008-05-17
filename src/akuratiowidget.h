@@ -22,7 +22,7 @@ Q_OBJECT
 public:
   akuRatioWidget(float ratio = 0.0, QWidget *parent = 0);
   ~akuRatioWidget();
-
+  QSize sizeHint() const;
 public slots:
   virtual void setRatio(float);
 
