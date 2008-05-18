@@ -511,6 +511,7 @@ void rarProcessHandler::showProgress() //gestiamo un progressdialog
 void rarProcessHandler::giveOutput(int, QProcess::ExitStatus)
 {
  emit outputReady(standardOutput(), crypted);
+ emit processCompleted(true); //check the bool
 }
 
 void rarProcessHandler::handleCancel()

@@ -25,6 +25,7 @@
 #include <QTextCodec>
 #include <KIconLoader>
 #include "mainwindow.h"
+#include "rarprocesshandler.h"
 
 int main ( int argc, char *argv[] )
 {
@@ -39,7 +40,8 @@ int main ( int argc, char *argv[] )
   aboutData.setCustomAuthorText(ki18n(0), ki18n(0));
   KCmdLineArgs::init(argc, argv, &aboutData);
   KCmdLineOptions options;
-  options.add("+file", ki18n("Makes aku open the file specified"));
+  options.add("+[archive]", ki18n("Makes aku open the archive specified"));
+  options.add("extractto <destination>", ki18n("Extracts the archive to <destination>"));
   KCmdLineArgs::addCmdLineOptions( options );
 
   KApplication app;
@@ -49,8 +51,8 @@ int main ( int argc, char *argv[] )
   QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
   MainWindow * mw = new MainWindow();
   mw->show();
-  KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
-  for(int i=0; i < args -> count(); i++)  mw -> raropen(args -> arg(i)); 
+ // KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
+
   return app.exec();
 }
 

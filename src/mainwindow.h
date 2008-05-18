@@ -193,6 +193,7 @@ protected slots:
   virtual void checkRarExe();
   virtual void showStatusInfo(bool);
   virtual void parseAndShow(QString, bool crypted=false);
+  virtual void closeAll(bool); //this is used after handling some cmdline options
 };
 
 

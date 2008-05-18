@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include <KCmdLineArgs>
 
 QString archiver = "rar";
 QString bf; //buffer
@@ -52,12 +53,28 @@ MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( paren
   renameAction -> setEnabled ( false );
   waitDialog = new akuWaitDialog(this);
   showStatusInfo(false);
+
+  KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
+  if(args->isSet("extractto")){
+    // code to extract the archive
+    rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",args->arg(0), QStringList(), args->getOption("extractto"));
+    connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
+    setVisible(false);
+    pHand->start();
+  }
+  else{
+    for(int i=0; i < args -> count(); i++)  raropen(args -> arg(i));     
+   }
 }
 
 MainWindow::~MainWindow()
 {
 }
 
+void MainWindow::closeAll(bool)
+{
+ kapp->quit();
+}
 void MainWindow::checkRarExe()
 {
  QString check = KStandardDirs::findExe("rar");
