@@ -73,12 +73,12 @@ void rarProcessHandler::initProcess()
 
       bool fullArchive;
 
+      rar aids;
+      rarProc->start(process, QStringList() << "v" << params.last() << rarArchive);
+      rarProc->waitForFinished();
+      globalTOC = standardOutput();
       if(filesToHandle.isEmpty()) //should we extract the entire archive?
         {
-         rar aids;
-         rarProc->start(process, QStringList() << "v" << params.last() << rarArchive);
-         rarProc->waitForFinished();
-         globalTOC = standardOutput();
          fullArchive = true;
          filesToHandle = aids.getFileList(globalTOC);
        } else
@@ -478,20 +478,18 @@ void rarProcessHandler::showProgress() //gestiamo un progressdialog
   
   if(QString(gotOutput).contains("Extracting") && !QString(gotOutput).contains("Extracting from"))
    {
-   // QStringList details = QString(gotOutput).split(" ", QString::SkipEmptyParts);
-   // details.removeAt(details.size()-1);
-   // details.removeAt(details.size()-1);
-   // details.removeAt(0);
-   if(totalFileCount < filesToHandle.size()){
+    if(totalFileCount < filesToHandle.size()){
+     puts(filesToHandle[totalFileCount].toAscii());
      rarProcProgress -> setCurrentFileName(filesToHandle[totalFileCount]);
      QString size = rar::getSingleFileSize(globalTOC, filesToHandle[totalFileCount]);
-    // rarProcProgress -> setCurrentFileSize(size);
+     rarProcProgress -> setCurrentFileSize(size);
+     totalFileCount++;
    }
 
   }
-  if(QString(gotOutput).contains("OK") && !QString(gotOutput).contains("All OK")){
+  if(QString(gotOutput).contains("OK")){  // && !QString(gotOutput).contains("All OK")
      rarProcProgress -> incrementOverall();
-     if(totalFileCount < filesToHandle.size()) totalFileCount++;
+ //   if(totalFileCount < filesToHandle.size()) totalFileCount++;
   }
   if ( QString(gotOutput).contains ( "%" )  )
   {

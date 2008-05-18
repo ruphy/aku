@@ -349,13 +349,12 @@ QString rar::getSingleFileAttributes(QString TOC, QString file)
   TOC.remove ( 0,1 );
   TOC.remove ( TOC.length()-1,1 );
   QStringList tempFileList = TOC.split ( "\n" ); //splitto basandomi sul carattere di newline
-  int index;
-  index = tempFileList.indexOf(" "+file);
-  if(index == -1)
-    index = tempFileList.indexOf("*"+file); //if we can't find the occurence we try to search as encrypted file
-    
-  tempFileList[index+1].remove(0,1);
-  return tempFileList[index+1];
+
+  for(int i = 0; i < tempFileList.size(); i++)
+  {
+   if(tempFileList[i].contains(file)) return tempFileList[i+1];
+   else return QString();
+  }
 }
 
 KDateTime rar::getSingleFileModificationTime(QString TOC, QString file)  //pass the output of a rar v process and the file path
@@ -369,12 +368,10 @@ KDateTime rar::getSingleFileModificationTime(QString TOC, QString file)  //pass 
 
 QString rar::getSingleFileSize(QString TOC, QString file)
 {
-  QString prova = rar().getSingleFileAttributes(TOC, file);
-  puts(prova.toAscii());
-  //QStringList attributes = rar().getSingleFileAttributes(TOC, file).split(" ", QString::SkipEmptyParts);
-  //QString size = KLocale(attributes[0]).formatByteSize(attributes[0].toLong());
-  //return size;
-  return QString();
+  QStringList attributes = rar().getSingleFileAttributes(TOC, file).split(" ", QString::SkipEmptyParts);
+  QString size;
+  if(!attributes.isEmpty()) size = KLocale(attributes[0]).formatByteSize(attributes[0].toLong());
+  return size;
 }
 
 QStringList rar::getArchiveDetails()
