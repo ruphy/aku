@@ -1,6 +1,6 @@
 #include "akuwaitdialog.h"
 
-akuWaitDialog::akuWaitDialog(QWidget *parent) : KProgressDialog(parent, i18n("Processing Archive"))
+akuWaitDialog::akuWaitDialog(QWidget *parent) : KProgressDialog(parent, i18n("Processing Archive"), i18n("Work in progress, aKu is not freezed"))
 {
   progressBar() -> setMaximumSize(654999, 20);
   progressBar() -> setMaximum(0);

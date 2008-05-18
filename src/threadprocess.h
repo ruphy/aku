@@ -28,6 +28,7 @@ class threadProcess : public QThread
   signals:
    void readyReadStandardError(); 
    void readyReadStandardOutput();
+   void finished(int, QProcess::ExitStatus);
 
 };
 

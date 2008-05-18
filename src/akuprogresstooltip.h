@@ -8,7 +8,7 @@ class akuProgressTooltip : public QWidget
    public:
      akuProgressTooltip(QWidget *parent = 0);
      ~akuProgressTooltip();
-     QSize sizeHint();
+     QSize sizeHint() const;
    public slots:
      virtual void setCurrentFileName(QString); 
      virtual void setCurrentFileProgress(int);

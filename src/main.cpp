@@ -44,7 +44,6 @@ int main ( int argc, char *argv[] )
 
   KApplication app;
   QString loIcon = KIconLoader().iconPath("aku",-KIconLoader::SizeEnormous );
-  puts(loIcon.toAscii());
   QApplication::setWindowIcon(KIcon(loIcon));
   //QApplication::setWindowIcon( KIcon( "utilities-file-archiver" ) ); ///TEMP ICON
   QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));

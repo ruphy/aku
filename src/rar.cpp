@@ -369,9 +369,12 @@ KDateTime rar::getSingleFileModificationTime(QString TOC, QString file)  //pass 
 
 QString rar::getSingleFileSize(QString TOC, QString file)
 {
-  QStringList attributes = getSingleFileAttributes(TOC, file).split(" ", QString::SkipEmptyParts);
-  QString size = KLocale(attributes[0]).formatByteSize(attributes[0].toLong());
-  return size;
+  QString prova = rar().getSingleFileAttributes(TOC, file);
+  puts(prova.toAscii());
+  //QStringList attributes = rar().getSingleFileAttributes(TOC, file).split(" ", QString::SkipEmptyParts);
+  //QString size = KLocale(attributes[0]).formatByteSize(attributes[0].toLong());
+  //return size;
+  return QString();
 }
 
 QStringList rar::getArchiveDetails()

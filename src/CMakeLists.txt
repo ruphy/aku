@@ -25,6 +25,7 @@ SET(aku_SRCS
  akutreewidget.cpp
  threadprocess.cpp
  akuprogresstooltip.cpp
+ akuwaitthread.cpp
 )
 
 KDE4_ADD_UI_FILES(aku_SRCS extracto.ui overwriteui.ui)

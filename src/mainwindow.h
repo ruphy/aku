@@ -21,6 +21,7 @@
 #include "akucomment.h"
 #include "akuwaitdialog.h"
 #include "akutreewidget.h"
+#include "akuwaitthread.h"
 
 //QT4 INCLUDES
 #include <QStringList>
@@ -168,6 +169,7 @@ private:
   akuRatioWidget *ratioBar;
   QWidget *statusWidget;
   bool globalRestrictions;
+
 protected:
   void setupSearchUI();
   QString rebuildPath ( QTreeWidgetItem* );

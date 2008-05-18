@@ -4,6 +4,7 @@ threadProcess::threadProcess(QObject * parent) : QThread(parent), d(new threadPr
 {
  connect(d->process, SIGNAL(readyReadStandardOutput()), this, SIGNAL(readyReadStandardOutput()));
  connect(d->process, SIGNAL(readyReadStandardError()), this, SIGNAL(readyReadStandardError()));
+ connect(d->process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SIGNAL(finished(int, QProcess::ExitStatus))); 
 }
 
 threadProcess::~threadProcess()
@@ -48,7 +49,7 @@ QProcess* threadProcess::proc()
 
 void threadProcess::killProcess()
 {
-  d->process->terminate();
+  d->process->kill();
 }
 
 void threadProcess::pauseProcess()

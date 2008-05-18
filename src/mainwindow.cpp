@@ -181,9 +181,8 @@ void MainWindow::setConnections()
 
 void MainWindow::debugging()
 {
- akuProgressDialog *debug = new akuProgressDialog(this);
- debug -> show();
- debug->setCurrentFileProgress(50);
+ akuWaitThread *waitThread = new akuWaitThread(this);
+ waitThread->start();
 }
 
 void MainWindow::addFilePwd()
@@ -404,19 +403,22 @@ void MainWindow::raropen ( QString filename, bool restrictions )
   
   newProcHandler = new rarProcessHandler(this, archiver, QStringList() << "v" << "-c-" , namex );
   connect(newProcHandler, SIGNAL(outputReady(QString, bool)), this, SLOT(parseAndShow(QString, bool)));
+
   newProcHandler -> start();
   
 }
 
 void MainWindow::parseAndShow(QString rarout, bool crypted)
 {
- //rarout = rarProc -> standardOutput();
+ puts("parseAndShow");
+  disconnect(newProcHandler, SIGNAL(outputReady(QString, bool)), this, SLOT(parseAndShow(QString, bool)));
+
   if(crypted)
     globalArchivePassword = newProcHandler -> getArchivePassword();
   else 
     globalArchivePassword.clear();
 
-  puts("RAROUT RICAVATA!!: "+rarout.toAscii());
+  puts("RAROUT RICAVATA!!");
   if(!rarout.isEmpty())
   { //se l'output non è nullo
     setCursor(Qt::WaitCursor);
@@ -438,7 +440,7 @@ void MainWindow::parseAndShow(QString rarout, bool crypted)
     rarList -> sortItems ( 1, Qt::AscendingOrder );
     rarList -> header() -> setResizeMode ( 0, QHeaderView::ResizeToContents );
     rarList -> header() -> setResizeMode(9, QHeaderView::ResizeToContents);
-    if(globalRestrictions) handleRestrictions(namex);
+    // if(globalRestrictions) handleRestrictions(namex);
     if ( fromNewArchive == true )   //ripristiniamo la gui se proveniamo da un new archive
     {
       closeNewArchiveGUI(false);

@@ -40,7 +40,7 @@ void akuProgressTooltip::setArchiveProgress(int prog)
  overallProgress->setRatio(prog);
 }
 
-QSize sizeHint()
+QSize akuProgressTooltip::sizeHint() const
 {
  return QSize(100,100);
 }

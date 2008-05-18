@@ -220,6 +220,5 @@ void akuProgressDialog::updateTooltip(int)
  tTip->setCurrentFileProgress(fileProgress->value());
  int overall = (100*overallProgress->value())/overallProgress->maximum();
  tTip->setArchiveProgress(overall);
- puts("overall: "+QString().setNum(overall).toAscii());
 }
 

@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'rarprocesshandler.h'
 **
-** Created: Thu May 15 23:58:19 2008
+** Created: Sat May 17 20:55:44 2008
 **      by: The Qt Meta Object Compiler version 59 (Qt 4.4.0)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -41,7 +41,7 @@ static const uint qt_meta_data_rarProcessHandler[] = {
      151,   18,   18,   18, 0x09,
      167,   18,   18,   18, 0x09,
      182,   18,   18,   18, 0x09,
-     200,   18,   18,   18, 0x09,
+     200,   60,   18,   18, 0x09,
 
        0        // eod
 };
@@ -52,7 +52,7 @@ static const char qt_meta_stringdata_rarProcessHandler[] = {
     "getError()\0showProgress()\0handleCancel()\0"
     "start()\0initProcess()\0handleProcess()\0"
     "handlePaused()\0handleContinued()\0"
-    "startSignals()\0"
+    "giveOutput(int,QProcess::ExitStatus)\0"
 };
 
 const QMetaObject rarProcessHandler::staticMetaObject = {
@@ -91,7 +91,7 @@ int rarProcessHandler::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 8: handleProcess(); break;
         case 9: handlePaused(); break;
         case 10: handleContinued(); break;
-        case 11: startSignals(); break;
+        case 11: giveOutput((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< QProcess::ExitStatus(*)>(_a[2]))); break;
         }
         _id -= 12;
     }

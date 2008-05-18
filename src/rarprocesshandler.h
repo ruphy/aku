@@ -38,7 +38,7 @@ class rarProcessHandler : public QObject
   bool completedCorrectly();
   bool isCrypted();
   QString getArchivePassword();
-  void run();
+
  signals:
   void processCompleted(bool);
   void processCanceled();
@@ -48,7 +48,7 @@ class rarProcessHandler : public QObject
   virtual void showProgress();
   virtual void handleCancel();
   virtual void start();
-
+  
  private:
   QWidget *parentWidget;
   threadProcess *rarProc;
@@ -83,7 +83,7 @@ class rarProcessHandler : public QObject
   virtual void handleProcess();
   virtual void handlePaused();
   virtual void handleContinued();
-  virtual void startSignals();
+  virtual void giveOutput(int, QProcess::ExitStatus);
 
 };
 #endif
