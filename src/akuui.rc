@@ -9,7 +9,7 @@
    <Action name="delete" />
    <Separator />
    <Action name="preview" />
-   <Action name="find" />
+   <Action name="info" />
    </ToolBar>
   <MenuBar>
     <Menu name="file" >

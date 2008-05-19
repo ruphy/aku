@@ -427,9 +427,7 @@ void MainWindow::raropen ( QString filename, bool restrictions )
 
 void MainWindow::parseAndShow(QString rarout, bool crypted)
 {
- puts("parseAndShow");
   disconnect(newProcHandler, SIGNAL(outputReady(QString, bool)), this, SLOT(parseAndShow(QString, bool)));
-
   if(crypted)
     globalArchivePassword = newProcHandler -> getArchivePassword();
   else 
@@ -785,7 +783,7 @@ QStringList MainWindow::recursiveRebuildForNew ( QTreeWidgetItem* item )
   if ( item -> childCount() != 0 )   //se ha dei figli
   {
     QString tempCheck = item -> child ( 0 ) -> text ( 1 ); //contiene il percorso dell'elemento
-    QStringList subFolders = QDir ( item -> text ( 1 ) + item -> text ( 0 ) ).entryList ( QStringList() << "*.*",QDir::NoDotAndDotDot | QDir::AllDirs | QDir::Files ); //TODO: clean this function.. no need to distinguish between untouched and touched
+    QStringList subFolders = QDir ( item -> text ( 1 ) + item -> text ( 0 ) ).entryList ( QStringList() << "*.*",QDir::NoDotAndDotDot | QDir::AllDirs | QDir::Files ); 
     QStringList endList;
     for ( int j = 0; j < item -> childCount(); j++ )
       endList << recursiveRebuildForNew ( item -> child ( j ) );
@@ -810,8 +808,8 @@ QStringList MainWindow::recursiveRebuildForNew ( QTreeWidgetItem* item )
         parentPath = parentPath + toReturn[i];
         if ( i != 0 ) parentPath.append ( QDir().separator() );
       }
-      //puts ( "Percorso ricostruito: -ap"+QString ( parentPath+" "+item -> text ( 1 ) + item -> text ( 0 ) ).toAscii() );
-      //se è un cartella del tipo *User created Folder* allora non passo nessun path di origine
+      // puts ( "Percorso ricostruito: -ap"+QString ( parentPath+" "+item -> text ( 1 ) + item -> text ( 0 ) ).toAscii() );
+      // se è un cartella del tipo *User created Folder* allora non passo nessun path di origine
       if ( item -> text ( 1 ).indexOf ( QDir().separator() ) != -1 )
       {
         return QStringList() << "-ap"+parentPath << item -> text ( 1 ) + item -> text ( 0 ); //altrimenti restituisco direttamente il percorso
@@ -841,8 +839,6 @@ void MainWindow::newArchive()
     //menubar -> setEnabled ( false );
     password = compressionWidget -> getPassword();
     compressionLevel = compressionWidget -> getCompressionLevel();
-    //controllo se c'è bisogno di usare un for di processi o se ne basta uno solo
-    //starting rarProcessHandler
    
     if(compressionWidget -> isSplitRequested()) // TODO:highly unstable!!! check
     { 
@@ -854,6 +850,7 @@ void MainWindow::newArchive()
     }
     else
     {
+      puts("NOT SPLITTED");
       newProcHandler = new rarProcessHandler(this, "rar", QStringList()<<"a"<<"-ep1"<<"-m"+QString().setNum(compressionLevel)<<"-p"+password, archive, filesToAdd);
       connect(newProcHandler, SIGNAL(processCompleted(bool)), this, SLOT(closeNewArchiveGUI(bool)));
       connect(newProcHandler, SIGNAL(processCanceled()), this, SLOT(closeRar()));
@@ -990,7 +987,6 @@ void MainWindow::embeddedViewer()
       view.terminate();
 
       QByteArray buffer = view.readAllStandardOutput(); //leggo il file temporaneo e memorizzo in buffer
-
       akuViewer *embedded = new akuViewer ( this ); //chiamiamo il viewer e passiamogli il testo
       embedded -> setAttribute(Qt::WA_DeleteOnClose);
       embedded -> setData(buffer);
@@ -1036,7 +1032,7 @@ void MainWindow::renameItem()
   }
 }
 
-QString MainWindow::rebuildPath ( QTreeWidgetItem *toRebuild ) //ricostruisce il percorso dell'elemento fino all'ultima cartella padre.. bisogna aggiungere il nome dell'elemento
+QString MainWindow::rebuildPath ( QTreeWidgetItem *toRebuild ) //missing item name.. see rebuildFullPath for complete string
 {
   QTreeWidgetItem *tmp; //elemento temporaneo
   QStringList pathlist; //lista delle cartelle di percorso
@@ -1047,7 +1043,7 @@ QString MainWindow::rebuildPath ( QTreeWidgetItem *toRebuild ) //ricostruisce il
     tmp = tmp -> parent();
   }
   QString path;
-  for ( int i = pathlist.size()-1; i>=0; i-- ) //for inverso per ricostruire il percorso
+  for ( int i = pathlist.size()-1; i>=0; i-- )
   {
     path.append ( pathlist[i] );
     if ( i!=0 ) path.append ( QDir().separator() );
@@ -1198,7 +1194,7 @@ void MainWindow::sumSelectedItemsSize()
 void MainWindow::setupActions()
 {
   toolExtract = new KAction ( this);
-  toolExtract -> setIcon ( KIcon ( "archive-extract.png" ) ); //TODO usare un solo tasto extract
+  toolExtract -> setIcon ( KIcon ( "archive-extract.png" ) ); 
   toolExtract -> setText ( i18n( "Extract" ) );
   actionCollection() -> addAction ( "extract", toolExtract );
   toolDelete = new KAction ( this );
@@ -1210,6 +1206,7 @@ void MainWindow::setupActions()
   toolView -> setText ( i18n( "Preview" ) );
   actionCollection() -> addAction ("preview", toolView );
   actionInfo = new KAction(this);
+  actionInfo -> setIcon(KIcon("help-about"));
   actionInfo -> setText(i18n("Information"));
   actionInfo -> setCheckable(true);
   actionCollection() -> addAction("info", actionInfo);

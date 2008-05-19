@@ -132,6 +132,7 @@ void rarProcessHandler::initProcess()
  }
   else if(params[0] == "a")
   {
+    disconnect(rarProc, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
     puts(QString("NewArchive Launching process: " + process + " " + params.join(" ")+ " "+rarArchive+ " " + filesToHandle.join(" ") + " "+ pathTarget).toAscii());
     rarProcProgress = new akuProgressDialog(parentWidget, filesToHandle.size());
     int total = 0;
@@ -255,23 +256,23 @@ void rarProcessHandler::handleProcess()
   puts("totalFileCount = "+ QString().setNum(totalFileCount).toAscii());
   if(totalFileCount < filesToHandle.size() && rarProc -> state() == QProcess::NotRunning) //if the extraction is complete we can start the next
   {
-    puts("extracting: "+ filesToHandle[totalFileCount].toAscii());
+   // puts("extracting: "+ filesToHandle[totalFileCount].toAscii());
     QStringList toDebug;
     toDebug << params << rarArchive  << filesToHandle[totalFileCount] << pathTarget;
     puts(process.toAscii() +" " + toDebug.join(" ").toAscii());
-    if(params[0] == "x" || params[0] == "e")
-    {
-      if(pathTarget != "") rarProc->start(process, QStringList() << params << rarArchive  << filesToHandle[totalFileCount] << pathTarget);
-      else rarProc->start(process, QStringList() << params << rarArchive << filesToHandle[totalFileCount]);
-      if(!hasPasswordParameter) rarProc -> waitForFinished(3000); 
-      else rarProc -> waitForFinished(-1);
-      rarProcProgress -> setCurrentFileName(filesToHandle[totalFileCount]);
-      rarProcProgress -> incrementOverall();
-      QString size = rar().getSingleFileSize(globalTOC, filesToHandle[totalFileCount]);
-      rarProcProgress -> setCurrentFileSize(size);
-    }
-    else
-    {
+   // if(params[0] == "x" || params[0] == "e")
+   // {
+   //   if(pathTarget != "") rarProc->start(process, QStringList() << params << rarArchive  << filesToHandle[totalFileCount] << pathTarget);
+   //   else rarProc->start(process, QStringList() << params << rarArchive << filesToHandle[totalFileCount]);
+   //   if(!hasPasswordParameter) rarProc -> waitForFinished(3000); 
+   //   else rarProc -> waitForFinished(-1);
+   //   rarProcProgress -> setCurrentFileName(filesToHandle[totalFileCount]);
+   //   rarProcProgress -> incrementOverall();
+   //   QString size = rar().getSingleFileSize(globalTOC, filesToHandle[totalFileCount]);
+   //   rarProcProgress -> setCurrentFileSize(size);
+   // }
+   // else
+   // {
       rarProc -> waitForFinished(-1);
       if ( filesToHandle[totalFileCount].indexOf ( "-ap" ) == -1 )
       {
@@ -292,14 +293,14 @@ void rarProcessHandler::handleProcess()
         rarProcProgress -> setCurrentFileSize(size);
         totalFileCount++;
       }
-    }
+   // }
     if(!passwordAsked) totalFileCount ++;
     else passwordAsked = false; //patch for one-file-extraction with password protection
   }
   else
   {
-    puts("stopping timer");
-    puts("totalFileCount =" +QString().setNum(totalFileCount).toAscii() + " filesToHandle.size() = "+QString().setNum(filesToHandle.size()).toAscii());
+   // puts("stopping timer");
+   // puts("totalFileCount =" +QString().setNum(totalFileCount).toAscii() + " filesToHandle.size() = "+QString().setNum(filesToHandle.size()).toAscii());
     if(totalFileCount == filesToHandle.size() && rarProc -> state() == QProcess::NotRunning)
     {
       processTimer -> stop();
@@ -319,12 +320,9 @@ void rarProcessHandler::handleProcess()
 void rarProcessHandler::getError()
 { 
   //questa funzione acquisisce l'errore e in base alla sua entità lo tratta in maniera specifica
-  puts("called");
   QByteArray temp = rarProc -> readAllStandardError();
-  puts("temp = "+temp);
   if(QString().fromAscii(temp).indexOf("already") != -1) //se riceviamo una richiesta di sovrascrittura la catturiamo
   {
-    puts("primo if");
     //rarProcProgress -> setValue ( rarProcProgress -> maximum()); //annulliamo la barra, perchè sicuramente ha finito l'estrazione precedente
     QString targetFile = QString().fromAscii(temp); //estraiamo il nome del file da sovrascrivere
     int forParsing = targetFile.indexOf("already"); //basandoci sull'occorrenza della stringa "already"
@@ -384,7 +382,6 @@ void rarProcessHandler::getError()
       passwordAsked = true;
       puts("initProcess called");
       initProcess();
-
     }
     else
     {
@@ -396,8 +393,7 @@ void rarProcessHandler::getError()
   else //altrimenti lasciamo che l'errore sia gestito da showError
   {
     if(QString().fromAscii(temp).indexOf("already") == -1 || QString().fromAscii(temp).indexOf("password") == -1) rarProcError.append(temp);
-  }
-  puts("fine di getError");  
+  } 
 }
 
 bool rarProcessHandler::isCrypted()
@@ -493,6 +489,7 @@ void rarProcessHandler::showProgress() //gestiamo un progressdialog
   }
   if ( QString(gotOutput).contains ( "%" )  )
   {
+    puts(gotOutput);
     percentuale = QString(gotOutput).split ( " ", QString::SkipEmptyParts );
     if ( percentuale.size() == 2 )
     {
