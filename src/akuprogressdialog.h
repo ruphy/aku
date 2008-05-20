@@ -48,6 +48,7 @@ protected slots:
   virtual void sendToTray();
   virtual void showInfoOnTray(QSystemTrayIcon::ActivationReason);
   virtual void updateTooltip(int);
+  virtual void clearEventualTrayIcon();
 signals:
   void canceled();
   void paused();
@@ -92,7 +93,6 @@ class helpFilter : public QObject
     if(event->type() == QEvent::ToolTip)
      {
       QHelpEvent *helpEvent = static_cast<QHelpEvent*>(event);
-      //toolTipWidget->setWindowFlags(Qt::ToolTip);
       QPoint point = helpEvent->globalPos();
       point.setX(point.x() - toolTipWidget->width());
       point.setY(point.y() - toolTipWidget->height());

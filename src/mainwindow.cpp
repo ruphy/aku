@@ -198,8 +198,7 @@ void MainWindow::setConnections()
 
 void MainWindow::debugging()
 {
- akuWaitThread *waitThread = new akuWaitThread(this);
- waitThread->start();
+
 }
 
 void MainWindow::addFilePwd()
@@ -214,10 +213,8 @@ void MainWindow::addFolderPwd()
 
 void MainWindow::setRecentActions()
 {
-  //imposto le voci di menu con gli ultimi file aperti
   KConfig config;
   config.sync();
-  //QStringList actionList = KConfigGroup(&config ,"recentFiles").readEntry("recentFiles" , QStringList());
   QStringList actionList = KConfigGroup(&config ,"KFileDialog Settings").readEntry("Recent Files" , QStringList());
   if ( !actionList.isEmpty())
   {
@@ -259,7 +256,6 @@ void MainWindow::addFolder( bool pwd)
       pwDialog.setPrompt(i18n("Enter a password"));
       if(pwDialog.exec()) pwdToSet = pwDialog.password();
     }
-    //------------------------------------------//
 
     rarProcessHandler *addingProc;
     if(rarList -> selectedItems().size() == 1 )
@@ -341,7 +337,6 @@ void MainWindow::addFile(bool pwd)
       pwDialog.setPrompt(i18n("Enter a password"));
       if (pwDialog.exec()) pwdToSet = pwDialog.password();
     }
-    //------------------------------------------//
     rarProcessHandler *addingProc;
     if(rarList -> selectedItems().size() == 1 )
     {
@@ -618,7 +613,7 @@ void MainWindow::singleExtractInit()
       getMetaInfo ( checkUnselected[0] );
       if(checkUnselected[0] -> text(9).contains("image") && metaWidget -> isVisible() && checkUnselected[0] -> icon(10).isNull())
       {
-      //if the file is an image we make a preview of it
+      //if the file is an image we make a preview
         QString itemPath = rebuildFullPath(checkUnselected[0]);
         QProcess toPreview;
         toPreview.start(archiver, QStringList()<<"p"<<"-inul"<<namex<<itemPath);
@@ -742,7 +737,7 @@ void MainWindow::setInformation ( bool visible )
 void MainWindow::setFolderIcons()
 {
   for ( int i = 0; i < rarList -> topLevelItemCount(); i++ )
-    if ( ( rarList -> topLevelItem ( i ) ) -> text ( 8 ) == "" )    //se non ho scritto il metodo è sicuramente una cartella
+    if ( ( rarList -> topLevelItem ( i ) ) -> text ( 8 ) == "" )
     {
       ( rarList -> topLevelItem ( i ) ) -> setIcon ( 0,KIcon ( "inode-directory" ) );
       recursiveFolderIcons ( rarList -> topLevelItem ( i ) );
@@ -928,26 +923,26 @@ void MainWindow::setupForNew()
   commentAction -> setVisible(false);
   showStatusInfo(false);
 
-  //usare un widget di base � un trick estetico per una migliore visualizzazione
+  // the source of file dragging
   sourceDock = new QDockWidget ( this );
   sourceDock -> setGeometry ( x() + width() + 20,y(),400,600 );
   sourceDock -> setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
   QWidget *baseWidget = new QWidget ( sourceDock );
 
-  //inizializzo la dragSource reimplementata
+  // dragSource widget
   sourceView = new akuDragSourceWidget(baseWidget);
   QGridLayout *layout = new QGridLayout ( baseWidget );
   layout -> addWidget ( sourceView,0,0,1,1 );
   sourceDock -> setWidget ( baseWidget );
 
-  //inizializzo la dragTarget
+  // dragTarget treewidget
   widgetForList = new QWidget ( this );
   QGridLayout *destLayout = new QGridLayout ( widgetForList );
   targetList = new dragTarget ( sourceView -> sourceViewInUse(), widgetForList );
   destLayout -> addWidget ( targetList, 1,1 );
   splitter -> addWidget ( widgetForList );
 
-  //inizializzo il dockoptions
+  // dockOptions
   dockOption = new QDockWidget(i18n("New archive"),this);
   dockOption -> setAllowedAreas(Qt::NoDockWidgetArea);
   compressionWidget = new akuCompressionWidget(this);
@@ -956,7 +951,7 @@ void MainWindow::setupForNew()
   dockOption -> setFloating(true);
   dockOption -> setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
   dockOption -> setGeometry(x() - 305, y(), 305,358);
-  /***************************************************************/
+ 
 
   this -> addDockWidget ( Qt::RightDockWidgetArea,sourceDock );
 
@@ -964,7 +959,7 @@ void MainWindow::setupForNew()
   QString tip;
   tip = i18n("<b>New Archive:</b>\njust drag and drop files and folders you wish to add to the new archive");
   new akuToolTip(tip, this);
-  //----------------------------------------//
+
 
   connect( compressionWidget, SIGNAL(creationCalled()), this, SLOT(newArchive()));
   connect(compressionWidget, SIGNAL(canceled()), this, SLOT(reloadArchive()));

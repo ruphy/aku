@@ -84,13 +84,6 @@ void rarProcessHandler::initProcess()
        } else
         fullArchive = false;
 
-
-     // totalExtraction = false;
-     // puts(QString("Launching process: " + process + " " + params.join(" ")+ " "+rarArchive+ " " + filesToHandle.join(" ") + " " + pathTarget).toAscii());
-      
-      //we need to recover archive file list
-      
-
       rarProcProgress = new akuProgressDialog(parentWidget, filesToHandle.size());
       connect(rarProcProgress, SIGNAL(canceled()), this, SLOT(handleCancel()));
       connect(rarProcProgress, SIGNAL(paused()), this, SLOT(handlePaused()));
@@ -101,34 +94,7 @@ void rarProcessHandler::initProcess()
         rarProc -> start(process, QStringList() << params << rarArchive << pathTarget);
       else
        rarProc -> start(process, QStringList() << params << rarArchive << filesToHandle << pathTarget);
-      // rarProc -> waitForFinished();
-   // }
-   // else
-   // {
-      //here we rebuild paths of the file the user wants to extract
-    //  puts(QString("Launching process: " + process + " " + params.join(" ")+ " "+rarArchive+ " " + filesToHandle.join(" ") + " "+ pathTarget).toAscii());
-      /*rar aids;
-      //we need to recover archive file list
-      puts("password parameter: "+params.last().toAscii());
-      rarProc->start(process, QStringList() << "v" << params.last() << rarArchive);
-      if(!hasPasswordParameter) rarProc->waitForFinished(1000); 
-      else rarProc->waitForFinished(-1);
-      globalTOC = rarProc->readAllStandardOutput();
-      QStringList tempFileList;
-      for(int i = 0; i < filesToHandle.size(); i++) tempFileList << aids.getListFromPath(filesToHandle[i], globalTOC); //we get the archive file list here from paths specified
-      filesToHandle = tempFileList;
 
-      rarProcProgress = new akuProgressDialog(parentWidget, filesToHandle.size());
-      connect(rarProcProgress, SIGNAL(canceled()), this, SLOT(handleCancel()));
-      connect(rarProcProgress, SIGNAL(paused()), this, SLOT(handlePaused()));
-      connect(rarProcProgress, SIGNAL(continued()), this, SLOT(handleContinued()));
-      rarProcProgress -> setArchiveName(rarArchive);
-            //here we start a timer to handle the extraction avoiding the GUI to freeze
-       processTimer = new QTimer();
-       connect(processTimer, SIGNAL(timeout()), this, SLOT(handleProcess()));
-       processTimer -> start(1);
-       puts("started timer");*/
-   // }
  }
   else if(params[0] == "a")
   {
@@ -155,9 +121,6 @@ void rarProcessHandler::initProcess()
     connect(rarProc, SIGNAL(readyReadStandardError()), this, SLOT(getError()));
     connect(rarProc, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
     rarProc->start(process, QStringList() << params << rarArchive);
-   // if(!hasPasswordParameter) rarProc->waitForFinished(1000); 
-   // else rarProc->waitForFinished(-1);
-   // rarProc->waitForFinished();
   }
   else if(params[0] == "rn")
   {
@@ -260,19 +223,7 @@ void rarProcessHandler::handleProcess()
     QStringList toDebug;
     toDebug << params << rarArchive  << filesToHandle[totalFileCount] << pathTarget;
     puts(process.toAscii() +" " + toDebug.join(" ").toAscii());
-   // if(params[0] == "x" || params[0] == "e")
-   // {
-   //   if(pathTarget != "") rarProc->start(process, QStringList() << params << rarArchive  << filesToHandle[totalFileCount] << pathTarget);
-   //   else rarProc->start(process, QStringList() << params << rarArchive << filesToHandle[totalFileCount]);
-   //   if(!hasPasswordParameter) rarProc -> waitForFinished(3000); 
-   //   else rarProc -> waitForFinished(-1);
-   //   rarProcProgress -> setCurrentFileName(filesToHandle[totalFileCount]);
-   //   rarProcProgress -> incrementOverall();
-   //   QString size = rar().getSingleFileSize(globalTOC, filesToHandle[totalFileCount]);
-   //   rarProcProgress -> setCurrentFileSize(size);
-   // }
-   // else
-   // {
+  
       rarProc -> waitForFinished(-1);
       if ( filesToHandle[totalFileCount].indexOf ( "-ap" ) == -1 )
       {
@@ -299,8 +250,6 @@ void rarProcessHandler::handleProcess()
   }
   else
   {
-   // puts("stopping timer");
-   // puts("totalFileCount =" +QString().setNum(totalFileCount).toAscii() + " filesToHandle.size() = "+QString().setNum(filesToHandle.size()).toAscii());
     if(totalFileCount == filesToHandle.size() && rarProc -> state() == QProcess::NotRunning)
     {
       processTimer -> stop();
@@ -454,7 +403,6 @@ void rarProcessHandler::showError(QByteArray errore)
 
 QString rarProcessHandler::standardOutput()
 {
-  //stdOutput.remove("UNRAR 3.71 beta 1 freeware      Copyright (c) 1993-2007 Alexander Roshal");
   if(stdOutput.indexOf("Pathname/Comment") == -1 ) stdOutput.clear();
   return stdOutput;
 }
@@ -483,7 +431,7 @@ void rarProcessHandler::showProgress() //gestiamo un progressdialog
    }
 
   }
-  if(QString(gotOutput).contains("OK")){  // && !QString(gotOutput).contains("All OK")
+  if(QString(gotOutput).contains("OK") && !QString(gotOutput).contains("All OK")){  
      rarProcProgress -> incrementOverall();
  //   if(totalFileCount < filesToHandle.size()) totalFileCount++;
   }

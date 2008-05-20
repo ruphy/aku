@@ -31,7 +31,7 @@ int main ( int argc, char *argv[] )
 {
 
   KAboutData aboutData( "aku", 0, ki18n("aKu"),
-      "2.0-SVN", ki18n("The RAR application for KDE4"), KAboutData::License_GPL_V3,
+      "SVN", ki18n("The RAR application for KDE4"), KAboutData::License_GPL_V3,
       ki18n("Copyright (c) 2008"));
    
   aboutData.addAuthor(ki18n("Alessandro Diaferia aka \"The Speedy Coder\""), ki18n("Main Developer"), "alediaferia@gmail.com");
@@ -40,7 +40,7 @@ int main ( int argc, char *argv[] )
   aboutData.setCustomAuthorText(ki18n(0), ki18n(0));
   KCmdLineArgs::init(argc, argv, &aboutData);
   KCmdLineOptions options;
-  options.add("+[archive]", ki18n("Makes aku open the archive specified"));
+  options.add("+[archive]", ki18n("Makes aKu open the archive specified"));
   options.add("extractto <destination>", ki18n("Extracts the archive to <destination>"));
   KCmdLineArgs::addCmdLineOptions( options );
 

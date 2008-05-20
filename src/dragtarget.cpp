@@ -35,7 +35,7 @@ dragTarget::dragTarget (dragSource *source, QWidget *parent ) : QTreeWidget ( pa
   setColumnWidth ( 0,170 );
   setDropIndicatorShown ( true );
   //setAnimated ( true );
-//-------settiamo i context menu---------------------------//
+
   newFolder = new QAction ( tr ( "New Folder" ), this );
   newFolder -> setIcon ( KIcon ( "folder-new" ) );
   //newFolder -> setShortcut(QKeySequence(tr("Ctrl+A")));
@@ -45,7 +45,7 @@ dragTarget::dragTarget (dragSource *source, QWidget *parent ) : QTreeWidget ( pa
   //delItem -> setShortcut(QKeySequence(tr("Del"))); //TODO check!
   //this -> addAction(delItem);
   //this-> setContextMenuPolicy(Qt::DefaultContextMenu); //se non imposto defaultcontextmenu non posso reimplementare la gestione del contextmenu
-//-----------------------------------------------------------//
+
   //creo il menu
   menu = new QMenu ( tr ( "Options" ),this );
   menu -> addAction ( newFolder );

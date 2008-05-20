@@ -35,6 +35,7 @@ class rarProcessHandler : public QObject
   QString standardOutput();
   QByteArray rawStandardOutput();
   void showError(QByteArray);
+  static void showError(QString);
   bool completedCorrectly();
   bool isCrypted();
   QString getArchivePassword();

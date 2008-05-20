@@ -103,8 +103,7 @@ akuProgressDialog::akuProgressDialog(QWidget* parent, int maximum) : QDialog(par
   connect(tButton, SIGNAL(clicked()), this, SLOT(sendToTray()));
   connect(fileProgress, SIGNAL(valueChanged(int)), this, SLOT(updateTooltip(int)));
   connect(overallProgress, SIGNAL(valueChanged(int)), this, SLOT(updateTooltip(int)));
-
-
+  connect(this, SIGNAL(accepted()), this, SLOT(clearEventualTrayIcon()));
 }
 
 akuProgressDialog::~akuProgressDialog()
@@ -117,6 +116,14 @@ int akuProgressDialog::currentFileProgressValue()
   return fileProgress -> value();
 }
 
+void akuProgressDialog::clearEventualTrayIcon()
+{
+  if(tray->isVisible())
+  { 
+   tray->hide();
+   parentW->setVisible(!parentW->isVisible());
+  }
+}
 void akuProgressDialog::setMaximum(int max)
 {
   overallProgress -> setMaximum(max);
@@ -182,7 +189,7 @@ void akuProgressDialog::incrementOverall()
 void akuProgressDialog::setCurrentFileProgress(int progress)
 {
   fileProgress -> setValue( progress );
-  show();
+  if(!tray->isVisible()) show();
 }
 
 void akuProgressDialog::setCurrentFileProgressToMaximum()
@@ -193,14 +200,12 @@ void akuProgressDialog::setCurrentFileProgressToMaximum()
 void akuProgressDialog::closeEvent(QCloseEvent *event)
 {
   tray->hide();
-  //delete tray;
   cancelPressed();
   event -> accept();
 }
 
 void akuProgressDialog::sendToTray()
 {
- puts("traying");
  tray -> show();
  setVisible(false);
  parentW->setVisible(false);

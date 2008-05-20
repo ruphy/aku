@@ -22,7 +22,6 @@ akuViewer::akuViewer ( QWidget *parent, Qt::WFlags fl ) : QDialog ( parent, fl )
   QGridLayout *fileLayout = new QGridLayout(fileWidget);
   fileLayout -> addWidget(fileIcon,1,1);
   fileLayout -> addLayout(fileInfoLayout,1,2);
-  //-----------------------------------
   layout = new QGridLayout ( this );
 
   layout -> addWidget(fileWidget,1,1);
@@ -62,10 +61,10 @@ void akuViewer::setupTextView()
   searchLayout -> addWidget ( searchBackward, 1,3 );
   searchLayout -> addWidget ( searchForward, 1, 4 );
   
-  comboLayout -> addWidget ( fontCombo, 1, 1 ); //fontCombo riga 1 colonna 1 secondo layout
-  comboLayout -> addWidget ( sizeCombo, 1, 2 ); //sizeCombo riga 1 colonna 2 secondo layout
+  comboLayout -> addWidget ( fontCombo, 1, 1 ); 
+  comboLayout -> addWidget ( sizeCombo, 1, 2 ); 
   layout -> addLayout ( comboLayout, 2,1 );
-  layout -> addWidget ( viewer,3,1 ); //testo riga 2 colonna 1
+  layout -> addWidget ( viewer,3,1 ); 
   layout -> addLayout ( searchLayout,4,1 );
   connect ( fontCombo, SIGNAL ( currentFontChanged ( QFont ) ), this, SLOT ( setTextFont ( QFont ) ) );
   connect ( sizeCombo, SIGNAL ( currentIndexChanged ( QString ) ), this, SLOT ( setTextSize ( QString ) ) );
@@ -73,10 +72,10 @@ void akuViewer::setupTextView()
   connect ( searchLine, SIGNAL ( returnPressed() ), this, SLOT ( searchForward() ) );
   connect ( searchBackward, SIGNAL ( clicked() ), this, SLOT ( searchBackward() ) );
   connect ( searchForward, SIGNAL ( clicked() ), this, SLOT ( searchForward() ) );
-  //viewer -> setWordWrapMode(QTextOption::WordWrap); //wordwrap per il textedit
+  //viewer -> setWordWrapMode(QTextOption::WordWrap); 
   viewer -> setAcceptRichText ( true );
   viewer -> setReadOnly ( true );
-  initSizeCombo(); //inseriamo i valori nel SizeCombo
+  initSizeCombo(); 
 }
 
 void akuViewer::setFileName( QString title )
@@ -170,20 +169,20 @@ void akuViewer::startTimer ( QString toFind )
 
 void akuViewer::find()
 {
-disconnect ( timer, SIGNAL ( timeout() ), this, SLOT ( find() ) );
-timer -> stop();
+ disconnect ( timer, SIGNAL ( timeout() ), this, SLOT ( find() ) );
+ timer -> stop();
 
-searchLine -> setPalette ( QPalette() );
+ searchLine -> setPalette ( QPalette() );
 
-//-----ripristiniamo il testo------------//
-QTextCharFormat restore;
-QBrush brush;
-restore.setBackground ( brush ); //ripristiniamo il background
-QFont fontRestore = viewer -> currentFont();
-restore.setFont ( fontRestore );
-viewer -> setExtraSelections(QList<QTextEdit::ExtraSelection>());
-viewer-> moveCursor ( QTextCursor::Start );
-//---------------------------------------//
+ // restoring text
+ QTextCharFormat restore;
+ QBrush brush;
+ restore.setBackground ( brush ); 
+ QFont fontRestore = viewer -> currentFont();
+ restore.setFont ( fontRestore );
+ viewer -> setExtraSelections(QList<QTextEdit::ExtraSelection>());
+ viewer-> moveCursor ( QTextCursor::Start );
+
 
 
 if ( daCercare != "" )
@@ -194,7 +193,7 @@ if ( daCercare != "" )
   restore.setBackground ( brush );
   QList<QTextEdit::ExtraSelection> exSelections;
   while ( found != false ) //cerca tutte le occorrenze della stringa
-  {//TODO: decidere se l'highlight all debba stare di default o meno
+  {
     found = viewer -> find ( daCercare );
     QTextEdit::ExtraSelection tempSelection;
     tempSelection.cursor = viewer -> textCursor();
@@ -220,18 +219,15 @@ if ( daCercare != "" )
 void akuViewer::searchForward()
 {
   bool found = viewer -> find ( searchLine -> text() );
-  if ( found == false )
-  {
+  if ( found == false ) 
     if ( searchLine -> text() != "" )
-    {
-      //chiediamo di riprendere la ricerca dall'inizio
-      if ( KMessageBox::questionYesNo ( this,i18n ( "No match found. Do you want to search again from the beginning?" ),  i18n ( "Find" )) ==KMessageBox::Yes )
+     if ( KMessageBox::questionYesNo ( this,i18n ( "No match found. Do you want to search again from the beginning?" ),  i18n ( "Find" )) ==KMessageBox::Yes )
       {
         viewer -> moveCursor ( QTextCursor::Start );
         found = viewer -> find ( searchLine -> text() );
         //alreadyQuestion = true;
       }
-    }
+    
   }
 }
 

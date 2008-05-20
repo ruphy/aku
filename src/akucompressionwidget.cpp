@@ -110,13 +110,9 @@ void akuCompressionWidget::handleSplitEditing(int index)
 void akuCompressionWidget::enableNamescheme(bool state)
 {
   if (state)
-  {
     infoSplit -> setText(i18n("Switch to another, extension based naming scheme, where the first volume file in a multi-volume set has the extension .rar, following volumes are numbered from .r00 to .r99."));
-  }
   else
-  {
     infoSplit -> setText(i18n("By default RAR volumes have names like 'volname.partNNN.rar', where NNN is the volume number"));
-  }
 }
 
 void akuCompressionWidget::enablePass(bool state)
