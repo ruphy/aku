@@ -442,7 +442,7 @@ void MainWindow::parseAndShow(QString rarout, bool crypted)
     metaWidget -> setMimeIcon( mimeIcon );
     //mi occupo di settare tutte le opzioni che riguardano l'interfaccia
     enableActions(true);
-    this -> setWindowTitle ( i18n( "aKu - " ) + KUrl(namex).url() );
+    this -> setWindowTitle ( i18n( "aKu - " ) + KUrl(namex).pathOrUrl() );
     setFolderIcons();
     rarList -> setSortingEnabled ( true );
     rarList -> sortItems ( 1, Qt::AscendingOrder );

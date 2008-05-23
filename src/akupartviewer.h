@@ -1,6 +1,6 @@
 #ifndef AKUPARTVIEWER_H
 #define AKUPARTVIEWER_H
-
+// this code and what comes with akupartviewer.cpp is widely taken from arkviewer. Thanks to the ark team
 #include <KDialog>
 #include <KParts/ReadOnlyPart>
 
