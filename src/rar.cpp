@@ -12,10 +12,10 @@ rar::~rar()
 
 int rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
 {
-  int numeroPezziPercorso; //questa variabile dichiarata in questo punto ci permette di velocizzare le operazioni di assegnamento dell'icona  
-  //contiene il numero di elementi di cui è costituita la lista del percorso e.g. /cartella1/cartella2/cartella3
-  //e verrà assegnata nel momento in cui sarà ricavata la lista del percorso (con singleItem)
-  //---------pulisco l'output e prendo solo le informazioni relative ai file-----------//
+  int numeroPezziPercorso; // questa variabile dichiarata in questo punto ci permette di velocizzare le operazioni di assegnamento dell'icona  
+                           // contiene il numero di elementi di cui è costituita la lista del percorso e.g. /cartella1/cartella2/cartella3
+                           // e verrà assegnata nel momento in cui sarà ricavata la lista del percorso (con singleItem)
+ 
   QString nomec;
   int target; //mi serve per sapere cosa eliminare dall'output
   target = bf.indexOf ( head_line );
@@ -71,7 +71,6 @@ int rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
             fitem = new QTreeWidgetItem ( listv );
             fitem -> setText ( 0, singleItem[j] );
             tmpItem = fitem;
-            ///fitem -> setSizeHint ( 1, QSize ( 0,25 ) );
           }
         }
         //---------------------------------------------------------------------------------------------------------//
@@ -93,7 +92,6 @@ int rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
             fitem = new QTreeWidgetItem ( tmpItem );
             fitem -> setText ( 0, singleItem[j] );
             tmpItem = fitem;
-            ///fitem -> setSizeHint ( 1, QSize ( 0,25 ) );
           }
         }
      //---------------------------------------------------------------------------------------------------------//
@@ -132,9 +130,8 @@ int rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
           else
             fitem -> setText ( g+1, dlist.at ( g ) );
     
-        //impostiamo le icone dei file
         }
-
+        // here we set the icon for the file
         QStringList temp = singleItem[numeroPezziPercorso].split ( "." ); //recupero il nome file dalla lista (l'ultimo elemento)
         temp[temp.size()-1].prepend ( "*." );
         KMimeType::Ptr mimePtr = KMimeType::findByUrl(KUrl(singleItem[numeroPezziPercorso]));
@@ -144,24 +141,15 @@ int rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
         fitem -> setIcon ( 0,icon );
         fitem -> setText(9, mime);
       }
-      //else{
       if(crypted == true) fitem -> setIcon(10, KIcon("dialog-password"));
-      //}else{
-      //fitem -> setIcon(0,QIcon(":/icons/oxygen/32x32/mimetypes/inode-directory.png"));  //patch rozza per la gestione istantanea delle icone
-      //}
-      //fitem -> setSizeHint(0, QSize(10,25));  //miglioriamo l'estetica della riga
-    }     //else terminato...
-  }  //for terminato...
- 
-  //--------------Questa sezione gestisce la visualizzazione degli attributi generali nella statusbar----//
+    }     
+  }  
+  // here we set status bar info
   stbarst.remove ( 0, target + 79 );
   QStringList archinfo;
   archinfo = stbarst.split ( " ", QString::SkipEmptyParts );
   archinfo[4].remove ( "\n" );
-  //details-> setText ( archinfo[1]+"\n\n"+archinfo[2].setNum ( archinfo[2].toFloat() /1024, 'f', 1 ) +" KiB"+"\n\n"+ archinfo[3].setNum ( archinfo[3].toFloat() /1024, 'f', 1 ) +" KiB"/*+" Rapporto: "+archinfo[4]*/ );
   archiveDetails << archinfo[1] << KLocale(archinfo[2] ).formatByteSize(archinfo[2].toLong())<<KLocale(archinfo[3] ).formatByteSize(archinfo[3].toLong());
-  //details -> setAlignment(Qt::AlignRight);
-  //details -> move(242 - details -> width(), 290);
   QString ratio = archinfo.at ( 4 );
   ratio.remove ( ratio.length()-1, 1 );
   float ratioNum = ratio.toFloat();
@@ -169,26 +157,24 @@ int rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
   else ratioNum = abs(ratioNum -100);
   ratioBar -> setRatio ( ratioNum );
 
-//----------------statusbar info---------------------------------------------------------------------//
-
   return archinfo[1].toInt();
 
 }
 
 void rar::simpleParse ( QTreeWidget * listv, QString bf )
 {
-  //---------pulisco l'output e prendo solo le informazioni relative ai file-----------//
+
   QString nomec;
-  int target; //mi serve per sapere cosa eliminare dall'output
+  int target;
   target = bf.indexOf ( head_line );
-  bf.remove ( 0,target + 79 ); //escludo tutto l'output fino al tratteggio
+  bf.remove ( 0,target + 79 );
   target = bf.indexOf ( head_line );
   QString stbarst;
   stbarst = bf;
-  bf.remove ( target, bf.length() ); //escludo tutto l'output oltre il secondo tratteggio
+  bf.remove ( target, bf.length() ); 
   bf.remove ( 0,1 );
   bf.remove ( bf.length()-1,1 );
-  QStringList flist = bf.split ( "\n" ); //splitto basandomi sul carattere di newline
+  QStringList flist = bf.split ( "\n" );
 
   QStringList foldbuffer; //un contenitore per la lista di percorsi di cartella
 
@@ -196,7 +182,6 @@ void rar::simpleParse ( QTreeWidget * listv, QString bf )
   {
     if ( i%2 == 0 )
     {
-    //(flist.at(i)).remove(0,1); //c'� uno spazio all'inizio di ogni linea, pu� creare problemi
       nomec = flist.at ( i );
       nomec.remove ( 0,1 );
     }
@@ -260,7 +245,6 @@ QStringList rar::getFileList(QString TOC)
     {
       if ( i%2 == 0 )
       {
-        //(flist.at(i)).remove(0,1); //c'è uno spazio all'inizio di ogni linea, può creare problemi
         QString tmpLine = tempFileList.at ( i );
         tmpLine.remove ( 0,1 );
         //let's make sure that the following item is not a folder already included before
@@ -268,22 +252,16 @@ QStringList rar::getFileList(QString TOC)
         bool alreadyIn = false;
         if(attributeCheck[7] == "m0")
         {
-          // puts("m0 found");
           for(int j = 0; j < fileList.size(); j++)
-          {
-            // puts("comparing "+tmpLine.toAscii()+" with "+fileList[j].toAscii());
             if(fileList[j].startsWith(tmpLine, Qt::CaseInsensitive) == true)
             {
-              //puts(tmpLine.toAscii() + " already included, skipping");
               alreadyIn = true;
               break;
             }
-          }
         }
         if(alreadyIn == false)
-        {
           fileList << tmpLine;
-        }
+
 
       }
     }
@@ -316,13 +294,10 @@ QStringList rar::getListFromPath(QString path, QString TOC)
         bool alreadyIn = false;
         if(attributeCheck[7] == "m0")
         {
-          // puts("m0 found");
           for(int j = 0; j < fileList.size(); j++)
           {
-            // puts(comparing "+tmpLine.toAscii()+" with "+fileList[j].toAscii());
             if(fileList[j].startsWith(tmpLine, Qt::CaseInsensitive) == true)
             {
-              //puts(tmpLine.toAscii() + " already included, skipping");
               alreadyIn = true;
               break;
             }

@@ -22,23 +22,11 @@ rarProcessHandler::rarProcessHandler( QWidget *parent,QString archiver, QStringL
     process = archiver;
     params = parameters;
     hasPasswordParameter = false;
-    for(int i = 0; i < params.size(); i++)
-      if(params[i].isEmpty() || params[i] == "-p") params.removeAt(i);
-
-    QString str;
-    foreach(str, params)
-    {
-      hasPasswordParameter = str.contains("-p");
-      if(hasPasswordParameter)
-        break;
-    }
-    if(!hasPasswordParameter && params[0] != "a" && params[0] != "ch") params << "-p-"; //this is to handle password later
     rarArchive = archive;
     filesToHandle= files;
     pathTarget = destination;
     parentWidget = parent;
     globalArchiver = archiver;
-  
   }
 
 }
@@ -52,6 +40,18 @@ void rarProcessHandler::start()
 {
   if(globalArchiver != "")
   {
+     for(int i = 0; i < params.size(); i++)
+      if(params[i].isEmpty() || params[i] == "-p") params.removeAt(i);
+
+     QString str;
+     foreach(str, params)
+     {
+      hasPasswordParameter = str.contains("-p");
+      if(hasPasswordParameter)
+        break;
+     }
+     if(!hasPasswordParameter && params[0] != "a" && params[0] != "ch") params << "-p-"; //this is to handle password later
+    
     initProcess();
     showError(rarProcError);
 
@@ -423,7 +423,7 @@ void rarProcessHandler::showProgress() //gestiamo un progressdialog
   if(QString(gotOutput).contains("Extracting") && !QString(gotOutput).contains("Extracting from"))
    {
     if(totalFileCount < filesToHandle.size()){
-     puts(filesToHandle[totalFileCount].toAscii());
+    // puts(filesToHandle[totalFileCount].toAscii());
      rarProcProgress -> setCurrentFileName(filesToHandle[totalFileCount]);
      QString size = rar::getSingleFileSize(globalTOC, filesToHandle[totalFileCount]);
      rarProcProgress -> setCurrentFileSize(size);
@@ -431,13 +431,11 @@ void rarProcessHandler::showProgress() //gestiamo un progressdialog
    }
 
   }
-  if(QString(gotOutput).contains("OK") && !QString(gotOutput).contains("All OK")){  
+  if(QString(gotOutput).contains("OK") && !QString(gotOutput).contains("All OK"))
      rarProcProgress -> incrementOverall();
- //   if(totalFileCount < filesToHandle.size()) totalFileCount++;
-  }
+
   if ( QString(gotOutput).contains ( "%" )  )
   {
-    puts(gotOutput);
     percentuale = QString(gotOutput).split ( " ", QString::SkipEmptyParts );
     if ( percentuale.size() == 2 )
     {

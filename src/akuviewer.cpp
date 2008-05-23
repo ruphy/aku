@@ -228,7 +228,6 @@ void akuViewer::searchForward()
         //alreadyQuestion = true;
       }
     
-  }
 }
 
 void akuViewer::searchBackward()

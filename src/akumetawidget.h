@@ -1,7 +1,6 @@
 #ifndef AKUMETAWIDGET_H
 #define AKUMETAWIDGET_H
 
-#include "akuratiowidget.h"
 
 #include <QWidget>
 #include <QLabel>
@@ -18,6 +17,7 @@
 #include <QScrollArea>
 #include <QList>
 #include <QTreeWidgetItem>
+#include <QPainter>
 
 class akuMetaWidget : public QWidget
 {
@@ -32,7 +32,6 @@ public slots:
   virtual void setMimeIcon(QPixmap);
   virtual void setFileName(QString, bool folder = false);
   virtual void setFileSize(QString);
-  virtual void setRatio(float);
   virtual void clear();
   virtual void setMime(QString);
   virtual void setPreview(QByteArray);
@@ -42,7 +41,6 @@ private:
   QGridLayout *singleFileLayout;
   QGridLayout *archiveLayout;
   QGridLayout *metaLayout;
-  akuRatioWidget *ratioWidget;
   QLabel *iconMap;
   QLabel *metaName;
   QLabel *metaSize;

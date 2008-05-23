@@ -186,19 +186,20 @@ void MainWindow::setConnections()
   connect ( toolView, SIGNAL ( triggered() ), this, SLOT ( embeddedViewer() ) );
   connect ( renameAction, SIGNAL ( triggered() ), this, SLOT ( renameItem() ) );
   connect ( toolDelete, SIGNAL ( triggered() ), this, SLOT ( rarDelete() ) );
-  connect (rarList, SIGNAL(itemDoubleClicked ( QTreeWidgetItem *, int )), this, SLOT(openItemUrl(QTreeWidgetItem *, int)));
+  connect ( rarList, SIGNAL(itemDoubleClicked ( QTreeWidgetItem *, int )), this, SLOT(openItemUrl(QTreeWidgetItem *, int)));
   connect ( actionLock, SIGNAL ( triggered() ), this, SLOT ( lockArchive() ) );
-  connect( actionAddComment, SIGNAL(triggered()), this, SLOT(addComment()));
-  connect( actionAddFolder, SIGNAL(triggered()), this, SLOT(addFolder()));
-  connect( actionAddFile, SIGNAL(triggered()), this, SLOT(addFile()));
-  connect( actionEncryptArchive, SIGNAL(triggered()), this, SLOT(encryptArchive()));
-  connect(actionAddFilePwd, SIGNAL(triggered()), this, SLOT(addFilePwd()));
-  connect(actionAddFolderPwd, SIGNAL(triggered()), this, SLOT(addFolderPwd()));
+  connect ( actionAddComment, SIGNAL(triggered()), this, SLOT(addComment()));
+  connect ( actionAddFolder, SIGNAL(triggered()), this, SLOT(addFolder()));
+  connect ( actionAddFile, SIGNAL(triggered()), this, SLOT(addFile()));
+  connect ( actionEncryptArchive, SIGNAL(triggered()), this, SLOT(encryptArchive()));
+  connect ( actionAddFilePwd, SIGNAL(triggered()), this, SLOT(addFilePwd()));
+  connect ( actionAddFolderPwd, SIGNAL(triggered()), this, SLOT(addFolderPwd()));
 }
 
 void MainWindow::debugging()
 {
-
+  akuPartViewer *viewer = new akuPartViewer(this);
+  viewer->view("~/Development/aku2/src/mainwindow.cpp");
 }
 
 void MainWindow::addFilePwd()
@@ -264,7 +265,6 @@ void MainWindow::addFolder( bool pwd)
       if(rarList -> selectedItems()[0] -> text(1) == "")
       {
         parentFolder = rebuildFullPath(rarList -> selectedItems()[0]);
-        //puts("parentfolder = "+parentFolder.toAscii());
         if(pwdToSet.isEmpty()) 
           addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-ap"+parentFolder,namex, QStringList()<<folderUrl.pathOrUrl());
         else
@@ -344,7 +344,6 @@ void MainWindow::addFile(bool pwd)
       if(rarList -> selectedItems()[0] -> text(1) == "")
       {
         parentFolder = rebuildFullPath(rarList -> selectedItems()[0]);
-        //puts("parentfolder = "+parentFolder.toAscii());
         if(pwdToSet.isEmpty())
           addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-ap"+parentFolder,namex, QStringList()<<fileList);
         else 
@@ -428,7 +427,6 @@ void MainWindow::parseAndShow(QString rarout, bool crypted)
   else 
     globalArchivePassword.clear();
 
-  puts("RAROUT RICAVATA!!");
   if(!rarout.isEmpty())
   { //se l'output non è nullo
     setCursor(Qt::WaitCursor);
@@ -737,7 +735,7 @@ void MainWindow::setInformation ( bool visible )
 void MainWindow::setFolderIcons()
 {
   for ( int i = 0; i < rarList -> topLevelItemCount(); i++ )
-    if ( ( rarList -> topLevelItem ( i ) ) -> text ( 8 ) == "" )
+    if ( ( rarList -> topLevelItem ( i ) ) -> text ( 8 ).isEmpty())
     {
       ( rarList -> topLevelItem ( i ) ) -> setIcon ( 0,KIcon ( "inode-directory" ) );
       recursiveFolderIcons ( rarList -> topLevelItem ( i ) );
@@ -748,7 +746,7 @@ void MainWindow::setFolderIcons()
 void MainWindow::recursiveFolderIcons ( QTreeWidgetItem *checkParent )
 {
   for ( int i = 0; i < checkParent -> childCount(); i++ )
-    if ( ( checkParent -> child ( i ) ) -> text ( 8 ) =="" )
+    if ( ( checkParent -> child ( i ) ) -> text ( 8 ).isEmpty() )
     {
       ( checkParent -> child ( i ) ) -> setIcon ( 0, KIcon ( "inode-directory" ) );
       recursiveFolderIcons ( checkParent -> child ( i ) );
@@ -768,14 +766,12 @@ QStringList MainWindow::rebuildPathForNew ( dragTarget *listForNew ) //ricostrui
   QStringList result;
   for ( int i = 0; i < listForNew -> topLevelItemCount(); i++ )
     result << recursiveRebuildForNew ( listForNew -> topLevelItem ( i ) );
-    ////puts ( "elemento passato: "+listForNew -> topLevelItem ( i ) -> text ( 0 ).toAscii() );
-
   return result;
 }
 
 QStringList MainWindow::recursiveRebuildForNew ( QTreeWidgetItem* item )
 {
-  if ( item -> childCount() != 0 )   //se ha dei figli
+  if ( item -> childCount() != 0 )
   {
     QString tempCheck = item -> child ( 0 ) -> text ( 1 ); //contiene il percorso dell'elemento
     QStringList subFolders = QDir ( item -> text ( 1 ) + item -> text ( 0 ) ).entryList ( QStringList() << "*.*",QDir::NoDotAndDotDot | QDir::AllDirs | QDir::Files ); 
@@ -784,7 +780,6 @@ QStringList MainWindow::recursiveRebuildForNew ( QTreeWidgetItem* item )
       endList << recursiveRebuildForNew ( item -> child ( j ) );
 
     return endList;
-  //}
   }
   else
   {
@@ -803,7 +798,6 @@ QStringList MainWindow::recursiveRebuildForNew ( QTreeWidgetItem* item )
         parentPath = parentPath + toReturn[i];
         if ( i != 0 ) parentPath.append ( QDir().separator() );
       }
-      // puts ( "Percorso ricostruito: -ap"+QString ( parentPath+" "+item -> text ( 1 ) + item -> text ( 0 ) ).toAscii() );
       // se è un cartella del tipo *User created Folder* allora non passo nessun path di origine
       if ( item -> text ( 1 ).indexOf ( QDir().separator() ) != -1 )
       {
@@ -831,7 +825,6 @@ void MainWindow::newArchive()
   if ( archive != "" ) //solo se è stato scelto un nomefile eseguiamo le operazioni
   {
     targetList -> setEnabled ( false );
-    //menubar -> setEnabled ( false );
     password = compressionWidget -> getPassword();
     compressionLevel = compressionWidget -> getCompressionLevel();
    
@@ -845,7 +838,6 @@ void MainWindow::newArchive()
     }
     else
     {
-      puts("NOT SPLITTED");
       newProcHandler = new rarProcessHandler(this, "rar", QStringList()<<"a"<<"-ep1"<<"-m"+QString().setNum(compressionLevel)<<"-p"+password, archive, filesToAdd);
       connect(newProcHandler, SIGNAL(processCompleted(bool)), this, SLOT(closeNewArchiveGUI(bool)));
       connect(newProcHandler, SIGNAL(processCanceled()), this, SLOT(closeRar()));
@@ -880,7 +872,6 @@ void MainWindow::closeNewArchiveGUI(bool correctly)
 void MainWindow::closeRar() //closes rar creation
 {
   targetList -> setEnabled ( true );
-  //visualizziamo un dock con un una tree dei file correttamente aggiunti al nuovo archivio
   QDockWidget *creationResults = new QDockWidget ( i18n( "Correctly added files" ), this );
   creationResults -> setFloating ( true );
   this -> addDockWidget ( Qt::LeftDockWidgetArea,creationResults );
@@ -906,7 +897,6 @@ void MainWindow::closeRar() //closes rar creation
     delete creationResults;
     KMessageBox::information ( this,i18n( "No archive file was created" ), i18n( "New Archive" )  );
   }
-  //results -> setText(i18n(
 
 }
 
@@ -1088,7 +1078,6 @@ void MainWindow::completeRename(bool ok)
   waitDialog -> quit();
   if(!ok) currentToRename -> setText(0, oldItemName);
   tempForRename.clear();
-  //reloadArchive();
 }
 
 void MainWindow::rarDelete()
@@ -1245,7 +1234,7 @@ void MainWindow::setupActions()
   actionAddFolderPwd -> setText(i18n("Add folder with password"));
   actionAddFolderPwd -> setIcon(KIcon("archive-insert-directory"));
   actionCollection() -> addAction("add_folder_pwd", actionAddFolderPwd);
-  //DEBUG//
+  // DEBUG
   KAction *debug = new KAction(i18n("Debug"), this);
   connect(debug, SIGNAL(triggered()), this, SLOT(debugging()));
   actionCollection() -> addAction("debug", debug);
@@ -1288,7 +1277,6 @@ void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento 
     QString forUrl;
     forUrl = tempPath + fileToExtract;
     KUrl url(tempPath + fileToExtract);
-    //QDesktopServices::openUrl(QUrl::fromLocalFile(forUrl));
     QDesktopServices::openUrl(url);
   }
 

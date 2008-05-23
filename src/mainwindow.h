@@ -21,6 +21,7 @@
 #include "akucomment.h"
 #include "akuwaitdialog.h"
 #include "akutreewidget.h"
+#include "akupartviewer.h"
 
 //QT4 INCLUDES
 #include <QStringList>

@@ -165,8 +165,3 @@ void akuMetaWidget::setFileSize(QString size)
 {
   metaSize -> setText(size);
 }
-
-void akuMetaWidget::setRatio(float newRatio)
-{
-  ratioWidget -> setRatio(newRatio);
-}
