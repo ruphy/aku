@@ -12,7 +12,7 @@ class akuPartViewer : public KDialog
        akuPartViewer(QWidget *parent = 0);
        ~akuPartViewer();
 
-       bool view (const QString& filename );
+       bool view (const QString& filename,const QByteArray &data );
    private:
        KParts::ReadOnlyPart *m_part;
        QWidget *m_widget;

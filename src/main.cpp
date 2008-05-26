@@ -41,7 +41,8 @@ int main ( int argc, char *argv[] )
   KCmdLineArgs::init(argc, argv, &aboutData);
   KCmdLineOptions options;
   options.add("+[archive]", ki18n("Makes aKu open the archive specified"));
-  options.add("extractto <destination>", ki18n("Extracts the archive to <destination>"));
+  options.add("extracthere", ki18n("Extracts all files in the archive path")); // FIXME: extracthere <destination>
+  options.add("extractto", ki18n("Extracts all files in a selected path"));
   KCmdLineArgs::addCmdLineOptions( options );
 
   KApplication app;

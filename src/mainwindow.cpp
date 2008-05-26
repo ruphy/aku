@@ -54,12 +54,23 @@ MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( paren
   waitDialog = new akuWaitDialog(this);
   showStatusInfo(false);
 
-  KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
+    KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
+  if(args->isSet("extracthere")){
+    // code to extract the archive
+    setVisible(false);
+    QDir herepath(args->arg(0));
+    KUrl url = herepath.absolutePath();
+    rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",args->arg(0), QStringList(), url.directory() );
+    connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
+    pHand->start();
+  }
   if(args->isSet("extractto")){
     // code to extract the archive
-    rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",args->arg(0), QStringList(), args->getOption("extractto"));
-    connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
     setVisible(false);
+    KUrl url = KFileDialog::getExistingDirectoryUrl(KUrl(QDir().homePath()),  this, i18n("Extract to"));
+    rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",args->arg(0), QStringList(), url.path() );
+    //puts(url.path().toAscii());
+    connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
     pHand->start();
   }
   else{
@@ -198,8 +209,8 @@ void MainWindow::setConnections()
 
 void MainWindow::debugging()
 {
-  akuPartViewer *viewer = new akuPartViewer(this);
-  viewer->view("~/Development/aku2/src/mainwindow.cpp");
+  //akuPartViewer *viewer = new akuPartViewer(this);
+  //viewer->view("~/Development/aku2/src/mainwindow.cpp");
 }
 
 void MainWindow::addFilePwd()
@@ -445,10 +456,10 @@ void MainWindow::parseAndShow(QString rarout, bool crypted)
     this -> setWindowTitle ( i18n( "aKu - " ) + KUrl(namex).pathOrUrl() );
     setFolderIcons();
     rarList -> setSortingEnabled ( true );
-    rarList -> sortItems ( 1, Qt::AscendingOrder );
+   // rarList -> sortItems ( 1, Qt::AscendingOrder );
     rarList -> header() -> setResizeMode ( 0, QHeaderView::ResizeToContents );
     rarList -> header() -> setResizeMode(9, QHeaderView::ResizeToContents);
-    // if(globalRestrictions) handleRestrictions(namex);
+    if(globalRestrictions) handleRestrictions(namex);
     if ( fromNewArchive == true )   //ripristiniamo la gui se proveniamo da un new archive
     {
       closeNewArchiveGUI(false);
@@ -735,7 +746,7 @@ void MainWindow::setInformation ( bool visible )
 void MainWindow::setFolderIcons()
 {
   for ( int i = 0; i < rarList -> topLevelItemCount(); i++ )
-    if ( ( rarList -> topLevelItem ( i ) ) -> text ( 8 ).isEmpty())
+    if ( ( rarList -> topLevelItem ( i ) ) -> text ( 2 ).isEmpty())
     {
       ( rarList -> topLevelItem ( i ) ) -> setIcon ( 0,KIcon ( "inode-directory" ) );
       recursiveFolderIcons ( rarList -> topLevelItem ( i ) );
@@ -746,7 +757,7 @@ void MainWindow::setFolderIcons()
 void MainWindow::recursiveFolderIcons ( QTreeWidgetItem *checkParent )
 {
   for ( int i = 0; i < checkParent -> childCount(); i++ )
-    if ( ( checkParent -> child ( i ) ) -> text ( 8 ).isEmpty() )
+    if ( ( checkParent -> child ( i ) ) -> text ( 2 ).isEmpty() )
     {
       ( checkParent -> child ( i ) ) -> setIcon ( 0, KIcon ( "inode-directory" ) );
       recursiveFolderIcons ( checkParent -> child ( i ) );

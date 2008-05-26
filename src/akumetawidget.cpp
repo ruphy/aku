@@ -2,7 +2,7 @@
 
 akuMetaWidget::akuMetaWidget (QWidget *parent) : QWidget (parent)
 {
-  //-----------------------first row of meta--------------------//
+
   QWidget *baseScrollWidget = new QWidget(this);
   scrollArea = new QScrollArea(this);
   scrollArea -> setBackgroundRole(QPalette::Dark);
@@ -27,17 +27,17 @@ akuMetaWidget::akuMetaWidget (QWidget *parent) : QWidget (parent)
   singleFileLayout -> addWidget(metaMime,5,1);
   QSpacerItem *spacer2 = new QSpacerItem(1,10, QSizePolicy::Minimum, QSizePolicy::Expanding);
   singleFileLayout -> addItem(spacer2,6,1);
-  //scrollArea -> setWidget(iconMap);
+  // scrollArea -> setWidget(iconMap);
   scrollArea -> setWidgetResizable(true);
-  //--------------------------------------------------------------//
+
 
 
   QGridLayout *general = new QGridLayout(this);
   metaLayout = new QGridLayout(baseScrollWidget);
   metaLayout -> addLayout(singleFileLayout,1,1);
-  //metaLayout -> addWidget(line,2,1);
-  //metaLayout -> addLayout(archiveLayout,3,1);
-  //metaLayout -> addItem(thirdSpacer,4,1);
+  // metaLayout -> addWidget(line,2,1);
+  // metaLayout -> addLayout(archiveLayout,3,1);
+  // metaLayout -> addItem(thirdSpacer,4,1);
   general -> addWidget(scrollArea,1,1);
   scrollArea -> setWidget(baseScrollWidget);
   setMinimumSize(150,0);

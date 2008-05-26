@@ -3,6 +3,7 @@
 
 
 #include <QString>
+#include <QHBoxLayout>
 
 akuViewer::akuViewer ( QWidget *parent, Qt::WFlags fl ) : QDialog ( parent, fl )
 {
@@ -22,9 +23,9 @@ akuViewer::akuViewer ( QWidget *parent, Qt::WFlags fl ) : QDialog ( parent, fl )
   QGridLayout *fileLayout = new QGridLayout(fileWidget);
   fileLayout -> addWidget(fileIcon,1,1);
   fileLayout -> addLayout(fileInfoLayout,1,2);
-  layout = new QGridLayout ( this );
+  layout = new QVBoxLayout ( this );
 
-  layout -> addWidget(fileWidget,1,1);
+  layout -> addWidget(fileWidget);
 
   setWindowTitle (i18n ( "aku Embedded Viewer" ) );
  
@@ -53,26 +54,26 @@ void akuViewer::setupTextView()
   searchBackward -> setMaximumSize ( 50,90 );
   searchForward -> setMaximumSize ( 50,90 );
   searchForward -> setShortcut(Qt::Key_F3);
-  comboLayout = new QGridLayout();
-  searchLayout = new QGridLayout();
+  QHBoxLayout *comboLayout = new QHBoxLayout();
+  QHBoxLayout *searchLayout = new QHBoxLayout();
   
-  searchLayout -> addWidget ( searchLine,1,2 );
-  searchLayout -> addWidget ( search,1,1 );
-  searchLayout -> addWidget ( searchBackward, 1,3 );
-  searchLayout -> addWidget ( searchForward, 1, 4 );
+  searchLayout -> addWidget ( search );
+  searchLayout -> addWidget ( searchLine);
+  searchLayout -> addWidget ( searchBackward );
+  searchLayout -> addWidget ( searchForward );
   
-  comboLayout -> addWidget ( fontCombo, 1, 1 ); 
-  comboLayout -> addWidget ( sizeCombo, 1, 2 ); 
-  layout -> addLayout ( comboLayout, 2,1 );
-  layout -> addWidget ( viewer,3,1 ); 
-  layout -> addLayout ( searchLayout,4,1 );
+  comboLayout -> addWidget ( fontCombo ); 
+  comboLayout -> addWidget ( sizeCombo ); 
+  layout -> addLayout ( comboLayout);
+  layout -> addWidget ( viewer ); 
+  layout -> addLayout ( searchLayout );
   connect ( fontCombo, SIGNAL ( currentFontChanged ( QFont ) ), this, SLOT ( setTextFont ( QFont ) ) );
   connect ( sizeCombo, SIGNAL ( currentIndexChanged ( QString ) ), this, SLOT ( setTextSize ( QString ) ) );
   connect ( searchLine, SIGNAL ( textChanged ( QString ) ), this, SLOT ( startTimer ( QString ) ) );
   connect ( searchLine, SIGNAL ( returnPressed() ), this, SLOT ( searchForward() ) );
   connect ( searchBackward, SIGNAL ( clicked() ), this, SLOT ( searchBackward() ) );
   connect ( searchForward, SIGNAL ( clicked() ), this, SLOT ( searchForward() ) );
-  //viewer -> setWordWrapMode(QTextOption::WordWrap); 
+  // viewer -> setWordWrapMode(QTextOption::WordWrap); 
   viewer -> setAcceptRichText ( true );
   viewer -> setReadOnly ( true );
   initSizeCombo(); 
@@ -90,7 +91,7 @@ void akuViewer::setFileName( QString title )
   fileIcon -> setPixmap(icon.pixmap(64,64));
 }
 
-void akuViewer::setData(QByteArray data)
+void akuViewer::setData(const QByteArray &data)
 {
   KMimeType::Ptr mimePtr = KMimeType::findByContent(data);
   if(mimePtr -> name().contains("image"))
@@ -101,7 +102,7 @@ void akuViewer::setData(QByteArray data)
     QPixmap imageBuffer;
     imageBuffer.loadFromData(data);
     QSize realSize = imageBuffer.size();
-    layout -> addWidget(imageViewer,2,1);
+    layout -> addWidget(imageViewer);
     imageViewer -> setPixmap(imageBuffer);
     imageViewer -> setFrameShape(QFrame::StyledPanel);
     imageViewer->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);

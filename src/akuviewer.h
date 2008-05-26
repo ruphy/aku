@@ -8,12 +8,12 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QTimer>
-#include <QGridLayout>
 #include <QDialog>
 #include <KLocale>
 #include <KMessageBox>
 #include <KMimeType>
 #include <KIcon>
+#include <QVBoxLayout>
 class akuViewer : public QDialog
 {
 Q_OBJECT
@@ -32,7 +32,7 @@ public slots:
   virtual void startTimer ( QString );
   virtual void setFileName ( QString );
   virtual void setupTextView();
-  virtual void setData(QByteArray);
+  virtual void setData(const QByteArray&);
 private:
   QTimer *timer;
   KTextEdit *viewer;
@@ -42,9 +42,7 @@ private:
   QComboBox *sizeCombo;
   QLineEdit *searchLine;
   void initSizeCombo();
-  QGridLayout *comboLayout;
-  QGridLayout *searchLayout;
-  QGridLayout *layout;
+  QVBoxLayout *layout;
   QLabel *fileName;
   QLabel *fileIcon;
   QLabel *fileMime;

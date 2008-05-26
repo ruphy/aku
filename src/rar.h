@@ -34,7 +34,7 @@ class rar
   QStringList getFileList(QString);
   QStringList getAttributeList(QString);
   static QString getSingleFileSize(QString, QString);
-  KDateTime getSingleFileModificationTime(QString, QString);
+  static KDateTime getSingleFileModificationTime(QString, QString);
   QStringList getListFromPath(QString, QString); //gets the content of a folder in the archive or returns the sinle file
 
  private:

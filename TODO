@@ -1,0 +1,22 @@
+
+- StatusBar Message of ending extraction
+- Check overwrite
+- After pressing create in the new archive section, the creation dialog is still available
+- Overall progress bar doesn't behave well (not real percentage)
+- Port akuViewer to KParts (!! troubles in handling a non-existing file !! maybe akuViewer is better)
+- Move lots of code from mainwindow to specific classes
+- Clean dragTarget's code
+- Make comments in english
+- Sum of packed size in meta
+- Column ordering, see Dolphin for tips
+- Where possible use QHBoxLayout and QVBoxLayout in place of QGridLayout
+- Archive creation: dragging many files at same time
+- Check overwritedialog's resize policy
+- Check overwritedialog's reactivity slowness
+- "Loading archive" status tip while loading
+- int is not enough in handling sizes
+- Make restriction handling in a separate thread
+- Speedup archive opening
+- Check wait cursor
+- Reopening an archive is slooooow
+- Move akuRatioWidget to akuMetaWidget leaving a ratio number in the list

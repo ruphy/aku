@@ -79,6 +79,7 @@ class rarProcessHandler : public QObject
   QString globalArchiver;
   bool totalExtraction;
   int pID;
+
  protected slots:
   virtual void initProcess();
   virtual void handleProcess();

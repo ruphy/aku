@@ -100,46 +100,33 @@ int rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
       QStringList dlist = ( flist.at ( i ) ).split ( " ", QString::SkipEmptyParts );// generiamo una lista contenente i parametri dei file
       if ( dlist[7] != "m0" )   //è inutile scrivere gli attributi della cartella
       {
-        for ( int g=0; g < dlist.size(); g++ )
-        {
-          //questo if gestisce la trasformazione in KiB o MiB
-          if ( g == 0 || g == 1 )
-          {
-            QString size = KLocale(dlist[g] ).formatByteSize(dlist[g] .toLong());
+            QString size = KLocale( QString() ).formatByteSize(dlist[0].toDouble());
             fitem -> setTextAlignment ( 1, Qt::AlignRight | Qt::AlignVCenter );
             fitem -> setTextAlignment ( 2, Qt::AlignRight | Qt::AlignVCenter );
-            fitem -> setText(g+1, size);
-          }
-          else if(g == 2)
-          {
-            dlist[g].remove("%"); //togliamo il segno di percentuale
-            float ratio = dlist[g].toFloat();
-            if (ratio > 100 || ratio == 0) ratio = 0;
-            else ratio = abs(ratio -100);
-            akuRatioWidget *ratioWidget = new akuRatioWidget(ratio);
-            listv -> setItemWidget(fitem, 3, ratioWidget); 
-          }
-          else if(g==3)
-          {  //modification time format
-            QDateTime ts (QDate::fromString(dlist[ g ], "dd-MM-yy"),
-            QTime::fromString(dlist[ g+1 ], "hh:mm"));
+            fitem -> setText(1, size);
+            size = KLocale( QString() ).formatByteSize(dlist[1] .toDouble());
+            fitem -> setText(2, size);
+
+          //  dlist[2].remove("%");                                        // akuRatioWidget (or any other widget) slows down
+          //  float ratio = dlist[2].toFloat();                            // the archive visualization, so it is deactivated 
+          //  if (ratio > 100 || ratio == 0) ratio = 0;                    // waiting for a better solution
+          //  else ratio = abs(ratio -100);
+          //  akuRatioWidget *ratioWidget = new akuRatioWidget(ratio);
+          //  listv -> setItemWidget(fitem, 3, ratioWidget); 
+
+            QDateTime ts (QDate::fromString(dlist[ 3 ], "dd-MM-yy"),
+                          QTime::fromString(dlist[ 4 ], "hh:mm"));
             fitem -> setText(4, ts.toString(Qt::LocaleDate));
             fitem -> setTextAlignment(4, Qt::AlignVCenter | Qt::AlignHCenter);
-            dlist.removeAt(g+1);
-          }
-          else
-            fitem -> setText ( g+1, dlist.at ( g ) );
-    
-        }
-        // here we set the icon for the file
-        QStringList temp = singleItem[numeroPezziPercorso].split ( "." ); //recupero il nome file dalla lista (l'ultimo elemento)
-        temp[temp.size()-1].prepend ( "*." );
+            //dlist.removeAt(4);
+        for ( int g=5; g < dlist.size(); g++ )  
+           fitem -> setText ( g, dlist[ g ] );
+
+
         KMimeType::Ptr mimePtr = KMimeType::findByUrl(KUrl(singleItem[numeroPezziPercorso]));
-        QString mimeIcon = mimePtr -> iconName();
-        QString mime = mimePtr -> name();
-        KIcon icon(mimeIcon);
+        KIcon icon(mimePtr -> iconName());
         fitem -> setIcon ( 0,icon );
-        fitem -> setText(9, mime);
+        fitem -> setText(9, mimePtr->name());
       }
       if(crypted == true) fitem -> setIcon(10, KIcon("dialog-password"));
     }     
@@ -149,11 +136,11 @@ int rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
   QStringList archinfo;
   archinfo = stbarst.split ( " ", QString::SkipEmptyParts );
   archinfo[4].remove ( "\n" );
-  archiveDetails << archinfo[1] << KLocale(archinfo[2] ).formatByteSize(archinfo[2].toLong())<<KLocale(archinfo[3] ).formatByteSize(archinfo[3].toLong());
+  archiveDetails << archinfo[1] << KLocale(archinfo[2] ).formatByteSize(archinfo[2].toULong())<<KLocale(archinfo[3] ).formatByteSize(archinfo[3].toULong());
   QString ratio = archinfo.at ( 4 );
   ratio.remove ( ratio.length()-1, 1 );
   float ratioNum = ratio.toFloat();
-  if (ratioNum > 100 || ratioNum == 0) ratioNum = 0;
+  if (ratioNum > 100.0 || ratioNum == 0.0) ratioNum = 0;
   else ratioNum = abs(ratioNum -100);
   ratioBar -> setRatio ( ratioNum );
 
@@ -320,23 +307,23 @@ QString rar::getSingleFileAttributes(QString TOC, QString file)
   target = TOC.indexOf ( head_line );
   TOC.remove ( 0,target + 79 ); //escludo tutto l'output fino al tratteggio
   target = TOC.indexOf ( head_line );
-  TOC.remove ( target, TOC.length() ); //escludo tutto l'output oltre il secondo tratteggio
+  TOC.remove( head_line );
   TOC.remove ( 0,1 );
   TOC.remove ( TOC.length()-1,1 );
   QStringList tempFileList = TOC.split ( "\n" ); //splitto basandomi sul carattere di newline
 
   for(int i = 0; i < tempFileList.size(); i++)
   {
-   if(tempFileList[i].contains(file)) return tempFileList[i+1];
-   else return QString();
+   if(tempFileList[i].contains(file))
+     return tempFileList[i+1];
   }
+   return QString();
 }
 
 KDateTime rar::getSingleFileModificationTime(QString TOC, QString file)  //pass the output of a rar v process and the file path
 {
-  //Size:PackedSize:Ratio:Date:Time:Attributes:CRC:Method:Version
-  QStringList attributes = getSingleFileAttributes(TOC, file).split(" ", QString::SkipEmptyParts);
-  puts(attributes[3].toAscii() + " " + attributes[4].toAscii());
+  // Size:PackedSize:Ratio:Date:Time:Attributes:CRC:Method:Version
+  QStringList attributes = rar().getSingleFileAttributes(TOC, file).split(" ", QString::SkipEmptyParts);
   KDateTime dateTime(QDate().fromString(attributes[3], "dd-MM-yy"), QTime().fromString(attributes[4], "hh:mm"));
   return dateTime;
 }

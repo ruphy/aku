@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Service
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin
+#X-KDE-Priority=TopLevel
+MimeType=application/x-rar;
+Actions=extracthere;extractto;
+
+[Desktop Action extracthere]
+Name=Extract Here
+Icon=
+### da modificare
+Exec=aku %u --extracthere
+
+[Desktop Action extractto]
+Name=Extract To
+Icon=
+Exec=aku %u --extractto

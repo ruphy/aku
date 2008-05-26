@@ -268,30 +268,37 @@ void rarProcessHandler::handleProcess()
 
 void rarProcessHandler::getError()
 { 
-  //questa funzione acquisisce l'errore e in base alla sua entità lo tratta in maniera specifica
+
   QByteArray temp = rarProc -> readAllStandardError();
-  if(QString().fromAscii(temp).indexOf("already") != -1) //se riceviamo una richiesta di sovrascrittura la catturiamo
+
+  // the keyword "already" tells us that rar is asking for an overwrite
+  // we need to save the filename:
+  // the string from rar is like: /the/path/of/the/archive.rar already exists. Overwrite it?
+  // so we need to erase everything from already to get the file name
+  // then we can call an overwrite dialog to handle user's choice
+
+  if(QString().fromAscii(temp).contains("already")) 
   {
-    //rarProcProgress -> setValue ( rarProcProgress -> maximum()); //annulliamo la barra, perchè sicuramente ha finito l'estrazione precedente
-    QString targetFile = QString().fromAscii(temp); //estraiamo il nome del file da sovrascrivere
-    int forParsing = targetFile.indexOf("already"); //basandoci sull'occorrenza della stringa "already"
+    
+    //rarProcProgress -> setValue ( rarProcProgress -> maximum()); 
+    QString targetFile = QString().fromAscii(temp); 
+    int forParsing = targetFile.indexOf("already"); 
     targetFile.remove(forParsing-1, targetFile.length());
     targetFile.remove("\n");
     
     overwriteDialog *oDialog = new overwriteDialog(rarProc -> proc(), parentWidget); //chiamiamo l'overwrite dialog
     if(toAll == false)
     {
-      QFileInfo details(targetFile); //generiamo le informazioni sul file
+      QFileInfo details(targetFile); // generating file info
       oDialog -> setDestinationDetails(details.filePath());
-
       QString currentExtraction = filesToHandle[totalFileCount];
       QString size = rar().getSingleFileSize(globalTOC, filesToHandle[totalFileCount]);
-      oDialog -> setSourceDetails(currentExtraction, rar().getSingleFileModificationTime(globalTOC, filesToHandle[totalFileCount]), size);
+      oDialog -> setSourceDetails(currentExtraction, rar::getSingleFileModificationTime(globalTOC, filesToHandle[totalFileCount]), size);
       rarProcProgress -> hide();
-      if( oDialog -> exec() == QDialog::Rejected) handleCancel();
+      if( oDialog -> exec() == QDialog::Rejected ) handleCancel();
       else
       {
-      //here we handle the "toAll option"
+      // here we handle the "toAll option"
         if(oDialog -> isToAllChecked() == true) toAll = true;
         rarProcProgress -> show();
       }
@@ -302,7 +309,8 @@ void rarProcessHandler::getError()
       if(oDialog -> yesToAllChecked() == true) oDialog -> yesOverwrite(); //if was toAll checked then we answer the same for next times
       else oDialog -> noOverwrite();                  
     }
-                
+   delete oDialog; 
+   totalFileCount++;             
   }
   else if(QString().fromAscii(temp).contains("password incorrect ?")) // here we handle a header-password-protected archive
   {
@@ -329,7 +337,7 @@ void rarProcessHandler::getError()
       archivePassword = password;
       stdOutput.clear();
       passwordAsked = true;
-      puts("initProcess called");
+     // puts("initProcess called");
       initProcess();
     }
     else
