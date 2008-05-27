@@ -28,7 +28,7 @@ void akuRatioWidget::paintEvent(QPaintEvent *)
   painter.setBrush(QBrush(color));
   painter.setPen(edgeColor);
   painter.drawRoundRect(QRect(2,4,(lunghezza/100)*width()-3, height()-9),8,8);
-  painter.setPen(Qt::black);
+  painter.setPen(QPalette().color(QPalette::Text));
   painter.setOpacity(1);
   painter.drawText(rect(), Qt::AlignCenter, QString().setNum(lunghezza)+"%");
 }

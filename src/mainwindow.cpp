@@ -54,7 +54,7 @@ MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( paren
   waitDialog = new akuWaitDialog(this);
   showStatusInfo(false);
 
-    KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
+  KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
   if(args->isSet("extracthere")){
     // code to extract the archive
     setVisible(false);
@@ -64,14 +64,20 @@ MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( paren
     connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
     pHand->start();
   }
-  if(args->isSet("extractto")){
+  else if(args->isSet("extractto")){
     // code to extract the archive
     setVisible(false);
     KUrl url = KFileDialog::getExistingDirectoryUrl(KUrl(QDir().homePath()),  this, i18n("Extract to"));
-    rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",args->arg(0), QStringList(), url.path() );
-    //puts(url.path().toAscii());
-    connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
-    pHand->start();
+    puts(url.pathOrUrl().toAscii());
+    if(!url.isEmpty()){
+     rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",args->arg(0), QStringList(), url.path() );
+     //puts(url.path().toAscii());
+     connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
+     pHand->start();
+    } else{
+     puts("uscendo");
+     kapp->quit(); //FIXME does not work!
+     }
   }
   else{
     for(int i=0; i < args -> count(); i++)  raropen(args -> arg(i));     
@@ -520,7 +526,9 @@ void MainWindow::handleRestrictions(QString nomeFile)
   if(!globalArchivePassword.isEmpty())
   {
     infoLock -> setPixmap(KIcon("dialog-password").pixmap(22,18));
-    infoLock -> setToolTip(i18n("This archive has a password protection")); 
+    infoLock -> setToolTip(i18n("This archive has a header password protection.<br>File data," 
+                                "file names, sizes, attributes, comments are encrypted.<br> Without a password it is"
+                                "impossible to view even the list of files in archive.")); 
   }
   if(infoLock ->pixmap()==NULL)
   {
@@ -767,9 +775,13 @@ void MainWindow::recursiveFolderIcons ( QTreeWidgetItem *checkParent )
 
 void MainWindow::getMetaInfo ( QTreeWidgetItem *item ) //setta le informazioni della metabar
 {
-  if(item -> text(1) != "") metaWidget -> setFileName ( item -> text ( 0 ) );
-  else metaWidget -> setFileName ( item -> text ( 0 ), true );
-  metaWidget -> setFileSize ( item -> text ( 1 ) );
+  if(!item -> text(1).isEmpty()){
+    metaWidget -> setFileName ( item -> text ( 0 ) );
+    metaWidget -> setFileSize ( item -> text ( 1 ) );
+    metaWidget->setRatio(item->text(3).remove("%").toFloat());
+  }else
+   metaWidget -> setFileName ( item -> text ( 0 ), true );
+
 }
 
 QStringList MainWindow::rebuildPathForNew ( dragTarget *listForNew ) //ricostruisce i percorsi da aggiungere all'archivio chiamando la funzione ricorsiva

@@ -18,6 +18,8 @@ akuMetaWidget::akuMetaWidget (QWidget *parent) : QWidget (parent)
   metaMime = new QLabel(this);
   metaMime -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   metaMime -> setWordWrap(true);
+  ratio = new akuRatioWidget(0, this);
+  ratio->setVisible(false);
   QSpacerItem *spacer = new QSpacerItem(1,3, QSizePolicy::Minimum, QSizePolicy::Fixed);
   singleFileLayout = new QGridLayout();
   singleFileLayout -> addWidget(iconMap, 1,1);
@@ -25,8 +27,9 @@ akuMetaWidget::akuMetaWidget (QWidget *parent) : QWidget (parent)
   singleFileLayout -> addWidget(metaName, 3,1);
   singleFileLayout -> addWidget(metaSize,4,1);
   singleFileLayout -> addWidget(metaMime,5,1);
+  singleFileLayout -> addWidget(ratio,6,1);
   QSpacerItem *spacer2 = new QSpacerItem(1,10, QSizePolicy::Minimum, QSizePolicy::Expanding);
-  singleFileLayout -> addItem(spacer2,6,1);
+  singleFileLayout -> addItem(spacer2,7,1);
   // scrollArea -> setWidget(iconMap);
   scrollArea -> setWidgetResizable(true);
 
@@ -114,6 +117,7 @@ void akuMetaWidget::setFileName(QString name, bool folder)
     QPixmap pixmap = KIcon("inode-directory").pixmap(128,128);
     setMimeIcon(pixmap);
     setMime(i18n("Folder"));
+    ratio->setVisible(false);
   }
 }
 
@@ -164,4 +168,10 @@ void akuMetaWidget::handleItemSelections(QList<QTreeWidgetItem*> list)
 void akuMetaWidget::setFileSize(QString size)
 {
   metaSize -> setText(size);
+}
+
+void akuMetaWidget::setRatio(float r)
+{
+ ratio->setVisible(true);
+ ratio->setRatio(r);
 }

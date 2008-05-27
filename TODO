@@ -20,3 +20,4 @@
 - Check wait cursor
 - Reopening an archive is slooooow
 - Move akuRatioWidget to akuMetaWidget leaving a ratio number in the list
+- toLong() to toULong()

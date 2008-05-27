@@ -100,27 +100,34 @@ int rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
       QStringList dlist = ( flist.at ( i ) ).split ( " ", QString::SkipEmptyParts );// generiamo una lista contenente i parametri dei file
       if ( dlist[7] != "m0" )   //è inutile scrivere gli attributi della cartella
       {
-            QString size = KLocale( QString() ).formatByteSize(dlist[0].toDouble());
-            fitem -> setTextAlignment ( 1, Qt::AlignRight | Qt::AlignVCenter );
-            fitem -> setTextAlignment ( 2, Qt::AlignRight | Qt::AlignVCenter );
-            fitem -> setText(1, size);
-            size = KLocale( QString() ).formatByteSize(dlist[1] .toDouble());
-            fitem -> setText(2, size);
+          for ( int g=0; g < dlist.size(); g++ )  
+           {
+            if(g==3)
+            {
+              QDateTime ts (QDate::fromString(dlist[ g ], "dd-MM-yy"),
+              QTime::fromString(dlist[ g+1 ], "hh:mm"));
+              fitem -> setText(g+1, ts.toString(Qt::LocaleDate));
+              fitem -> setTextAlignment(g+1, Qt::AlignVCenter | Qt::AlignHCenter);
+              dlist.removeAt(g+1);
+            }else  fitem -> setText ( g+1, dlist[ g ] );
+           }
 
-          //  dlist[2].remove("%");                                        // akuRatioWidget (or any other widget) slows down
-          //  float ratio = dlist[2].toFloat();                            // the archive visualization, so it is deactivated 
-          //  if (ratio > 100 || ratio == 0) ratio = 0;                    // waiting for a better solution
-          //  else ratio = abs(ratio -100);
+          QString size = KLocale( QString() ).formatByteSize(dlist[0].toDouble());
+          fitem -> setTextAlignment ( 1, Qt::AlignRight | Qt::AlignVCenter );
+          fitem -> setTextAlignment ( 2, Qt::AlignRight | Qt::AlignVCenter );
+          fitem -> setText(1, size);
+          size = KLocale( QString() ).formatByteSize(dlist[1] .toDouble());
+          fitem -> setText(2, size);
+
+            dlist[2].remove("%");                                      // akuRatioWidget (or any other widget) slows down
+            float ratio = dlist[2].toFloat();                            // the archive visualization, so it is deactivated 
+            if (ratio > 100.0 || ratio == 0.0) ratio = 0.0;                    // waiting for a better solution
+            else ratio = abs(ratio -100.0);
+            fitem->setText(3,QString().setNum(ratio)+"%");
           //  akuRatioWidget *ratioWidget = new akuRatioWidget(ratio);
           //  listv -> setItemWidget(fitem, 3, ratioWidget); 
 
-            QDateTime ts (QDate::fromString(dlist[ 3 ], "dd-MM-yy"),
-                          QTime::fromString(dlist[ 4 ], "hh:mm"));
-            fitem -> setText(4, ts.toString(Qt::LocaleDate));
-            fitem -> setTextAlignment(4, Qt::AlignVCenter | Qt::AlignHCenter);
-            //dlist.removeAt(4);
-        for ( int g=5; g < dlist.size(); g++ )  
-           fitem -> setText ( g, dlist[ g ] );
+
 
 
         KMimeType::Ptr mimePtr = KMimeType::findByUrl(KUrl(singleItem[numeroPezziPercorso]));

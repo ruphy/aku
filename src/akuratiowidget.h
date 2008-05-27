@@ -29,7 +29,6 @@ public slots:
 private:
   void paintEvent(QPaintEvent *);
   float lunghezza;
-
 };
 
 #endif

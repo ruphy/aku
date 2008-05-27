@@ -324,7 +324,7 @@ void rarProcessHandler::getError()
     if(rarProcProgress != NULL) rarProcProgress -> cancel();
     if(processTimer != 0) processTimer -> stop();
     KPasswordDialog pwD(parentWidget);
-    pwD.setPrompt(i18n("This archive is header-password-protected, enter the password"));
+    pwD.setPrompt(i18n("This archive is <b>header password protected</b>.<br>Enter the password:"));
     QPixmap pixmap = KIcon("dialog-password").pixmap(64,64);
     pwD.setPixmap(pixmap);
     if(passwordRequests <3)

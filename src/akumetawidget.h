@@ -1,6 +1,7 @@
 #ifndef AKUMETAWIDGET_H
 #define AKUMETAWIDGET_H
 
+#include "akuratiowidget.h"
 
 #include <QWidget>
 #include <QLabel>
@@ -36,7 +37,7 @@ public slots:
   virtual void setMime(QString);
   virtual void setPreview(QByteArray);
   virtual void handleItemSelections(QList<QTreeWidgetItem*>);
-
+  virtual void setRatio(float);
 private:
   QGridLayout *singleFileLayout;
   QGridLayout *archiveLayout;
@@ -49,5 +50,6 @@ private:
   QLabel *archiveDetails;
   QLabel *notificationIcon;
   QScrollArea *scrollArea;
+  akuRatioWidget *ratio;
 };
 #endif
