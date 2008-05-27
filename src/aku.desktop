@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=0.99
+Name=aKu
+Name[it]=aKu
+GenericName=RAR GUI Utility
+Exec=aku %U
+Comment=aKu - The RAR GUI application for KDE
+Icon=aku
+MimeType=application/x-rar
+Categories=Qt;KDE;Utility;X-KDE-Utilities-File;
+InitialPreference=3
