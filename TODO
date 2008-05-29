@@ -24,3 +24,8 @@
 - Deactivate ratio while multiple selection
 - Ratio bar estethic
 - Make const unedited params in functions
+- fix percentage parsing
+- issue when reloading archive after encryption
+- Encrypt this archive -> Encrypt this archive's header
+- Error handling does not work
+- Adding files to header protected ones does not work
