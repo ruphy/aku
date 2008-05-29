@@ -53,7 +53,7 @@ MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( paren
   renameAction -> setEnabled ( false );
   waitDialog = new akuWaitDialog(this);
   showStatusInfo(false);
-
+  puts("parsing");
   KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
   if(args->isSet("extracthere")){
     // code to extract the archive
@@ -71,7 +71,6 @@ MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( paren
     puts(url.pathOrUrl().toAscii());
     if(!url.isEmpty()){
      rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",args->arg(0), QStringList(), url.path() );
-     //puts(url.path().toAscii());
      connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
      pHand->start();
     } else{
@@ -82,6 +81,7 @@ MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( paren
   else{
     for(int i=0; i < args -> count(); i++)  raropen(args -> arg(i));     
    }
+  puts("created");
 }
 
 MainWindow::~MainWindow()
@@ -429,7 +429,7 @@ void MainWindow::raropen ( QString filename, bool restrictions )
   bf = "";
   namex = filename; //rendo globale il nome dell'archivio
   
-  newProcHandler = new rarProcessHandler(this, archiver, QStringList() << "v" << "-c-" , namex );
+  newProcHandler = new rarProcessHandler(this, archiver, QStringList() << "v" , namex );
   connect(newProcHandler, SIGNAL(outputReady(QString, bool)), this, SLOT(parseAndShow(QString, bool)));
 
   newProcHandler -> start();
@@ -445,7 +445,7 @@ void MainWindow::parseAndShow(QString rarout, bool crypted)
     globalArchivePassword.clear();
 
   if(!rarout.isEmpty())
-  { //se l'output non è nullo
+  { 
     setCursor(Qt::WaitCursor);
     rarList -> clear(); //ripulisco la lista
     //inizio il processo per il parsing dell'output
@@ -465,7 +465,7 @@ void MainWindow::parseAndShow(QString rarout, bool crypted)
    // rarList -> sortItems ( 1, Qt::AscendingOrder );
     rarList -> header() -> setResizeMode ( 0, QHeaderView::ResizeToContents );
     rarList -> header() -> setResizeMode(9, QHeaderView::ResizeToContents);
-    if(globalRestrictions) handleRestrictions(namex);
+    if(globalRestrictions) handleRestrictions(namex, rarout);
     if ( fromNewArchive == true )   //ripristiniamo la gui se proveniamo da un new archive
     {
       closeNewArchiveGUI(false);
@@ -476,19 +476,28 @@ void MainWindow::parseAndShow(QString rarout, bool crypted)
     setCursor(QCursor());
   }
 }
-void MainWindow::handleRestrictions(QString nomeFile)
+void MainWindow::handleRestrictions(QString nomeFile, QString archList)
 { 
-  rarProcessHandler *proce;
+  // here we parse rar listing to find out comments and lock info
+  // to know whether we have comments or not we can simply use the QString
+  // received from rarProcessHandler::outputReady()
+  // But to know if lock is present we need to call rar with vt params.
+  // rarProcessHandler is asyncronous and heavier than QProcess for this simple operation
+  // even if it handles better rar errors. However QProcess seems better for this fast call
+  // TODO: check if really QProcess is enough!
+
+  QProcess *p = new QProcess();
   if(!globalArchivePassword.isEmpty())
-    proce = new rarProcessHandler(this, archiver, QStringList() << "vt"<< "-p"+globalArchivePassword, nomeFile);
+   p->start(archiver, QStringList() << "vt" << "-p"+globalArchivePassword << nomeFile);
   else
-    proce = new rarProcessHandler(this, archiver, QStringList() << "vt", nomeFile);
-  proce -> start();
-  QString comment;
-  comment = proce->standardOutput();
-  if (comment.contains("Lock is present\n"))
+   p->start(archiver, QStringList() << "vt" << nomeFile);
+  p->waitForFinished();
+  
+  QString lockcheck = p->readAllStandardOutput();
+  delete p;
+  if (lockcheck.contains("Lock is present\n"))
   {
-    //puts("lock found");
+    lockcheck.clear();
     QString toolTip(i18n("<b><font color=red>Locked archive</u></b></font><p><i>Any attempt to change the archive will be ignored</i>"));
     QPixmap lockIcon = KIcon("object-locked").pixmap(22,18);
     infoLock -> setPixmap(lockIcon);
@@ -498,22 +507,15 @@ void MainWindow::handleRestrictions(QString nomeFile)
   {
     infoLock -> clear();
   }
- 
-  if(!globalArchivePassword.isEmpty())
-    proce = new rarProcessHandler(this, archiver, QStringList() << "v"<< "-p"+globalArchivePassword, nomeFile);
-  else
-    proce = new rarProcessHandler(this, archiver, QStringList() << "v", nomeFile);
-  proce -> start();
-  comment = proce->standardOutput();
-  if (comment.contains("Comment:"))//se troviamo la stringa Comment: vuol dire che c'è un commento, quindi lo estraiamo
+
+ if (archList.contains("Comment:"))//se troviamo la stringa Comment: vuol dire che c'è un commento, quindi lo estraiamo
   {
-    //puts("Stringa Comment: trovata");
-    //puts(comment.toAscii());
-    int target = comment.indexOf("Comment:");
-    comment.remove(0, target);
-    comment.remove("Comment:");
-    comment.remove(comment.indexOf("Pathname"), comment.length());
-    commentEdit -> setText(comment);
+    int target = archList.indexOf("Comment:");
+    archList.remove(0, target);
+    archList.remove("Comment:");
+    archList.remove(archList.indexOf("Pathname"), archList.length());
+
+    commentEdit -> setText(archList);
     commentDock -> setVisible(true);
     commentAction -> setVisible(true);
     commentDock -> setGeometry(x() - 200, y(), 200,200);

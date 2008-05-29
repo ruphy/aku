@@ -411,7 +411,7 @@ void rarProcessHandler::showError(QByteArray errore)
 
 QString rarProcessHandler::standardOutput()
 {
-  if(stdOutput.indexOf("Pathname/Comment") == -1 ) stdOutput.clear();
+  if(!stdOutput.contains("Pathname/Comment")) stdOutput.clear();
   return stdOutput;
 }
 

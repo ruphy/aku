@@ -115,6 +115,7 @@ int rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
           QString size = KLocale( QString() ).formatByteSize(dlist[0].toDouble());
           fitem -> setTextAlignment ( 1, Qt::AlignRight | Qt::AlignVCenter );
           fitem -> setTextAlignment ( 2, Qt::AlignRight | Qt::AlignVCenter );
+          fitem -> setTextAlignment ( 3, Qt::AlignRight | Qt::AlignVCenter );
           fitem -> setText(1, size);
           size = KLocale( QString() ).formatByteSize(dlist[1] .toDouble());
           fitem -> setText(2, size);

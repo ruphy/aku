@@ -22,3 +22,5 @@
 - Move akuRatioWidget to akuMetaWidget leaving a ratio number in the list
 - toLong() to toULong()
 - Deactivate ratio while multiple selection
+- Ratio bar estethic
+- Make const unedited params in functions

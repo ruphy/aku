@@ -182,7 +182,7 @@ protected:
 protected slots:
   virtual void lockArchive();
   virtual void addComment();
-  virtual void handleRestrictions(QString);
+  virtual void handleRestrictions(QString, QString);
   virtual void setupStatusBar();
   virtual void setupCommentView();
   virtual void completeRename(bool);
