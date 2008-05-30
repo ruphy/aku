@@ -4,6 +4,7 @@
 #include "overwritedialog.h"
 #include "akuprogressdialog.h"
 #include "threadprocess.h"
+#include "akuerrordialog.h"
 
 #include <QStringList>
 #include <QProcess>
@@ -79,7 +80,7 @@ class rarProcessHandler : public QObject
   QString globalArchiver;
   bool totalExtraction;
   int pID;
-
+  akuErrorDialog *errorDialog;
  protected slots:
   virtual void initProcess();
   virtual void handleProcess();

@@ -3,6 +3,7 @@
 #include "moc_akudragsourcewidget.cpp"
 #include "moc_akuviewer.cpp"
 #include "moc_akutreewidget.cpp"
+#include "moc_akuerrordialog.cpp"
 #include "moc_akuwaitdialog.cpp"
 #include "moc_extractdialog.cpp"
 #include "moc_dragtarget.cpp"

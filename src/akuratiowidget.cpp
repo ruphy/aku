@@ -35,5 +35,5 @@ void akuRatioWidget::paintEvent(QPaintEvent *)
 
 QSize akuRatioWidget::sizeHint() const
 {
- return QSize(200, 18);
+ return QSize(200, 22);
 }

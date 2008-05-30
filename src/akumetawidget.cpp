@@ -77,16 +77,10 @@ void akuMetaWidget::setPreview(QByteArray preview)
 
 void akuMetaWidget::clear()
 {
- QObjectList objectList = children();
- for (int i = 0; i < objectList.size(); i++)
- {
-   QLabel *toClear = qobject_cast<QLabel *>(objectList[i]); //let's clean every label
-   if (toClear != 0)
-   {
-     QString labelText = toClear -> text();
-     if(labelText != i18n("Details")  || labelText !=QString("<p><b>"+i18n("File(s)")+":</b></p><p><b>"+i18n("Size")+":</b></p><p><b>"+i18n("Packed Size")+":</b></p>"))  toClear -> clear();
-   }
- }
+ metaName->clear();
+ metaSize->clear();
+ metaMime->clear();
+ ratio->setVisible(false);
 }
 
 void akuMetaWidget::setMimeIcon(QPixmap iconPixmap)
@@ -125,7 +119,7 @@ void akuMetaWidget::handleItemSelections(QList<QTreeWidgetItem*> list)
 {
   int listSize = list.size();
   //icons =  192 / listSize;
- 
+  if(listSize>1) ratio->setVisible(false);
   QPalette palette;
   QPixmap view(128,128);
   view.fill(palette.color(QPalette::Dark));

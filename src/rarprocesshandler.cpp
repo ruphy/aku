@@ -15,6 +15,7 @@ rarProcessHandler::rarProcessHandler( QWidget *parent,QString archiver, QStringL
     errorDock = new QWidget();
     errorEdit = new QTextEdit(errorDock);
     errorEdit -> setReadOnly(true);
+    errorDialog = new akuErrorDialog();
     QGridLayout *layout = new QGridLayout(errorDock);
     layout -> addWidget(errorEdit,1,1);
     toAll = false;
@@ -53,7 +54,6 @@ void rarProcessHandler::start()
      if(!hasPasswordParameter && params[0] != "a" && params[0] != "ch") params << "-p-"; //this is to handle password later
     
     initProcess();
-    showError(rarProcError);
 
   }
 }
@@ -99,7 +99,7 @@ void rarProcessHandler::initProcess()
   else if(params[0] == "a")
   {
     disconnect(rarProc, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
-    puts(QString("NewArchive Launching process: " + process + " " + params.join(" ")+ " "+rarArchive+ " " + filesToHandle.join(" ") + " "+ pathTarget).toAscii());
+    puts(QString("Launching process: " + process + " " + params.join(" ")+ " "+rarArchive+ " " + filesToHandle.join(" ") + " "+ pathTarget).toAscii());
     rarProcProgress = new akuProgressDialog(parentWidget, filesToHandle.size());
     int total = 0;
     for(int i = 0; i < filesToHandle.size(); i++) if(filesToHandle[i].indexOf("-ap") == -1) total++;
@@ -213,9 +213,10 @@ bool rarProcessHandler::completedCorrectly()
 
 void rarProcessHandler::handleProcess()
 {
+  puts("handling adding");
   connect(rarProc, SIGNAL(readyReadStandardError()), this, SLOT(getError()));
   connect(rarProc, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
-  puts("extracting single file");
+ // puts("extracting single file");
   puts("totalFileCount = "+ QString().setNum(totalFileCount).toAscii());
   if(totalFileCount < filesToHandle.size() && rarProc -> state() == QProcess::NotRunning) //if the extraction is complete we can start the next
   {
@@ -368,9 +369,9 @@ void rarProcessHandler::showError(QByteArray errore)
 
   if(!errore.isEmpty())
   {
-    errorDock -> setGeometry(parentWidget -> x() , parentWidget -> y(), 300,200);
-    errorDock -> setWindowTitle(i18n("An error occurred"));
-    if(errorDock -> isVisible() != true) errorDock -> show();
+   // errorDock -> setGeometry(parentWidget -> x() , parentWidget -> y(), 300,200);
+   // errorDock -> setWindowTitle(i18n("An error occurred"));
+   // if(errorDock -> isVisible() != true) errorDock -> show();
     QByteArray error = errore;
     QByteArray original(QString("Cannot create").toAscii());
     QByteArray translated(QString("<b>" + tr("\nCannot create") + "</b>").toAscii());
@@ -405,7 +406,9 @@ void rarProcessHandler::showError(QByteArray errore)
     original = QString("CRC failed").toAscii();
     translated = QString("<b>" + tr("CRC failed") + "</b>").toAscii();
     error.replace(original, translated);
-    errorEdit -> append(error);
+   // errorEdit -> append(error);
+    errorDialog->setError(error);
+    errorDialog->show();
   }
 }
 
@@ -440,7 +443,11 @@ void rarProcessHandler::showProgress() //gestiamo un progressdialog
 
   }
   if(QString(gotOutput).contains("OK") && !QString(gotOutput).contains("All OK"))
-     rarProcProgress -> incrementOverall();
+   {
+    rarProcProgress->setCurrentFileProgressToMaximum();
+    rarProcProgress->setCurrentFileProgress(0);
+   }
+ //    rarProcProgress -> incrementOverall();
 
   if ( QString(gotOutput).contains ( "%" )  )
   {
@@ -448,11 +455,8 @@ void rarProcessHandler::showProgress() //gestiamo un progressdialog
     if ( percentuale.size() == 2 )
     {
       percentuale[1].remove ( "%" );
-      int perc = percentuale[1].toInt();
-      perc++;
-      int increment = 100 / filesToHandle.size();
-      perc = perc - increment*totalFileCount;
-      rarProcProgress -> setCurrentFileProgress(perc*filesToHandle.size());
+      rarProcProgress->setCurrentFileProgress(rarProcProgress->currentFileProgressValue() + (100 / filesToHandle.size()));
+      rarProcProgress->setOverallProgress(percentuale[1].toInt());
     }
   }
   if ( QString(gotOutput).contains("All OK"))  rarProcProgress -> accept(); 
@@ -461,8 +465,11 @@ void rarProcessHandler::showProgress() //gestiamo un progressdialog
 
 void rarProcessHandler::giveOutput(int, QProcess::ExitStatus)
 {
+ puts("process terminated");
  emit outputReady(standardOutput(), crypted);
  emit processCompleted(true); //check the bool
+ showError(rarProcError);
+
 }
 
 void rarProcessHandler::handleCancel()

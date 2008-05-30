@@ -1,5 +1,8 @@
 #include "akuprogressdialog.h"
 
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+
 akuProgressDialog::akuProgressDialog(QWidget* parent, int maximum) : QDialog(parent)
 {
   tTip = new akuProgressTooltip();
@@ -31,13 +34,15 @@ akuProgressDialog::akuProgressDialog(QWidget* parent, int maximum) : QDialog(par
   //currentFileName -> setTextInteractionFlags(Qt::NoTextInteraction);
   
 
-  QGridLayout *fileInfoLayout = new QGridLayout();
-  fileInfoLayout -> addWidget(currentFileIcon,1,1);
-  fileInfoLayout -> addWidget(currentFileName,1,2);
+  // QGridLayout *fileInfoLayout = new QGridLayout();
+  QHBoxLayout *fileInfoLayout = new QHBoxLayout();
+  fileInfoLayout -> addWidget(currentFileIcon);
+  fileInfoLayout -> addWidget(currentFileName);
 
-  QGridLayout *fileDestLayout = new QGridLayout();
-  fileDestLayout -> addWidget(folderdownloadIcon,1,1);
-  fileDestLayout -> addWidget(archiveName,1,2);
+  // QGridLayout *fileDestLayout = new QGridLayout();
+  QHBoxLayout *fileDestLayout = new QHBoxLayout();
+  fileDestLayout -> addWidget(folderdownloadIcon);
+  fileDestLayout -> addWidget(archiveName);
 
   currentFileSize = new QLabel(i18n("Size: "), this);
   currentFileSize -> setAlignment(Qt::AlignRight);
@@ -48,41 +53,46 @@ akuProgressDialog::akuProgressDialog(QWidget* parent, int maximum) : QDialog(par
   progressBox = new QGroupBox(i18n("Processing..."),this);
   //progressBox = new QGroupBox(this);
   
-  QGridLayout *baseLayout = new QGridLayout(this);
+ // QGridLayout *baseLayout = new QGridLayout(this);
+  QVBoxLayout *baseLayout = new QVBoxLayout(this);
   QToolButton *tButton = new QToolButton(this);
   tButton -> setToolTip(i18n("Send aKu to tray"));
   tButton -> setIcon(KIcon("arrow-down-double"));
   tButton -> setAutoRaise(true);
-  baseLayout -> addWidget(progressBox,1,1);
+  baseLayout -> addWidget(progressBox);
   
   QFrame *singleFileFrame = new QFrame(this);
   QFrame *overallFrame = new QFrame(this);
   singleFileFrame -> setFrameStyle(QFrame::StyledPanel);
   overallFrame -> setFrameStyle(QFrame::StyledPanel);
   
-  QGridLayout *singleFileLayout = new QGridLayout(singleFileFrame);
-  singleFileLayout -> addLayout(fileInfoLayout,1,1);
-  singleFileLayout -> addWidget(currentFileSize,2,1);
-  singleFileLayout -> addWidget(fileProgress,3,1);
+ // QGridLayout *singleFileLayout = new QGridLayout(singleFileFrame);
+  QVBoxLayout *singleFileLayout = new QVBoxLayout(singleFileFrame);
+  singleFileLayout -> addLayout(fileInfoLayout);
+  singleFileLayout -> addWidget(currentFileSize);
+  singleFileLayout -> addWidget(fileProgress);
   
-  QGridLayout *overallLayout = new QGridLayout(overallFrame);
-  overallLayout -> addLayout(fileDestLayout,1,1);
-  overallLayout -> addWidget(overallProgress,2,1);
+ // QGridLayout *overallLayout = new QGridLayout(overallFrame);
+  QVBoxLayout *overallLayout = new QVBoxLayout(overallFrame);
+  overallLayout -> addLayout(fileDestLayout);
+  overallLayout -> addWidget(overallProgress);
   
   KPushButton *cancel = new KPushButton(i18n("Cancel"), this);
   cancel-> setIcon(KIcon("dialog-cancel"));
   pause = new KPushButton(i18n("Pause"), this);
   pause-> setIcon(KIcon("edit-clear-history"));
   
-  QGridLayout *inBoxLayout = new QGridLayout(progressBox);
-  inBoxLayout -> addWidget(singleFileFrame,1,1);
-  inBoxLayout -> addWidget(overallFrame,2,1);
+ // QGridLayout *inBoxLayout = new QGridLayout(progressBox);
+  QVBoxLayout *inBoxLayout = new QVBoxLayout(progressBox);
+  inBoxLayout -> addWidget(singleFileFrame);
+  inBoxLayout -> addWidget(overallFrame);
   
-  QGridLayout *buttonsLayout = new QGridLayout();
-  buttonsLayout -> addWidget(cancel,1,1);
-  buttonsLayout -> addWidget(pause,1,2);
-  buttonsLayout -> addWidget(tButton,1,3);
-  baseLayout -> addLayout(buttonsLayout,3,1);
+ // QGridLayout *buttonsLayout = new QGridLayout();
+  QHBoxLayout *buttonsLayout = new QHBoxLayout();
+  buttonsLayout -> addWidget(cancel);
+  buttonsLayout -> addWidget(pause);
+  buttonsLayout -> addWidget(tButton);
+  baseLayout -> addLayout(buttonsLayout);
   
   fileProgress -> setValue(0);
   increment = maximum / 100;
@@ -190,6 +200,11 @@ void akuProgressDialog::setCurrentFileProgress(int progress)
 {
   fileProgress -> setValue( progress );
   if(!tray->isVisible()) show();
+}
+
+void akuProgressDialog::setOverallProgress(int p)
+{
+ overallProgress->setValue(p);
 }
 
 void akuProgressDialog::setCurrentFileProgressToMaximum()

@@ -22,6 +22,7 @@
 #include "akuwaitdialog.h"
 #include "akutreewidget.h"
 #include "akupartviewer.h"
+#include "akuerrordialog.h"
 
 //QT4 INCLUDES
 #include <QStringList>

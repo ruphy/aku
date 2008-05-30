@@ -36,6 +36,7 @@ public slots:
   virtual void setCurrentFileName(QString);
   virtual void setCurrentFileSize(QString);
   virtual void setCurrentFileProgress(int);
+  virtual void setOverallProgress(int);
   virtual void setCurrentFileProgressToMaximum();
   virtual void cancel();
   virtual void incrementOverall();

@@ -13,7 +13,6 @@ QDockWidget *commentDock = 0;
 QTextEdit *commentEdit = 0;
 QSplitter *splitter;
 
-enum { MaxRecentFiles = 5 };
 
 MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( parent, fl )
 {
@@ -74,14 +73,12 @@ MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( paren
      connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
      pHand->start();
     } else{
-     puts("uscendo");
      kapp->quit(); //FIXME does not work!
      }
   }
   else{
     for(int i=0; i < args -> count(); i++)  raropen(args -> arg(i));     
    }
-  puts("created");
 }
 
 MainWindow::~MainWindow()
@@ -215,8 +212,8 @@ void MainWindow::setConnections()
 
 void MainWindow::debugging()
 {
-  //akuPartViewer *viewer = new akuPartViewer(this);
-  //viewer->view("~/Development/aku2/src/mainwindow.cpp");
+  akuErrorDialog *e = new akuErrorDialog(this);
+  e->show();
 }
 
 void MainWindow::addFilePwd()
@@ -358,11 +355,11 @@ void MainWindow::addFile(bool pwd)
     if(rarList -> selectedItems().size() == 1 )
     {
       QString parentFolder;
-      if(rarList -> selectedItems()[0] -> text(1) == "")
+      if(rarList -> selectedItems()[0] -> text(1).isEmpty())
       {
         parentFolder = rebuildFullPath(rarList -> selectedItems()[0]);
         if(pwdToSet.isEmpty())
-          addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-ap"+parentFolder,namex, QStringList()<<fileList);
+          addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-ap"+parentFolder<<"-p"+globalArchivePassword,namex, QStringList()<<fileList);
         else 
           addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-p"+pwdToSet<<"-ap"+parentFolder,namex, QStringList()<<fileList);
         connect(addingProc, SIGNAL(processCompleted(bool)), this, SLOT(reloadArchive(bool)));
@@ -373,7 +370,7 @@ void MainWindow::addFile(bool pwd)
         {
           parentFolder = rebuildFullPath(rarList -> selectedItems()[0] -> parent());
           if(pwdToSet.isEmpty())
-            addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-ap"+parentFolder,namex, QStringList()<<fileList);
+            addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-ap"+parentFolder<<"-p"+globalArchivePassword,namex, QStringList()<<fileList);
           else 
             addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-p"+pwdToSet<<"-ap"+parentFolder,namex, QStringList()<<fileList);
           connect(addingProc, SIGNAL(processCompleted(bool)), this, SLOT(reloadArchive(bool)));
@@ -381,7 +378,7 @@ void MainWindow::addFile(bool pwd)
         else
         {
           if(pwdToSet.isEmpty())
-            addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1",namex, QStringList()<<fileList);
+            addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-p"+globalArchivePassword,namex, QStringList()<<fileList);
           else 
             addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-p"+pwdToSet,namex, QStringList()<<fileList);
           connect(addingProc, SIGNAL(processCompleted(bool)), this, SLOT(reloadArchive(bool)));
@@ -392,7 +389,7 @@ void MainWindow::addFile(bool pwd)
     else
     {
       if(pwdToSet.isEmpty())
-        addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1",namex, QStringList()<<fileList);
+        addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-p"+globalArchivePassword,namex, QStringList()<<fileList);
       else 
         addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-p"+pwdToSet,namex, QStringList()<<fileList);
       connect(addingProc, SIGNAL(processCompleted(bool)), this, SLOT(reloadArchive(bool)));
@@ -424,6 +421,7 @@ void MainWindow::openDialog()
 
 void MainWindow::raropen ( QString filename, bool restrictions )
 {
+  metaWidget->clear();
   globalRestrictions = restrictions;
   searchWidget -> searchLineEdit() ->clear();
   bf = "";
@@ -439,10 +437,7 @@ void MainWindow::raropen ( QString filename, bool restrictions )
 void MainWindow::parseAndShow(QString rarout, bool crypted)
 {
   disconnect(newProcHandler, SIGNAL(outputReady(QString, bool)), this, SLOT(parseAndShow(QString, bool)));
-  if(crypted)
-    globalArchivePassword = newProcHandler -> getArchivePassword();
-  else 
-    globalArchivePassword.clear();
+
 
   if(!rarout.isEmpty())
   { 
@@ -459,6 +454,15 @@ void MainWindow::parseAndShow(QString rarout, bool crypted)
     metaWidget -> setMimeIcon( mimeIcon );
     //mi occupo di settare tutte le opzioni che riguardano l'interfaccia
     enableActions(true);
+
+    if(crypted){
+    globalArchivePassword = newProcHandler -> getArchivePassword();
+    actionAddFolderPwd->setEnabled(false);
+    actionAddFilePwd->setEnabled(false);
+    }
+    else 
+    globalArchivePassword.clear();
+    
     this -> setWindowTitle ( i18n( "aKu - " ) + KUrl(namex).pathOrUrl() );
     setFolderIcons();
     rarList -> setSortingEnabled ( true );
