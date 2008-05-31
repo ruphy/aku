@@ -12,12 +12,7 @@ rarProcessHandler::rarProcessHandler( QWidget *parent,QString archiver, QStringL
     rarProcProgress = NULL;
     processTimer = NULL;
     done = false;
-    errorDock = new QWidget();
-    errorEdit = new QTextEdit(errorDock);
-    errorEdit -> setReadOnly(true);
     errorDialog = new akuErrorDialog();
-    QGridLayout *layout = new QGridLayout(errorDock);
-    layout -> addWidget(errorEdit,1,1);
     toAll = false;
     totalFileCount = 0; //this var will increment until getting the same value of filesToHandle.size()
     process = archiver;
@@ -63,11 +58,11 @@ void rarProcessHandler::initProcess()
 {
   puts("initProcess..");
   rarProc = new threadProcess(this);
-  //setUp firstTime connections
+  // setUp firstTime connections
   connect(rarProc, SIGNAL(readyReadStandardError()), this, SLOT(getError()));
   connect(rarProc, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
   connect(rarProc, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
-  //let's check how to launch the process
+  // let's check how to launch the process
   if(params[0] == "x" || params[0] == "e")
   { 
 
@@ -230,7 +225,6 @@ void rarProcessHandler::handleProcess()
       {
         rarProc->start(process, QStringList() << params << rarArchive << filesToHandle[totalFileCount]); 
         rarProcProgress -> setCurrentFileName(filesToHandle[totalFileCount]);
-        rarProcProgress -> incrementOverall();
         QFileInfo fileInfo(filesToHandle[totalFileCount]);
         QString size = KLocale("").formatByteSize(fileInfo.size());
         rarProcProgress -> setCurrentFileSize(size);
@@ -369,9 +363,6 @@ void rarProcessHandler::showError(QByteArray errore)
 
   if(!errore.isEmpty())
   {
-   // errorDock -> setGeometry(parentWidget -> x() , parentWidget -> y(), 300,200);
-   // errorDock -> setWindowTitle(i18n("An error occurred"));
-   // if(errorDock -> isVisible() != true) errorDock -> show();
     QByteArray error = errore;
     QByteArray original(QString("Cannot create").toAscii());
     QByteArray translated(QString("<b>" + tr("\nCannot create") + "</b>").toAscii());
@@ -406,7 +397,6 @@ void rarProcessHandler::showError(QByteArray errore)
     original = QString("CRC failed").toAscii();
     translated = QString("<b>" + tr("CRC failed") + "</b>").toAscii();
     error.replace(original, translated);
-   // errorEdit -> append(error);
     errorDialog->setError(error);
     errorDialog->show();
   }
@@ -442,10 +432,11 @@ void rarProcessHandler::showProgress() //gestiamo un progressdialog
    }
 
   }
-  if(QString(gotOutput).contains("OK") && !QString(gotOutput).contains("All OK"))
+  if(QString(gotOutput).contains("OK") && !QString(gotOutput).contains("All OK") && params[0]!="a")
    {
     rarProcProgress->setCurrentFileProgressToMaximum();
     rarProcProgress->setCurrentFileProgress(0);
+    rarProcProgress->incrementOverall();
    }
  //    rarProcProgress -> incrementOverall();
 
@@ -455,8 +446,9 @@ void rarProcessHandler::showProgress() //gestiamo un progressdialog
     if ( percentuale.size() == 2 )
     {
       percentuale[1].remove ( "%" );
-      rarProcProgress->setCurrentFileProgress(rarProcProgress->currentFileProgressValue() + (100 / filesToHandle.size()));
-      rarProcProgress->setOverallProgress(percentuale[1].toInt());
+      if(params[0]!="a") rarProcProgress->setCurrentFileProgress(rarProcProgress->currentFileProgressValue() + (100 / filesToHandle.size()));
+        else rarProcProgress->setCurrentFileProgress(percentuale[1].toInt());
+    //  rarProcProgress->setOverallProgress(percentuale[1].toInt());
     }
   }
   if ( QString(gotOutput).contains("All OK"))  rarProcProgress -> accept(); 
@@ -476,6 +468,7 @@ void rarProcessHandler::handleCancel()
 {
   rarProc -> killProcess();
   rarProcProgress -> cancel();
+  if(params[0] == "a") processTimer->stop();
   emit processCanceled();
 }
 

@@ -15,7 +15,7 @@
 #include <KFileItem>
 #include <KMimeType>
 #include <KUrl>
-//la dragSource si occupa di visualizzare il filesystem del proprio sistema per permettere all'utente di trascinare i file che vuole aggiungere all'archivio
+
 
 class dragSource : public KFileTreeView
 {

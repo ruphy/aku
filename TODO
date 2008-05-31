@@ -26,3 +26,6 @@
 / Error handling does not work
 / Adding files to header protected ones does not work (goes loop)
 / When an archive is password-header-protected deny any way to add files/folders with password
+- Archive creation doesn't stop
+- Sending aku to tray during archive creation still keeps visible the creation dialog
+- Multiple selection should make a list of ratiobars in metaWidget to make comparison between ratios

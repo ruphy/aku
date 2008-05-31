@@ -19,7 +19,6 @@ akuErrorDialog::akuErrorDialog(QWidget *parent) : KDialog(parent)
  topLayout->addWidget(icon);
  QLabel *title = new QLabel(topW);
  title->setText("<b>"+i18n("One or more errors occurred:")+"</b>");
-// title->setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Minimum );
  title->setAlignment( Qt::AlignVCenter | Qt::AlignLeft);
  topLayout->addWidget(title);
  t = new KTextEdit(layout);

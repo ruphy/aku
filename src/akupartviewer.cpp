@@ -21,7 +21,7 @@ akuPartViewer::~akuPartViewer()
 bool akuPartViewer::view(const QString &filename, const QByteArray &data)
 {
   KUrl u(filename);
-  KMimeType::Ptr mimetype = KMimeType::findByUrl( u, 0, false); // the file is not phisical
+  KMimeType::Ptr mimetype = KMimeType::findByUrl( u, 0, false); // the file is not physical
   QSize size(400,500);
   setInitialSize(size);
   setCaption(u.fileName());

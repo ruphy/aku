@@ -234,7 +234,8 @@ void MainWindow::setRecentActions()
   if ( !actionList.isEmpty())
   {
     recents -> clear(); //clear actions
-    for ( int i = 0; i < actionList.size(); i++ )  recents -> addUrl(KUrl(actionList[i])); //and set new ones
+    for ( int i = 0; i < actionList.size(); i++ )
+     if( actionList[i].contains("rar", Qt::CaseInsensitive)) recents -> addUrl(KUrl(actionList[i])); //and set new ones
   }
 }
 

@@ -8,12 +8,9 @@
 
 #include <QStringList>
 #include <QProcess>
-#include <QDockWidget>
-#include <QTextEdit>
 #include <QByteArray>
 #include <QGridLayout>
 #include <QPushButton>
-#include <QInputDialog>
 #include <QFileInfo>
 #include <QDateTime>
 #include <QUrl>
@@ -25,7 +22,6 @@
 #include <KIcon>
 #include <QPixmap>
 #include <KMessageBox>
-#include <knewpassworddialog.h>
 class rarProcessHandler : public QObject
 {
  Q_OBJECT
@@ -54,8 +50,6 @@ class rarProcessHandler : public QObject
  private:
   QWidget *parentWidget;
   threadProcess *rarProc;
-  QTextEdit *errorEdit;
-  QWidget *errorDock;
   QByteArray rarProcError;
   akuProgressDialog *rarProcProgress;
   QString stdOutput;

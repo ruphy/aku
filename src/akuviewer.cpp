@@ -4,28 +4,30 @@
 
 #include <QString>
 #include <QHBoxLayout>
+#include <KVBox>
+#include <KHBox>
+#include <QScrollArea>
+#include <QSlider>
 
-akuViewer::akuViewer ( QWidget *parent, Qt::WFlags fl ) : QDialog ( parent, fl )
+akuViewer::akuViewer ( QWidget *parent, Qt::WFlags fl ) : KDialog ( parent, fl )
 {
   setModal ( true );
-  
+  setButtons(Close);
+  blayout = new KVBox(this);
 
-  //Setting up file information widget
-  QWidget *fileWidget = new QWidget(this);
-  fileName = new QLabel(fileWidget);
+  QWidget *fileWidget = new QWidget(blayout);
   fileIcon = new QLabel(fileWidget);
-  fileIcon -> setMaximumSize(65,68);
-  fileMime = new QLabel(fileWidget);
-  fileWidget -> setMaximumSize(654999, 68);
-  QGridLayout *fileInfoLayout = new QGridLayout();
-  fileInfoLayout -> addWidget(fileName,1,1);
-  fileInfoLayout -> addWidget(fileMime,2,1);
-  QGridLayout *fileLayout = new QGridLayout(fileWidget);
-  fileLayout -> addWidget(fileIcon,1,1);
-  fileLayout -> addLayout(fileInfoLayout,1,2);
-  layout = new QVBoxLayout ( this );
 
-  layout -> addWidget(fileWidget);
+  fileIcon->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
+  KVBox *fileInfoLayout = new KVBox();
+  fileName = new QLabel(fileInfoLayout);
+  fileMime = new QLabel(fileInfoLayout);
+
+  QHBoxLayout *fileLayout = new QHBoxLayout(fileWidget);
+  fileLayout -> addWidget(fileIcon);
+  fileLayout -> addWidget(fileInfoLayout);
+  setMainWidget(blayout);
+
 
   setWindowTitle (i18n ( "aku Embedded Viewer" ) );
  
@@ -38,24 +40,27 @@ akuViewer::~akuViewer()
 
 void akuViewer::setupTextView()
 {
-  viewer = new KTextEdit ( this );
+  QWidget *comboW = new QWidget(blayout);
+  viewer = new KTextEdit ( blayout );
+  QWidget *searchW = new QWidget(blayout); 
   viewer -> enableFindReplace(true);
-  fontCombo = new QFontComboBox(); //per scegliere il font
-  sizeCombo = new QComboBox(); //per la dimensione del font
-  sizeCombo -> setMaximumSize ( 90,80 );
+  fontCombo = new KFontComboBox();
+  fontCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+  sizeCombo = new QComboBox(); 
+  sizeCombo -> setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum );
   searchLine = new QLineEdit ( this );
-  searchLine -> setMaximumSize ( 65000, 90 );
   QLabel *search = new QLabel (i18n ( "Search:" ), this );
-  search->setMaximumSize ( search->text().length() *10, 90 ); //impostiamo la lunghezza della label
+  search->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   QPushButton *searchBackward = new QPushButton (  this );
   QPushButton *searchForward = new QPushButton ( this );
   searchBackward -> setIcon(KIcon("go-up"));
   searchForward -> setIcon(KIcon("go-down"));
-  searchBackward -> setMaximumSize ( 50,90 );
-  searchForward -> setMaximumSize ( 50,90 );
+  searchBackward->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+  searchForward->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   searchForward -> setShortcut(Qt::Key_F3);
-  QHBoxLayout *comboLayout = new QHBoxLayout();
-  QHBoxLayout *searchLayout = new QHBoxLayout();
+
+  QHBoxLayout *comboLayout = new QHBoxLayout(comboW);
+  QHBoxLayout *searchLayout = new QHBoxLayout(searchW);
   
   searchLayout -> addWidget ( search );
   searchLayout -> addWidget ( searchLine);
@@ -64,9 +69,6 @@ void akuViewer::setupTextView()
   
   comboLayout -> addWidget ( fontCombo ); 
   comboLayout -> addWidget ( sizeCombo ); 
-  layout -> addLayout ( comboLayout);
-  layout -> addWidget ( viewer ); 
-  layout -> addLayout ( searchLayout );
   connect ( fontCombo, SIGNAL ( currentFontChanged ( QFont ) ), this, SLOT ( setTextFont ( QFont ) ) );
   connect ( sizeCombo, SIGNAL ( currentIndexChanged ( QString ) ), this, SLOT ( setTextSize ( QString ) ) );
   connect ( searchLine, SIGNAL ( textChanged ( QString ) ), this, SLOT ( startTimer ( QString ) ) );
@@ -96,19 +98,33 @@ void akuViewer::setData(const QByteArray &data)
   KMimeType::Ptr mimePtr = KMimeType::findByContent(data);
   if(mimePtr -> name().contains("image"))
   {
-    QLabel *imageViewer = new QLabel(this);
-    
-    imageViewer->setScaledContents(true);
-    QPixmap imageBuffer;
+    QScrollArea *sArea = new QScrollArea(blayout);
+    imageViewer = new QLabel(sArea);
+    sArea->setBackgroundRole(QPalette::Dark);
+    imageViewer->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    sArea->setWidget(imageViewer);
+    sArea->setWidgetResizable(true);
     imageBuffer.loadFromData(data);
-    QSize realSize = imageBuffer.size();
-    layout -> addWidget(imageViewer);
     imageViewer -> setPixmap(imageBuffer);
-    imageViewer -> setFrameShape(QFrame::StyledPanel);
-    imageViewer->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-    resize(realSize);
+    QWidget *resW = new QWidget(blayout);
+    am = new QLabel(resW);
+    QSlider *slider = new QSlider(Qt::Horizontal, resW);
+    slider->setRange(0,100);
+    slider->setTracking(true);
+    connect(slider, SIGNAL(valueChanged(int)), this, SLOT(resizePreview(int)));
+    slider->setValue(50);
+    QHBoxLayout *hLay = new QHBoxLayout(resW);
+    hLay->addWidget(am);
+    hLay->addWidget(slider);
   }
   else setText(QString::fromUtf8(data));
+}
+
+void akuViewer::resizePreview(int s)
+{
+  am->setText(QString("%1\%").arg(s));
+  float amount = s/100.0;
+  imageViewer->setPixmap(imageBuffer.scaled(imageBuffer.size()*amount, Qt::KeepAspectRatio));
 }
 
 void akuViewer::setText ( QString txt )

@@ -3,18 +3,18 @@
 #define AKUVIEWER_H
 
 #include <KTextEdit>
-#include <QFontComboBox>
+#include <KFontComboBox>
 #include <QLineEdit>
 #include <QLabel>
 #include <QPushButton>
 #include <QTimer>
-#include <QDialog>
+#include <KDialog>
 #include <KLocale>
 #include <KMessageBox>
 #include <KMimeType>
 #include <KIcon>
 #include <QVBoxLayout>
-class akuViewer : public QDialog
+class akuViewer : public KDialog
 {
 Q_OBJECT
 
@@ -38,7 +38,7 @@ private:
   KTextEdit *viewer;
   QString testo;
   QString daCercare;
-  QFontComboBox *fontCombo;
+  KFontComboBox *fontCombo;
   QComboBox *sizeCombo;
   QLineEdit *searchLine;
   void initSizeCombo();
@@ -46,5 +46,11 @@ private:
   QLabel *fileName;
   QLabel *fileIcon;
   QLabel *fileMime;
+  QLabel *imageViewer;
+  QWidget *blayout;
+  QPixmap imageBuffer;
+  QLabel *am;
+protected slots:
+  virtual void resizePreview(int);
 };
 #endif
