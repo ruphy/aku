@@ -401,9 +401,10 @@ void MainWindow::addFile(bool pwd)
 
 void MainWindow::reloadArchive(bool correctly)
 {
+  disconnect(sender(), 0, this, 0); // this disconnects any signal avoiding multiple unuseful reloading
   if (correctly)
   {
-    if(!namex.isEmpty()) raropen(namex, false);
+    if(!namex.isEmpty()) raropen(namex, true);
     else if(fromNewArchive) closeNewArchiveGUI(true);
   }
 }
@@ -442,6 +443,7 @@ void MainWindow::parseAndShow(QString rarout, bool crypted)
 
   if(!rarout.isEmpty())
   { 
+    statusBar()->showMessage(i18n("Loading archive..."));
     setCursor(Qt::WaitCursor);
     rarList -> clear(); //ripulisco la lista
     //inizio il processo per il parsing dell'output
@@ -479,6 +481,7 @@ void MainWindow::parseAndShow(QString rarout, bool crypted)
     rarList -> resizeColumnToContents(10);
     showStatusInfo(true);
     setCursor(QCursor());
+    statusBar()->clearMessage();
   }
 }
 void MainWindow::handleRestrictions(QString nomeFile, QString archList)
@@ -533,7 +536,7 @@ void MainWindow::handleRestrictions(QString nomeFile, QString archList)
   if(!globalArchivePassword.isEmpty())
   {
     infoLock -> setPixmap(KIcon("dialog-password").pixmap(22,18));
-    infoLock -> setToolTip(i18n("This archive has a header password protection.<br>File data," 
+    infoLock -> setToolTip(i18n("This archive has a header password protection.<br>File data, " 
                                 "file names, sizes, attributes, comments are encrypted.<br> Without a password it is"
                                 "impossible to view even the list of files in archive.")); 
   }
@@ -609,12 +612,13 @@ void MainWindow::lockArchive()
 void MainWindow::encryptArchive()
 {
   KNewPasswordDialog pwDlg(this);
-  pwDlg.setPrompt(i18n("Enter a password. NOTE: this password will encrypt both header and files"));
+  pwDlg.setPrompt(i18n("Enter a password.<p><b>NOTE: this password will encrypt both header and files</b></p>"));
   if(pwDlg.exec())
   {
     if(!pwDlg.password().isEmpty())
     {
       rarProcessHandler *encProc = new rarProcessHandler(this, archiver, QStringList() << "ch" <<"-hp"+pwDlg.password(), namex);
+      globalArchivePassword=pwDlg.password();
       connect(encProc, SIGNAL(processCompleted(bool)), this, SLOT(reloadArchive(bool)));
       encProc -> start();
     }
@@ -849,11 +853,12 @@ QStringList MainWindow::recursiveRebuildForNew ( QTreeWidgetItem* item )
  
 void MainWindow::newArchive()
 {
-
+  
   filesToAdd = rebuildPathForNew ( targetList ); //ricostruiamo i path di tutti gli elementi da aggiungere
   archive = KFileDialog::getSaveFileName ( KUrl(QDir().homePath()),i18n( "RAR Archive *.rar" ),this, i18n( "Archive Name" ) );
   if ( archive != "" ) //solo se è stato scelto un nomefile eseguiamo le operazioni
   {
+    dockOption->setEnabled(false);
     targetList -> setEnabled ( false );
     password = compressionWidget -> getPassword();
     compressionLevel = compressionWidget -> getCompressionLevel();
@@ -901,10 +906,11 @@ void MainWindow::closeNewArchiveGUI(bool correctly)
 
 void MainWindow::closeRar() //closes rar creation
 {
+  dockOption->setEnabled(true);
   targetList -> setEnabled ( true );
   QDockWidget *creationResults = new QDockWidget ( i18n( "Correctly added files" ), this );
-  creationResults -> setFloating ( true );
-  this -> addDockWidget ( Qt::LeftDockWidgetArea,creationResults );
+ // creationResults -> setFloating ( true );
+  this -> addDockWidget ( Qt::BottomDockWidgetArea,creationResults );
   creationResults -> setGeometry ( creationResults -> x(), creationResults -> y(), 400,600 );
   QWidget *baseWidget = new QWidget ( creationResults );
   QTreeWidget *results = new QTreeWidget ( baseWidget );
@@ -975,16 +981,15 @@ void MainWindow::setupForNew()
 
   this -> addDockWidget ( Qt::RightDockWidgetArea,sourceDock );
 
-  //a useful tooltip to explain what to do
+  // a useful tooltip to explain what to do
   QString tip;
   tip = i18n("<b>New Archive:</b>\njust drag and drop files and folders you wish to add to the new archive");
-  new akuToolTip(tip, this);
-
+  akuToolTip *t = new akuToolTip(tip, this);
+  t->show();
 
   connect( compressionWidget, SIGNAL(creationCalled()), this, SLOT(newArchive()));
-  connect(compressionWidget, SIGNAL(canceled()), this, SLOT(reloadArchive()));
-  akuShadeAnimation *animation = new akuShadeAnimation(sourceDock); //let's animate sourceDock
-  animation -> start();
+  connect( compressionWidget, SIGNAL(canceled()), this, SLOT(reloadArchive()));
+
   
 }
 

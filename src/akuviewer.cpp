@@ -8,6 +8,7 @@
 #include <KHBox>
 #include <QScrollArea>
 #include <QSlider>
+#include <KIconLoader>
 
 akuViewer::akuViewer ( QWidget *parent, Qt::WFlags fl ) : KDialog ( parent, fl )
 {
@@ -89,8 +90,9 @@ void akuViewer::setFileName( QString title )
   fileName -> setText(title);
   KMimeType::Ptr mimePtr = KMimeType::findByUrl(KUrl(title));
   fileMime -> setText(mimePtr -> comment());
-  KIcon icon(mimePtr -> iconName());
-  fileIcon -> setPixmap(icon.pixmap(64,64));
+ // KIcon icon(mimePtr -> iconName());  //TODO: use KIconLoader instead..
+ // fileIcon -> setPixmap(icon.pixmap(64,64));
+   fileIcon->setPixmap(KIconLoader::global()->loadIcon(mimePtr->iconName(), KIconLoader::Desktop)); 
 }
 
 void akuViewer::setData(const QByteArray &data)

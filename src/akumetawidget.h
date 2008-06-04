@@ -6,8 +6,6 @@
 #include <QWidget>
 #include <QLabel>
 #include <QFrame>
-#include <QGridLayout>
-#include <QSpacerItem>
 #include <QPixmap>
 #include <QFont>
 #include <QGroupBox>
@@ -19,6 +17,7 @@
 #include <QList>
 #include <QTreeWidgetItem>
 #include <QPainter>
+#include <KVBox>
 
 class akuMetaWidget : public QWidget
 {
@@ -39,9 +38,6 @@ public slots:
   virtual void handleItemSelections(QList<QTreeWidgetItem*>);
   virtual void setRatio(float);
 private:
-  QGridLayout *singleFileLayout;
-  QGridLayout *archiveLayout;
-  QGridLayout *metaLayout;
   QLabel *iconMap;
   QLabel *metaName;
   QLabel *metaSize;
@@ -51,5 +47,6 @@ private:
   QLabel *notificationIcon;
   QScrollArea *scrollArea;
   akuRatioWidget *ratio;
+  KVBox *baseScrollWidget;
 };
 #endif

@@ -1,31 +1,37 @@
+1.0 plan:
 
 - StatusBar Message of ending extraction
 - Check overwrite
-- After pressing create in the new archive section, the creation dialog is still available
-- Port akuViewer to KParts (!! troubles in handling a non-existing file !! maybe akuViewer is better)
-- Move lots of code from mainwindow to specific classes
+? Port akuViewer to KParts (?? troubles in handling a non-existing file ?? maybe akuViewer is better)
 - Clean dragTarget's code
-- Make comments in english
 - Sum of packed size in meta
-- Column ordering, see Dolphin for tips
 - Where possible use QHBoxLayout and QVBoxLayout in place of QGridLayout
-- Archive creation: dragging many files at same time
 - Check overwritedialog's resize policy
 - Check overwritedialog's reactivity slowness
-- "Loading archive" status tip while loading
-- Make restriction handling in a separate thread
-/ Speedup archive opening
+? Make restriction handling in a separate thread
 - Check wait cursor
-- Reopening an archive is slooooow
+? Reopening an archive is slooooow
 - toLong() to toULong()
-- Ratio bar estethic
 - Make const unedited params in functions
 / fix percentage parsing
-- issue when reloading archive after encryption
-- "Encrypt this archive" -> "Encrypt this archive's header"
-/ Error handling does not work
+/ issue when reloading archive after encryption
+? "Encrypt this archive" -> "Encrypt this archive's header"
 / Adding files to header protected ones does not work (goes loop)
-/ When an archive is password-header-protected deny any way to add files/folders with password
-- Archive creation doesn't stop
+/ Archive creation doesn't stop
 - Sending aku to tray during archive creation still keeps visible the creation dialog
-- Multiple selection should make a list of ratiobars in metaWidget to make comparison between ratios
+- Erase akuShadeAnimation. REASON: completely unuseful!
+- When canceling archive creation: "Archive creation stopped. Do you wish to erase the archive?"
+
+
+next features plan:
+
+- Column ordering, see Dolphin for tips
+- Move lots of code from mainwindow to specific classes
+- Make comments in english
+- Archive creation: dragging many files at same time
+
+SYMBOLS:
+?: is the wish really needed? || the bug is not reproducible
+/: work in progress (often this is used when the bug/issue was completed and needs some testing before closing it)
+-: bug/issue which needs normal level of attention
+!: high priority bug/issue/wish

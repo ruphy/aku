@@ -1,49 +1,40 @@
 #include "akumetawidget.h"
+#include <QVBoxLayout>
 
 akuMetaWidget::akuMetaWidget (QWidget *parent) : QWidget (parent)
 {
 
-  QWidget *baseScrollWidget = new QWidget(this);
+  baseScrollWidget = new KVBox(this);
   scrollArea = new QScrollArea(this);
   scrollArea -> setBackgroundRole(QPalette::Dark);
-  iconMap = new QLabel(this);
-  iconMap -> setMinimumSize(0,128);
+  iconMap = new QLabel(baseScrollWidget);
+
   iconMap -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-  metaName = new QLabel(this);
+  iconMap->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+  metaName = new QLabel(baseScrollWidget);
   metaName -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   metaName -> setWordWrap(true);
-  metaSize = new QLabel(this);
+  metaName -> setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+  metaSize = new QLabel(baseScrollWidget);
   metaSize -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   metaSize -> setWordWrap(true);
-  metaMime = new QLabel(this);
+  metaSize -> setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+  metaMime = new QLabel(baseScrollWidget);
   metaMime -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   metaMime -> setWordWrap(true);
-  ratio = new akuRatioWidget(0, this);
+  metaMime -> setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+  ratio = new akuRatioWidget(0, baseScrollWidget);
   ratio->setVisible(false);
-  QSpacerItem *spacer = new QSpacerItem(1,3, QSizePolicy::Minimum, QSizePolicy::Fixed);
-  singleFileLayout = new QGridLayout();
-  singleFileLayout -> addWidget(iconMap, 1,1);
-  singleFileLayout -> addItem(spacer,2,1);
-  singleFileLayout -> addWidget(metaName, 3,1);
-  singleFileLayout -> addWidget(metaSize,4,1);
-  singleFileLayout -> addWidget(metaMime,5,1);
-  singleFileLayout -> addWidget(ratio,6,1);
-  QSpacerItem *spacer2 = new QSpacerItem(1,10, QSizePolicy::Minimum, QSizePolicy::Expanding);
-  singleFileLayout -> addItem(spacer2,7,1);
-  // scrollArea -> setWidget(iconMap);
+  ratio->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+  QWidget *spacer = new QWidget(baseScrollWidget);
+  spacer->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+
+  scrollArea -> setWidget(baseScrollWidget);
   scrollArea -> setWidgetResizable(true);
 
-
-
-  QGridLayout *general = new QGridLayout(this);
-  metaLayout = new QGridLayout(baseScrollWidget);
-  metaLayout -> addLayout(singleFileLayout,1,1);
-  // metaLayout -> addWidget(line,2,1);
-  // metaLayout -> addLayout(archiveLayout,3,1);
-  // metaLayout -> addItem(thirdSpacer,4,1);
-  general -> addWidget(scrollArea,1,1);
-  scrollArea -> setWidget(baseScrollWidget);
-  setMinimumSize(150,0);
+  QVBoxLayout* layout = new QVBoxLayout(this);
+  layout->addWidget(scrollArea);
+  setMinimumSize(150,0); //TODO: do not hardcode sizes
   setMaximumSize(280,6574777);
 
 }
@@ -113,6 +104,7 @@ void akuMetaWidget::setFileName(QString name, bool folder)
     setMime(i18n("Folder"));
     ratio->setVisible(false);
   }
+
 }
 
 void akuMetaWidget::handleItemSelections(QList<QTreeWidgetItem*> list)
@@ -157,7 +149,15 @@ void akuMetaWidget::handleItemSelections(QList<QTreeWidgetItem*> list)
    }
    else setMime(QString());
    iconMap -> setPixmap(view);
+
+ //  TODO: see if this multiple-ratio-view is needed and nice
+ //
+ // for(int x=0; x<list.size(); x++){                                           
+ //   akuRatioWidget *r = new akuRatioWidget(list[x]->text(3).remove("%").toFloat(), baseScrollWidget);
+ //   r->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+ //  }
 }
+
 
 void akuMetaWidget::setFileSize(QString size)
 {

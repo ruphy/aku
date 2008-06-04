@@ -4,7 +4,7 @@ akuToolTip::akuToolTip(QString tip, QWidget *parent) : QWidget()
 {
   shots = 0;
   setWindowFlags(Qt::ToolTip);
-  //creiamo una tooltip con una label per la tip, una barra di progressione e un tasto close
+  // TODO: clean the code, avoid QGridLayout if not necessary
   timeBar = new QLabel(this);
   toolTip = new QLabel(tip,this);
   toolTip -> setAlignment(Qt::AlignLeft | Qt::AlignTop);
@@ -27,7 +27,6 @@ akuToolTip::akuToolTip(QString tip, QWidget *parent) : QWidget()
   tipTimer -> start();
   connect(tipTimer, SIGNAL(timeout()), this, SLOT(progress()));
   connect(closeButton, SIGNAL(clicked()), this, SLOT(closeTip()));
-  show();
 
 }
 
