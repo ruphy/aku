@@ -1,4 +1,5 @@
 #include "akuratiowidget.h"
+#include <QLinearGradient>
 
 akuRatioWidget::akuRatioWidget(float ratio, QWidget *parent) : QWidget(parent)
 {
@@ -22,19 +23,33 @@ void akuRatioWidget::paintEvent(QPaintEvent *)
   QColor color;
   QColor edgeColor;
   painter.setRenderHint(QPainter::Antialiasing);
+  color = QPalette().color(backgroundRole()).darker();
+  edgeColor = color.darker();
+  QLinearGradient grad(QPoint(rect().center().x(), 0), QPoint(rect().center().x(), height()));
+  grad.setColorAt(0, color);
+  grad.setColorAt(0.5, color.lighter());
+  grad.setColorAt(1, color);
+  painter.setBrush(grad);
+  painter.setPen(edgeColor);
+  painter.drawRoundRect(QRect(12,4,width()-25, height()-9),8,8);
   edgeColor.setHsv(200,255,255);
   color.setHsv(lunghezza*1.2, 255,220);
   painter.setOpacity(0.7);
-  painter.setBrush(QBrush(color));
+  grad.setColorAt(0, color.lighter());
+  grad.setColorAt(0.5, color.lighter());
+  grad.setColorAt(0.85, color.darker());
+  grad.setColorAt(1, color.darker());
+  painter.setBrush(grad);
   painter.setPen(edgeColor);
-  painter.drawRoundRect(QRect(2,4,(lunghezza/100)*width()-3, height()-9),8,8);
-  if(backgroundRole() == QPalette::Dark) painter.setPen(QPalette().color(QPalette::BrightText));
-   else painter.setPen(QPalette().color(QPalette::Text));
+  painter.drawRoundRect(QRect(12,4,(lunghezza/100)*(width()-25), height()-9),8,8);
+ // if(backgroundRole() == QPalette::Dark) painter.setPen(QPalette().color(QPalette::BrightText));
+ //  else painter.setPen(QPalette().color(QPalette::Text));
+  painter.setPen(QPalette().color(QPalette::BrightText));
   painter.setOpacity(1);
   painter.drawText(rect(), Qt::AlignCenter, QString().setNum(lunghezza)+"%");
 }
 
 QSize akuRatioWidget::sizeHint() const
 {
- return QSize(200, 22);
+ return QSize(180, 24);
 }

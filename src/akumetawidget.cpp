@@ -5,8 +5,10 @@ akuMetaWidget::akuMetaWidget (QWidget *parent) : QWidget (parent)
 {
 
   baseScrollWidget = new KVBox(this);
-  scrollArea = new QScrollArea(this);
-  scrollArea -> setBackgroundRole(QPalette::Dark);
+ // scrollArea = new QScrollArea(this);
+ // scrollArea -> setBackgroundRole(QPalette::Dark);
+ // scrollArea->setFrameShape(QFrame::NoFrame);
+ // scrollArea->setFrameShadow(QFrame::Plain);
   iconMap = new QLabel(baseScrollWidget);
 
   iconMap -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
@@ -23,17 +25,26 @@ akuMetaWidget::akuMetaWidget (QWidget *parent) : QWidget (parent)
   metaMime -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   metaMime -> setWordWrap(true);
   metaMime -> setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
-  ratio = new akuRatioWidget(0, baseScrollWidget);
-  ratio->setVisible(false);
-  ratio->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+  w_ratio = new QWidget(baseScrollWidget);
+  QHBoxLayout *ratioL = new QHBoxLayout(w_ratio);
+  ratio = new akuRatioWidget(0, w_ratio);
+//  ratio->setVisible(false);
+  w_ratio->setVisible(false);
+  ratio->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  QLabel *label = new QLabel("<b>"+i18n("Ratio:")+"</b>", w_ratio);
+  label->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+  label->setAlignment( Qt::AlignRight | Qt::AlignVCenter);
+  ratioL->addWidget(label);
+  ratioL->addWidget(ratio);
   QWidget *spacer = new QWidget(baseScrollWidget);
   spacer->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 
-  scrollArea -> setWidget(baseScrollWidget);
-  scrollArea -> setWidgetResizable(true);
+ // scrollArea -> setWidget(baseScrollWidget);
+ // scrollArea -> setWidgetResizable(true);
 
   QVBoxLayout* layout = new QVBoxLayout(this);
-  layout->addWidget(scrollArea);
+  layout->addWidget(baseScrollWidget);
+
   setMinimumSize(150,0); //TODO: do not hardcode sizes
   setMaximumSize(280,6574777);
 
@@ -54,7 +65,7 @@ void akuMetaWidget::setPreview(QByteArray preview)
   QRect rect = scaledMap.rect();
   QPixmap final(rect.width()+7, rect.height()+7);
   QRect finalRect = final.rect();
-  final.fill(palette.color(QPalette::Dark));
+  final.fill(QPalette().color(QPalette::Window));
   QPainter decor(&final);
   decor.setRenderHint(QPainter::Antialiasing);
   decor.setPen(palette.color(QPalette::Shadow));
@@ -71,7 +82,7 @@ void akuMetaWidget::clear()
  metaName->clear();
  metaSize->clear();
  metaMime->clear();
- ratio->setVisible(false);
+ w_ratio->setVisible(false);
 }
 
 void akuMetaWidget::setMimeIcon(QPixmap iconPixmap)
@@ -102,7 +113,7 @@ void akuMetaWidget::setFileName(QString name, bool folder)
     QPixmap pixmap = KIcon("inode-directory").pixmap(128,128);
     setMimeIcon(pixmap);
     setMime(i18n("Folder"));
-    ratio->setVisible(false);
+    w_ratio->setVisible(false);
   }
 
 }
@@ -111,10 +122,10 @@ void akuMetaWidget::handleItemSelections(QList<QTreeWidgetItem*> list)
 {
   int listSize = list.size();
   //icons =  192 / listSize;
-  if(listSize>1) ratio->setVisible(false);
+  if(listSize>1) w_ratio->setVisible(false);
   QPalette palette;
   QPixmap view(128,128);
-  view.fill(palette.color(QPalette::Dark));
+  view.fill(palette.color(foregroundRole()));
   int height = 128;
   QStringList iconNames;
   for(int i = 0; i < listSize; i ++)
@@ -131,7 +142,7 @@ void akuMetaWidget::handleItemSelections(QList<QTreeWidgetItem*> list)
       tempIconList << iconNames;
       if(tempIconList.size() > 1 )tempIconList.removeAll("inode-directory");
       view = QPixmap(128+(15*(tempIconList.size()-1)),height);
-      view.fill(palette.color(QPalette::Dark));
+      view.fill(palette.color(foregroundRole()));
       for(int j = 0; j < tempIconList.size(); j++)
       {
         icon  = KIcon(tempIconList[j]).pixmap(height,height);
@@ -166,6 +177,6 @@ void akuMetaWidget::setFileSize(QString size)
 
 void akuMetaWidget::setRatio(float r)
 {
- ratio->setVisible(true);
+ w_ratio->setVisible(true);
  ratio->setRatio(r);
 }

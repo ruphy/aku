@@ -48,5 +48,6 @@ private:
   QScrollArea *scrollArea;
   akuRatioWidget *ratio;
   KVBox *baseScrollWidget;
+  QWidget *w_ratio;
 };
 #endif

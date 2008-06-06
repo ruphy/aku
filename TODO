@@ -3,25 +3,26 @@
 - StatusBar Message of ending extraction
 - Check overwrite
 ? Port akuViewer to KParts (?? troubles in handling a non-existing file ?? maybe akuViewer is better)
-- Clean dragTarget's code
 - Sum of packed size in meta
 - Where possible use QHBoxLayout and QVBoxLayout in place of QGridLayout
 - Check overwritedialog's resize policy
 - Check overwritedialog's reactivity slowness
 ? Make restriction handling in a separate thread
-- Check wait cursor
+? Check wait cursor
 ? Reopening an archive is slooooow
-- toLong() to toULong()
-- Make const unedited params in functions
 / fix percentage parsing
 / issue when reloading archive after encryption
-? "Encrypt this archive" -> "Encrypt this archive's header"
+? "Encrypt this archive" -> "Encrypt this archive's header" (a note explains already what is going to happen)
 / Adding files to header protected ones does not work (goes loop)
 / Archive creation doesn't stop
 - Sending aku to tray during archive creation still keeps visible the creation dialog
 - Erase akuShadeAnimation. REASON: completely unuseful!
 - When canceling archive creation: "Archive creation stopped. Do you wish to erase the archive?"
-
+- Set keyboard shortcuts up
+- Preview of crypted files does not work
+- When pressing cancel in new archive, if the archive opened before doesn't exist anymore should get back to a clean list.
+- Make a base background for akuRatioWidget
+- Global progressBar seems to not work when creating an archive with a custom filled folder
 
 next features plan:
 
@@ -29,6 +30,10 @@ next features plan:
 - Move lots of code from mainwindow to specific classes
 - Make comments in english
 - Archive creation: dragging many files at same time
+- annma dislikes the name
+- Clean dragTarget's code
+- toLong() to toULong()
+- Make const unedited params in functions
 
 SYMBOLS:
 ?: is the wish really needed? || the bug is not reproducible

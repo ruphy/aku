@@ -22,6 +22,8 @@ akuErrorDialog::akuErrorDialog(QWidget *parent) : KDialog(parent)
  title->setAlignment( Qt::AlignVCenter | Qt::AlignLeft);
  topLayout->addWidget(title);
  t = new KTextEdit(layout);
+ t->setReadOnly(true);
+ setCaption(i18n("Error"));
 }
 
 akuErrorDialog::~akuErrorDialog()

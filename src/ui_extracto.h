@@ -4,7 +4,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'extracto.ui'
 **
-** Created: Fri May 30 15:51:36 2008
+** Created: Fri Jun 6 20:00:19 2008
 **      by: Qt User Interface Compiler version 4.4.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!

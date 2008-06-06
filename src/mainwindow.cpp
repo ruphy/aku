@@ -1174,6 +1174,7 @@ void MainWindow::completeDelete(bool ok)
       enableActions(false);
       showStatusInfo(false);
       statusBar() -> showMessage(i18n("Archive deleted"),2000);
+      namex.clear();
     }
   }
 }
