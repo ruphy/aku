@@ -16,7 +16,7 @@ akuMetaWidget::akuMetaWidget (QWidget *parent) : QWidget (parent)
   metaName = new QLabel(baseScrollWidget);
   metaName -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   metaName -> setWordWrap(true);
-  metaName -> setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+  metaName -> setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   metaSize = new QLabel(baseScrollWidget);
   metaSize -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   metaSize -> setWordWrap(true);
