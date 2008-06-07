@@ -21,7 +21,6 @@
 - Set keyboard shortcuts up
 - Preview of crypted files does not work
 - When pressing cancel in new archive, if the archive opened before doesn't exist anymore should get back to a clean list.
-- Make a base background for akuRatioWidget
 - Global progressBar seems to not work when creating an archive with a custom filled folder
 
 next features plan:
