@@ -55,6 +55,9 @@ void akuCrazyTip::show()
  QTimer *t = new QTimer();
  connect(t, SIGNAL(timeout()), this, SLOT(gradualShow()));
  t->start(10); 
+ QTimer *closeTimer = new QTimer();
+ connect(closeTimer, SIGNAL(timeout()), this, SLOT(startHide()));
+ closeTimer->start(5000);
 }
 
 void akuCrazyTip::gradualShow()
@@ -73,6 +76,7 @@ void akuCrazyTip::gradualShow()
 
 void akuCrazyTip::startHide()
 {
+ disconnect(sender(),0,this,0);
  QTimer *t = new QTimer();
  connect(t, SIGNAL(timeout()), this, SLOT(gradualHide()));
  t->start(10);
