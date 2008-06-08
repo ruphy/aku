@@ -35,7 +35,7 @@ MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( paren
   // a tip widget to show info
   tip = new akuCrazyTip(baseWindowWidget);
   tip->setVisible(false);
-  tip->setTip(i18n("This is a tooltip"));
+  //tip->setTip(i18n("This is a tooltip"));
   tip->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
  // baseWindowLayout->addWidget(tip);
 
@@ -1294,18 +1294,20 @@ void MainWindow::setupActions()
   actionAddFolderPwd -> setText(i18n("Add folder with password"));
   actionAddFolderPwd -> setIcon(KIcon("archive-insert-directory"));
   actionCollection() -> addAction("add_folder_pwd", actionAddFolderPwd);
+  KAction *lasttip = tip->actionTip();
+  actionCollection() -> addAction("lasttip", lasttip);
+  connect(lasttip, SIGNAL(triggered()), this, SLOT(showTip()));
   // DEBUG
   KAction *debug = new KAction(i18n("Debug"), this);
-  KAction *lasttip = new KAction(i18n("Last tip"), this);
-  lasttip -> setIcon(KIcon("view-refresh"));
-  lasttip -> setCheckable(true);
-  lasttip -> setEnabled(false);
-  connect(lasttip, SIGNAL(triggered()), this, SLOT(debugging()));
-  connect(debug, SIGNAL(triggered()), this, SLOT(debugging()));
-  actionCollection() -> addAction("lasttip", lasttip);
+  connect(debug, SIGNAL(triggered()), this, SLOT(debugging()));  
   actionCollection() -> addAction("debug", debug);
   setupGUI (QSize(650,460));
   checkRarExe();
+}
+
+void MainWindow::showTip()
+{
+  tip->show();
 }
 
 void MainWindow::cantDeleteMessage()

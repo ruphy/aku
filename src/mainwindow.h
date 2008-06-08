@@ -104,7 +104,8 @@ public slots:
   virtual void enableActions(bool);
   virtual void cantDeleteMessage();
   virtual void closeDeletedArchive();
-  
+  virtual void showTip();  
+
 private:
   QByteArray newArchiveError;
   QTreeWidget *rarList;

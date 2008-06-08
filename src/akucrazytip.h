@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QPaintEvent>
 #include <KPushButton>
+#include <KAction>
 
 class akuCrazyTip : public QWidget
 {
@@ -13,13 +14,15 @@ class akuCrazyTip : public QWidget
    public:
     akuCrazyTip(QWidget *parent = 0);
     ~akuCrazyTip();
-
+   KAction* actionTip(); 
+  
    virtual QSize sizeHint() const;
    
 
    public slots:
     virtual void show();
     virtual void setTip(const QString&);
+
    protected slots:
     virtual void gradualShow();
     virtual void gradualHide();
@@ -27,7 +30,7 @@ class akuCrazyTip : public QWidget
    private:
     class privateTip;
     privateTip *d;  
-
+    
 };
 
 class akuCrazyTip::privateTip 
@@ -35,12 +38,13 @@ class akuCrazyTip::privateTip
  public:
   privateTip() : size(QSize(800,38)),
                  count(0),
-                 box(0), close(0){}
+                 box(0), close(0), actionTip(0){}
   QSize size;
   int count;
   QWidget *box;
   QLabel *toolTip;
   KPushButton *close;
+  KAction *actionTip;
 };
 
 #endif

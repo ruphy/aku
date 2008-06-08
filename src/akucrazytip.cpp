@@ -36,17 +36,25 @@ akuCrazyTip::akuCrazyTip(QWidget *parent) : QWidget(parent),
 
  QHBoxLayout *baseLayout = new QHBoxLayout(this);
  baseLayout->addWidget(d->box);
- 
-
+ d->actionTip = new KAction(this);
+ d->actionTip -> setIcon(KIcon("view-refresh"));
+ d->actionTip -> setText(i18n("Last tip"));
+ d->actionTip -> setEnabled(false);
 }
 
 akuCrazyTip::~akuCrazyTip()
 {
 }
 
+KAction* akuCrazyTip::actionTip()
+{
+  return d->actionTip;
+}
+
 void akuCrazyTip::setTip(const QString& tip)
 {
  d->toolTip->setText(tip);
+ d->actionTip->setEnabled(true);
 }
 
 void akuCrazyTip::show()
