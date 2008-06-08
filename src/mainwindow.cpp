@@ -1026,7 +1026,12 @@ void MainWindow::embeddedViewer()
       embedded -> show();
     }
   }
-  else  statusBar() -> showMessage ( i18n( "Only one item at time can be viewed" ), 2000 );
+  else  
+  {
+    tip->setTip(i18n("Only one item at time can be viewed"));
+    tip->show(); 
+   //statusBar() -> showMessage ( i18n( "Only one item at time can be viewed" ), 2000 );
+  }
 }
 
 void MainWindow::find ( bool find )
@@ -1043,7 +1048,12 @@ void MainWindow::find ( bool find )
 void MainWindow::renameItem()
 {
   QList<QTreeWidgetItem*> selectedItems = rarList -> selectedItems();
-  if ( selectedItems.size() > 1 ) statusBar() -> showMessage ( i18n( "Only one item at time can be renamed" ), 2000 );
+  if ( selectedItems.size() > 1 )
+  {
+    tip->setTip(i18n("Only one item at time can be renamed"));
+    tip->show();
+    // statusBar() -> showMessage ( i18n( "Only one item at time can be renamed" ), 2000 );
+  }
   else
   {
     //tempForRename stores item brothers to avoid same naming under same parent
@@ -1113,7 +1123,9 @@ void MainWindow::rarRename ( QTreeWidgetItem *current, int )
   else
   {
     current -> setText(0,oldItemName);
-    statusBar() -> showMessage(i18n("Rename denied"), 2000);
+    tip->setTip(i18n("Rename denied"));
+    tip->show();
+    //statusBar() -> showMessage(i18n("Rename denied"), 2000);
   }
   
 }
@@ -1183,7 +1195,9 @@ void MainWindow::completeDelete(bool ok)
       this -> setWindowTitle ( i18n( "aKu" ) );
       enableActions(false);
       showStatusInfo(false);
-      statusBar() -> showMessage(i18n("Archive deleted"),2000);
+      tip->setTip(i18n("Archive deleted"));
+      tip->show();
+      //statusBar() -> showMessage(i18n("Archive deleted"),2000);
       namex.clear();
     }
   }
@@ -1290,7 +1304,9 @@ void MainWindow::setupActions()
 
 void MainWindow::cantDeleteMessage()
 {
-  statusBar() -> showMessage(i18n("Can't delete the archive file"),2000);
+  tip->setTip(i18n("Can't delete the archive file"));
+  tip->show();
+  //statusBar() -> showMessage(i18n("Can't delete the archive file"),2000);
 }
 
 void MainWindow::closeDeletedArchive()
@@ -1300,7 +1316,9 @@ void MainWindow::closeDeletedArchive()
   enableActions(false);
   archiveInfo -> clear();
   infoLock-> clear();
-  statusBar() -> showMessage(i18n("Archive deleted"));
+  tip->setTip(i18n("Archive deleted"));
+  tip->show();
+  //statusBar() -> showMessage(i18n("Archive deleted"));
 }
 
 void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento con la relativa applicazione associata
