@@ -60,7 +60,7 @@ void akuCrazyTip::show()
 void akuCrazyTip::gradualShow()
 {
  if(d->count <=100){
-  d->box->resize(d->box->size().width(), (d->count/100.0)*d->size.height());
+  d->box->resize(d->box->size().width(), (d->count/100.0)*height());
   puts(QString().setNum(size().height()).toAscii());
   d->count++;
  }else{
