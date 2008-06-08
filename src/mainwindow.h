@@ -23,6 +23,7 @@
 #include "akutreewidget.h"
 #include "akupartviewer.h"
 #include "akuerrordialog.h"
+#include "akucrazytip.h"
 
 //QT4 INCLUDES
 #include <QStringList>
@@ -35,6 +36,7 @@
 #include <QTreeWidget>
 #include <QPoint>
 #include <QFont>
+#include <QVBoxLayout>
 
 //KDE4 INCLUDES
 #include <KApplication>
@@ -159,7 +161,7 @@ private:
 // QSplitter *splitter; 
   akuMetaWidget *metaWidget;
   QWidget *baseWindowWidget;
-  QGridLayout *baseWindowLayout;
+  QVBoxLayout *baseWindowLayout;
   
   QLabel *archiveInfo;
   QLabel *infoLock;
@@ -170,6 +172,7 @@ private:
   akuRatioWidget *ratioBar;
   QWidget *statusWidget;
   bool globalRestrictions;
+  akuCrazyTip *tip;
 
 protected:
   void setupSearchUI();

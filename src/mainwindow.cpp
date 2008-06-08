@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include <KCmdLineArgs>
+#include <KVBox>
 
 QString archiver = "rar";
 QString bf; //buffer
@@ -16,20 +17,29 @@ QSplitter *splitter;
 
 MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( parent, fl )
 {
-  baseWindowWidget = new QWidget(this);
-  baseWindowLayout = new QGridLayout(baseWindowWidget);
+  baseWindowWidget = new KVBox(this);
+ // baseWindowLayout = new QVBoxLayout(baseWindowWidget);
   splitter = new QSplitter(this);
-  
-  rarList = new akuTreeWidget(splitter);
-  splitter -> addWidget(rarList);
+
+
+
+  rarList = new akuTreeWidget(baseWindowWidget);
+  splitter -> addWidget(baseWindowWidget);
 
   //adding metaWidget to splitter
   metaWidget = new akuMetaWidget(this);
   splitter -> addWidget(metaWidget);
   metaWidget -> setVisible(false);
 
-  baseWindowLayout -> addWidget(splitter,1,1);
-  setCentralWidget(baseWindowWidget);
+ // baseWindowLayout -> addWidget(splitter);
+  
+  // a tip widget to show info
+  tip = new akuCrazyTip(baseWindowWidget);
+  tip->setVisible(false);
+  tip->setTip(i18n("This is a tooltip"));
+ // baseWindowLayout->addWidget(tip);
+
+  setCentralWidget(splitter);
  
   setHelpMenuEnabled(false);
   setupCommentView();
@@ -152,9 +162,9 @@ void MainWindow::setupStatusBar()
 
 void MainWindow::setupSearchUI()
 {
-  searchWidget = new akuSearchWidget(rarList, this);
+  searchWidget = new akuSearchWidget(rarList, baseWindowWidget);
   searchWidget -> setMaximumSize(655555, 35);
-  baseWindowLayout->addWidget( searchWidget, 2, 1 );
+ // baseWindowLayout->addWidget( searchWidget);
   searchWidget -> setVisible ( false );	
   actionFind = searchWidget -> getCloseAction();
 }
@@ -212,8 +222,7 @@ void MainWindow::setConnections()
 
 void MainWindow::debugging()
 {
-  akuErrorDialog *e = new akuErrorDialog(this);
-  e->show();
+  tip->show();
 }
 
 void MainWindow::addFilePwd()
@@ -790,6 +799,7 @@ void MainWindow::getMetaInfo ( QTreeWidgetItem *item ) //setta le informazioni d
     metaWidget -> setFileName ( item -> text ( 0 ) );
     metaWidget -> setFileSize ( item -> text ( 1 ) );
     metaWidget->setRatio(item->text(3).remove("%").toFloat());
+    metaWidget->setDateTime((item->data(4, Qt::UserRole)).toDateTime());
   }else
    metaWidget -> setFileName ( item -> text ( 0 ), true );
 

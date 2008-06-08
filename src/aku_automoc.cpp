@@ -17,6 +17,7 @@
 #include "moc_akuprogresstooltip.cpp"
 #include "moc_overwritedialog.cpp"
 #include "moc_akupartviewer.cpp"
+#include "moc_akucrazytip.cpp"
 #include "moc_mainwindow.cpp"
 #include "moc_threadprocess.cpp"
 #include "moc_akuprogressdialog.cpp"

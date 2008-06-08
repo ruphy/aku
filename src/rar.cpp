@@ -106,7 +106,10 @@ int rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
             {
               QDateTime ts (QDate::fromString(dlist[ g ], "dd-MM-yy"),
               QTime::fromString(dlist[ g+1 ], "hh:mm"));
-              fitem -> setText(g+1, ts.toString(Qt::LocaleDate));
+               // FIXME wishing to make Qt::TextDate but 0x years (e.g. 07)
+               // are recognized as 190x and not as 200x e.g. 1907 instead of 2007
+              fitem -> setText(g+1, ts.toString(Qt::DefaultLocaleShortDate)); 
+              fitem -> setData(g+1, Qt::UserRole, ts);
               fitem -> setTextAlignment(g+1, Qt::AlignVCenter | Qt::AlignHCenter);
               dlist.removeAt(g+1);
             }else  fitem -> setText ( g+1, dlist[ g ] );
@@ -120,9 +123,9 @@ int rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
           size = KLocale( QString() ).formatByteSize(dlist[1] .toDouble());
           fitem -> setText(2, size);
 
-            dlist[2].remove("%");                                      // akuRatioWidget (or any other widget) slows down
-            float ratio = dlist[2].toFloat();                            // the archive visualization, so it is deactivated 
-            if (ratio > 100.0 || ratio == 0.0) ratio = 0.0;                    // waiting for a better solution
+            dlist[2].remove("%");                                      
+            float ratio = dlist[2].toFloat();                         
+            if (ratio > 100.0 || ratio == 0.0) ratio = 0.0;            
             else ratio = abs(ratio -100.0);
             fitem->setText(3,QString().setNum(ratio)+"%");
           //  akuRatioWidget *ratioWidget = new akuRatioWidget(ratio);

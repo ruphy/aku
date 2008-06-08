@@ -3,7 +3,6 @@
 
 #include "akuratiowidget.h"
 
-#include <QWidget>
 #include <QLabel>
 #include <QFrame>
 #include <QPixmap>
@@ -13,11 +12,11 @@
 #include <QList>
 #include <KMimeType>
 #include <KLocale>
-#include <QScrollArea>
-#include <QList>
+// #include <QScrollArea>
 #include <QTreeWidgetItem>
 #include <QPainter>
 #include <KVBox>
+#include <QDateTime>
 
 class akuMetaWidget : public QWidget
 {
@@ -37,6 +36,7 @@ public slots:
   virtual void setPreview(QByteArray);
   virtual void handleItemSelections(QList<QTreeWidgetItem*>);
   virtual void setRatio(float);
+  virtual void setDateTime(const QDateTime&);
 private:
   QLabel *iconMap;
   QLabel *metaName;
@@ -45,7 +45,8 @@ private:
   QLabel *archiveName;
   QLabel *archiveDetails;
   QLabel *notificationIcon;
-  QScrollArea *scrollArea;
+  QLabel *dtime;
+ // QScrollArea *scrollArea;
   akuRatioWidget *ratio;
   KVBox *baseScrollWidget;
   QWidget *w_ratio;

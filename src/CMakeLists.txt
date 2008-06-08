@@ -27,6 +27,7 @@ SET(aku_SRCS
  akuprogresstooltip.cpp
  akupartviewer.cpp
  akuerrordialog.cpp
+ akucrazytip.cpp
 )
 
 KDE4_ADD_UI_FILES(aku_SRCS extracto.ui overwriteui.ui)

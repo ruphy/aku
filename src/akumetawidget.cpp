@@ -21,6 +21,10 @@ akuMetaWidget::akuMetaWidget (QWidget *parent) : QWidget (parent)
   metaSize -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   metaSize -> setWordWrap(true);
   metaSize -> setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+  dtime = new QLabel(baseScrollWidget);
+  dtime->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+  dtime->setWordWrap(true);
+  dtime->setSizePolicy(QSizePolicy::Minimum , QSizePolicy::Minimum);
   metaMime = new QLabel(baseScrollWidget);
   metaMime -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   metaMime -> setWordWrap(true);
@@ -31,7 +35,6 @@ akuMetaWidget::akuMetaWidget (QWidget *parent) : QWidget (parent)
   w_ratio = new QWidget(baseScrollWidget);
   QHBoxLayout *ratioL = new QHBoxLayout(w_ratio);
   ratio = new akuRatioWidget(0, w_ratio);
- // ratio->setVisible(false);
   w_ratio->setVisible(false);
   ratio->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   QLabel *label = new QLabel("<b>"+i18n("Ratio:")+"</b>", w_ratio);
@@ -80,6 +83,20 @@ void akuMetaWidget::setPreview(QByteArray preview)
   setMimeIcon(final.scaled(QSize(192,192), Qt::KeepAspectRatio));
 }
 
+void akuMetaWidget::setDateTime(const QDateTime &dt)
+{
+ QString niceDate;
+ niceDate += QString().setNum(dt.date().day())
+          += QString(" ")
+          += QDate::longMonthName(dt.date().month())
+          += QString(" ")
+          += QString().setNum(dt.date().year()).right(2)
+          += QString(" ")
+          += dt.time().toString(Qt::LocaleDate);
+
+ dtime->setVisible(true);
+ dtime -> setText("<b>"+i18n("Modified:")+"</b> "+niceDate);
+}
 void akuMetaWidget::clear()
 {
  metaName->clear();
@@ -95,7 +112,8 @@ void akuMetaWidget::setMimeIcon(QPixmap iconPixmap)
 
 void akuMetaWidget::setMime(QString mime)
 {
-  metaMime -> setText("<b>"+i18n("Type: ")+"</b>"+mime);
+  metaMime->setText(QString());
+  if(!mime.isEmpty()) metaMime -> setText("<b>"+i18n("Type: ")+"</b>"+mime);
 }
 
 void akuMetaWidget::setFileName(QString name, bool folder)
@@ -109,7 +127,7 @@ void akuMetaWidget::setFileName(QString name, bool folder)
     KMimeType::Ptr mimePtr = KMimeType::findByUrl(KUrl(name));
     QPixmap pixmap = KIcon(mimePtr -> iconName()).pixmap(128,128);
     setMimeIcon(pixmap);
-    setMime(mimePtr -> comment());
+    setMime(mimePtr -> comment());   
   }
   else
   {
@@ -117,6 +135,7 @@ void akuMetaWidget::setFileName(QString name, bool folder)
     setMimeIcon(pixmap);
     setMime(i18n("Folder"));
     w_ratio->setVisible(false);
+    dtime->setVisible(false);
   }
 
 }
@@ -125,7 +144,10 @@ void akuMetaWidget::handleItemSelections(QList<QTreeWidgetItem*> list)
 {
   int listSize = list.size();
   //icons =  192 / listSize;
-  if(listSize>1) w_ratio->setVisible(false);
+  if(listSize>1){
+    w_ratio->setVisible(false);
+    dtime->setVisible(false);
+  }
   QPalette palette;
   QPixmap view(128,128);
   view.fill(Qt::transparent);
