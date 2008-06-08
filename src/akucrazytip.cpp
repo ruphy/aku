@@ -21,14 +21,14 @@ akuCrazyTip::akuCrazyTip(QWidget *parent) : QWidget(parent),
  w->setBackgroundRole(QPalette::HighlightedText);
 
  d->toolTip = new QLabel(w);
- d->toolTip->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+ d->toolTip->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Ignored);
 
  QLabel *icon = new QLabel(w);
  icon->setPixmap(KIconLoader::global()->loadIcon("help-about", KIconLoader::Small));
- icon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+ icon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Ignored);
 
  d->close = new KPushButton(KIcon("dialog-close"), i18n("Close"), w);
- d->close->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed); 
+ d->close->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Ignored); 
 
  layout->addWidget(icon);
  layout->addWidget(d->toolTip);

@@ -37,6 +37,7 @@ MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( paren
   tip = new akuCrazyTip(baseWindowWidget);
   tip->setVisible(false);
   tip->setTip(i18n("This is a tooltip"));
+  tip->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
  // baseWindowLayout->addWidget(tip);
 
   setCentralWidget(splitter);
