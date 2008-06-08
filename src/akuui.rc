@@ -29,6 +29,7 @@
       <Action name="info" />
       <Action name="find" />
       <Action name="comment" />
+      <Action name="lasttip" />
       <Action name="debug" />
    </Menu>
   </MenuBar>

@@ -14,7 +14,6 @@ QDockWidget *commentDock = 0;
 QTextEdit *commentEdit = 0;
 QSplitter *splitter;
 
-
 MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( parent, fl )
 {
   baseWindowWidget = new KVBox(this);
@@ -1297,7 +1296,13 @@ void MainWindow::setupActions()
   actionCollection() -> addAction("add_folder_pwd", actionAddFolderPwd);
   // DEBUG
   KAction *debug = new KAction(i18n("Debug"), this);
+  KAction *lasttip = new KAction(i18n("Last tip"), this);
+  lasttip -> setIcon(KIcon("view-refresh"));
+  lasttip -> setCheckable(true);
+  lasttip -> setEnabled(false);
+  connect(lasttip, SIGNAL(triggered()), this, SLOT(debugging()));
   connect(debug, SIGNAL(triggered()), this, SLOT(debugging()));
+  actionCollection() -> addAction("lasttip", lasttip);
   actionCollection() -> addAction("debug", debug);
   setupGUI (QSize(650,460));
   checkRarExe();

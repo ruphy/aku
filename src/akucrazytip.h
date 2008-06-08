@@ -33,7 +33,7 @@ class akuCrazyTip : public QWidget
 class akuCrazyTip::privateTip 
 {
  public:
-  privateTip() : size(QSize(800,30)),
+  privateTip() : size(QSize(800,38)),
                  count(0),
                  box(0), close(0){}
   QSize size;
