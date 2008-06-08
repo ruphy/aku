@@ -61,6 +61,8 @@ void akuCrazyTip::setTip(const QString& tip)
 
 void akuCrazyTip::show()
 {
+ if(!isVisible())
+ {
  setVisible(true);
  QTimer *t = new QTimer();
  connect(t, SIGNAL(timeout()), this, SLOT(gradualShow()));
@@ -68,6 +70,7 @@ void akuCrazyTip::show()
  QTimer *closeTimer = new QTimer();
  connect(closeTimer, SIGNAL(timeout()), this, SLOT(startHide()));
  closeTimer->start(5000);
+ }
 }
 
 void akuCrazyTip::gradualShow()
@@ -80,6 +83,7 @@ void akuCrazyTip::gradualShow()
   d->box->resize(d->box->size().width(), height());
   disconnect(sender(), 0, this, 0);
   connect(d->close, SIGNAL(clicked()), this, SLOT(startHide()));
+  delete sender();
  // qobject_cast<QTimer*>(sender())->stop();
  }
 }
@@ -99,6 +103,7 @@ void akuCrazyTip::gradualHide()
   d->count--;
  }else{
   disconnect(sender(), 0, this, 0);
+  delete sender();
   setVisible(false);
  }
 }
