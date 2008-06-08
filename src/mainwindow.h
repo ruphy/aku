@@ -103,8 +103,7 @@ public slots:
   virtual void reloadArchive(bool ok = true);
   virtual void enableActions(bool);
   virtual void cantDeleteMessage();
-  virtual void closeDeletedArchive();
-  virtual void showTip();  
+  virtual void closeDeletedArchive(); 
 
 private:
   QByteArray newArchiveError;

@@ -1296,7 +1296,7 @@ void MainWindow::setupActions()
   actionCollection() -> addAction("add_folder_pwd", actionAddFolderPwd);
   KAction *lasttip = tip->actionTip();
   actionCollection() -> addAction("lasttip", lasttip);
-  connect(lasttip, SIGNAL(triggered()), this, SLOT(showTip()));
+  connect(lasttip, SIGNAL(triggered()),tip, SLOT(show()));
   // DEBUG
   KAction *debug = new KAction(i18n("Debug"), this);
   connect(debug, SIGNAL(triggered()), this, SLOT(debugging()));  
@@ -1305,10 +1305,6 @@ void MainWindow::setupActions()
   checkRarExe();
 }
 
-void MainWindow::showTip()
-{
-  tip->show();
-}
 
 void MainWindow::cantDeleteMessage()
 {

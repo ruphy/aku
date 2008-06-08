@@ -18,17 +18,18 @@ akuCrazyTip::akuCrazyTip(QWidget *parent) : QWidget(parent),
  QWidget *w = new QWidget(d->box);
  QHBoxLayout *layout = new QHBoxLayout(w);
  w->setAutoFillBackground(true);
- w->setBackgroundRole(QPalette::HighlightedText);
+ w->setBackgroundRole(QPalette::ToolTipBase);
 
  d->toolTip = new QLabel(w);
- d->toolTip->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Ignored);
+ d->toolTip->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+ d->toolTip->setForegroundRole(QPalette::ToolTipText);
 
  QLabel *icon = new QLabel(w);
  icon->setPixmap(KIconLoader::global()->loadIcon("help-about", KIconLoader::Small));
- icon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Ignored);
+ icon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
  d->close = new KPushButton(KIcon("dialog-close"), i18n("Close"), w);
- d->close->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Ignored); 
+ d->close->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed); 
 
  layout->addWidget(icon);
  layout->addWidget(d->toolTip);
@@ -36,6 +37,7 @@ akuCrazyTip::akuCrazyTip(QWidget *parent) : QWidget(parent),
 
  QHBoxLayout *baseLayout = new QHBoxLayout(this);
  baseLayout->addWidget(d->box);
+
  d->actionTip = new KAction(this);
  d->actionTip -> setIcon(KIcon("view-refresh"));
  d->actionTip -> setText(i18n("Last tip"));
