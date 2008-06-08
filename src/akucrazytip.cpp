@@ -5,7 +5,6 @@
 #include <KLocale>
 #include <QPainter>
 #include <QBrush>
-#include <KPushButton>
 #include <QHBoxLayout>
 #include <KIconLoader>
 #include <QPixmap>
@@ -19,7 +18,7 @@ akuCrazyTip::akuCrazyTip(QWidget *parent) : QWidget(parent),
  QWidget *w = new QWidget(d->box);
  QHBoxLayout *layout = new QHBoxLayout(w);
  w->setAutoFillBackground(true);
- w->setBackgroundRole(QPalette::BrightText);
+ w->setBackgroundRole(QPalette::HighlightedText);
 
  d->toolTip = new QLabel(w);
  d->toolTip->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -28,16 +27,17 @@ akuCrazyTip::akuCrazyTip(QWidget *parent) : QWidget(parent),
  icon->setPixmap(KIconLoader::global()->loadIcon("help-about", KIconLoader::Small));
  icon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
- KPushButton *close = new KPushButton(KIcon("dialog-close"), i18n("Close"), w);
- close->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed); 
+ d->close = new KPushButton(KIcon("dialog-close"), i18n("Close"), w);
+ d->close->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed); 
 
  layout->addWidget(icon);
  layout->addWidget(d->toolTip);
- layout->addWidget(close);
+ layout->addWidget(d->close);
 
  QHBoxLayout *baseLayout = new QHBoxLayout(this);
  baseLayout->addWidget(d->box);
  
+
 }
 
 akuCrazyTip::~akuCrazyTip()
@@ -66,7 +66,26 @@ void akuCrazyTip::gradualShow()
  }else{
   d->box->resize(d->box->size().width(), height());
   disconnect(sender(), 0, this, 0);
+  connect(d->close, SIGNAL(clicked()), this, SLOT(startHide()));
  // qobject_cast<QTimer*>(sender())->stop();
+ }
+}
+
+void akuCrazyTip::startHide()
+{
+ QTimer *t = new QTimer();
+ connect(t, SIGNAL(timeout()), this, SLOT(gradualHide()));
+ t->start(10);
+}
+
+void akuCrazyTip::gradualHide()
+{
+ if(d->count >= 0){
+  d->box->resize(d->box->size().width(), (d->count/100.0)*height());
+  d->count--;
+ }else{
+  disconnect(sender(), 0, this, 0);
+  setVisible(false);
  }
 }
 
