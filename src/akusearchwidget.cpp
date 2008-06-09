@@ -67,3 +67,8 @@ KAction* akuSearchWidget::getCloseAction()
 {
   return closeAction;
 }
+
+QSize akuSearchWidget::sizeHint() const
+{
+ return QSize(500, 37);
+}

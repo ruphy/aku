@@ -27,6 +27,8 @@ public:
   akuSearchLine *searchLineEdit();
   KAction *getCloseAction();
 
+  virtual QSize sizeHint() const;
+
 private:
   akuSearchLine *searchLine;
   QToolButton *closeTool;

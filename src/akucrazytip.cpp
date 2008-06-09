@@ -1,6 +1,5 @@
 #include "akucrazytip.h"
 #include <QPalette>
-#include <QTimer>
 #include <KVBox>
 #include <KLocale>
 #include <QPainter>
@@ -18,18 +17,21 @@ akuCrazyTip::akuCrazyTip(QWidget *parent) : QWidget(parent),
  QWidget *w = new QWidget(d->box);
  QHBoxLayout *layout = new QHBoxLayout(w);
  w->setAutoFillBackground(true);
- w->setBackgroundRole(QPalette::ToolTipBase);
+ QPalette p = w->palette();
+ p.setColor(QPalette::Window, Qt::white);
+ w->setPalette(p);
 
  d->toolTip = new QLabel(w);
  d->toolTip->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
- d->toolTip->setForegroundRole(QPalette::ToolTipText);
-
+ QPalette pt = d->toolTip->palette();
+ pt.setColor(QPalette::WindowText, Qt::black);
+ d->toolTip->setPalette(pt);
+ 
  QLabel *icon = new QLabel(w);
  icon->setPixmap(KIconLoader::global()->loadIcon("help-about", KIconLoader::Small));
  icon->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
  d->close = new KPushButton(KIcon("dialog-close"), i18n("Close"), w);
- d->close->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed); 
 
  layout->addWidget(icon);
  layout->addWidget(d->toolTip);
@@ -63,13 +65,16 @@ void akuCrazyTip::show()
 {
  if(!isVisible())
  {
- setVisible(true);
- QTimer *t = new QTimer();
- connect(t, SIGNAL(timeout()), this, SLOT(gradualShow()));
- t->start(10); 
- QTimer *closeTimer = new QTimer();
- connect(closeTimer, SIGNAL(timeout()), this, SLOT(startHide()));
- closeTimer->start(5000);
+  setVisible(true);
+  QTimer *t = new QTimer();
+  connect(t, SIGNAL(timeout()), this, SLOT(gradualShow()));
+  t->start(10); 
+  d->closeTimer = new QTimer();
+  connect(d->closeTimer, SIGNAL(timeout()), this, SLOT(startHide()));
+  d->closeTimer->start(5000);
+ }else{
+  disconnect(d->closeTimer,0,this,0);
+  setVisible(true);
  }
 }
 
@@ -77,14 +82,13 @@ void akuCrazyTip::gradualShow()
 {
  if(d->count <=100){
   d->box->resize(d->box->size().width(), (d->count/100.0)*height());
-  puts(QString().setNum(size().height()).toAscii());
+ // puts(QString().setNum(size().height()).toAscii());
   d->count++;
  }else{
   d->box->resize(d->box->size().width(), height());
   disconnect(sender(), 0, this, 0);
   connect(d->close, SIGNAL(clicked()), this, SLOT(startHide()));
   delete sender();
- // qobject_cast<QTimer*>(sender())->stop();
  }
 }
 

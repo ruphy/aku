@@ -1,5 +1,6 @@
 #include "akuratiowidget.h"
 #include <QLinearGradient>
+#include <QPen>
 
 akuRatioWidget::akuRatioWidget(float ratio, QWidget *parent) : QWidget(parent)
 {
@@ -30,7 +31,10 @@ void akuRatioWidget::paintEvent(QPaintEvent *)
   grad.setColorAt(0.5, color.lighter());
   grad.setColorAt(1, color);
   painter.setBrush(grad);
-  painter.setPen(edgeColor);
+  QPen pen;
+  pen.setColor(edgeColor);
+  pen.setWidthF(0.5);
+  painter.setPen(pen);
   painter.drawRoundRect(QRect(12,4,width()-25, height()-9),8,8);
   edgeColor.setHsv(200,255,255);
   color.setHsv(lunghezza*1.2, 255,220);
@@ -40,7 +44,8 @@ void akuRatioWidget::paintEvent(QPaintEvent *)
   grad.setColorAt(0.85, color.darker());
   grad.setColorAt(1, color.darker());
   painter.setBrush(grad);
-  painter.setPen(edgeColor);
+  pen.setColor(edgeColor);
+  painter.setPen(pen);
   painter.drawRoundRect(QRect(12,4,(lunghezza/100)*(width()-25), height()-9),8,8);
  // if(backgroundRole() == QPalette::Dark) painter.setPen(QPalette().color(QPalette::BrightText));
  //  else painter.setPen(QPalette().color(QPalette::Text));

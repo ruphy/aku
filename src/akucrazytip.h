@@ -1,12 +1,12 @@
 #ifndef AKUCRAZYTIP_H
 #define AKUCRAZYTIP_H
 
-#include <QWidget>
 #include <QSize>
 #include <QLabel>
 #include <QPaintEvent>
 #include <KPushButton>
 #include <KAction>
+#include <QTimer>
 
 class akuCrazyTip : public QWidget
 {
@@ -34,9 +34,10 @@ class akuCrazyTip : public QWidget
 class akuCrazyTip::privateTip 
 {
  public:
-  privateTip() : size(QSize(800,30)),
+  privateTip() : size(QSize(800,22)),
                  count(0),
-                 box(0), close(0), actionTip(0){}
+                 box(0), close(0), actionTip(0),
+                 closeTimer(0){}
  
   QSize size;
   int count;
@@ -44,6 +45,7 @@ class akuCrazyTip::privateTip
   QLabel *toolTip;
   KPushButton *close;
   KAction *actionTip;
+  QTimer *closeTimer;
 };
 
 #endif

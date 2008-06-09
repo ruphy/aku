@@ -146,9 +146,9 @@ void MainWindow::setupStatusBar()
   archiveInfo = new QLabel(this);  
   statusBar() -> addPermanentWidget(archiveInfo, 0);
   infoLock = new QLabel(this);
-  QFont font = archiveInfo -> font();
-  font.setPointSize(9);
-  archiveInfo -> setFont(font);
+ // QFont font = archiveInfo -> font();
+ // font.setPointSize(9);
+ // archiveInfo -> setFont(font);
   infoLock -> setMaximumSize(22,18);
   ratioBar = new akuRatioWidget(0,this);
   ratioBar -> setMinimumSize(120,0);
@@ -163,7 +163,8 @@ void MainWindow::setupStatusBar()
 void MainWindow::setupSearchUI()
 {
   searchWidget = new akuSearchWidget(rarList, baseWindowWidget);
-  searchWidget -> setMaximumSize(655555, 35);
+  searchWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+ // searchWidget -> setMaximumSize(655555, 35);
  // baseWindowLayout->addWidget( searchWidget);
   searchWidget -> setVisible ( false );	
   actionFind = searchWidget -> getCloseAction();
