@@ -15,7 +15,7 @@ void threadProcess::run()
   d->process -> start(d->program, d->params);
 }
 
-void threadProcess::start(QString prog, QStringList par, QThread::Priority prior)
+void threadProcess::start(QString prog, QStringList par, QThread::Priority)
 {
  d->program = prog;
  d->params = par;
@@ -54,14 +54,18 @@ void threadProcess::killProcess()
 
 void threadProcess::pauseProcess()
 {
+#ifdef Q_WS_X11
   QProcess pauseProc;
   pauseProc.start("kill", QStringList() << "-s"<<"SIGSTOP" << QString().setNum(d->process->pid()));
   pauseProc.waitForFinished();
+#endif
 }
 
 void threadProcess::continueProcess()
 {
+#ifdef Q_WS_X11
   QProcess continueProc;
   continueProc.start("kill", QStringList() << "-s"<<"SIGCONT" << QString().setNum(d->process->pid()));
   continueProc.waitForFinished();
+#endif
 }

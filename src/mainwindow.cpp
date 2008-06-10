@@ -476,7 +476,8 @@ void MainWindow::parseAndShow(QString rarout, bool crypted)
     else 
     globalArchivePassword.clear();
     
-    this -> setWindowTitle ( i18n( "aKu - " ) + KUrl(namex).pathOrUrl() );
+    // setWindowTitle ( i18n( "aKu - " ) + KUrl(namex).pathOrUrl() );
+    setCaption(KUrl(namex).pathOrUrl());
     setFolderIcons();
     rarList -> setSortingEnabled ( true );
    // rarList -> sortItems ( 1, Qt::AscendingOrder );
@@ -895,8 +896,9 @@ void MainWindow::newArchive()
 
 void MainWindow::closeNewArchiveGUI(bool correctly)
 {
-  rarList -> setVisible(true);
+  //rarList -> setVisible(true);
   //menubar -> setEnabled ( true );
+  baseWindowWidget->setVisible(true);
   delete widgetForList;
   delete sourceDock;
   //toolDelete -> setEnabled ( true );
@@ -951,7 +953,9 @@ void MainWindow::setupForNew()
 {
   fromNewArchive = true;
   rarList -> clear();
-  rarList -> setVisible ( false );
+ // rarList -> setVisible ( false );
+  baseWindowWidget->setVisible(false);
+  setCaption(QString());
   setInformation ( false );
   toolDelete -> setEnabled ( false );
   toolNew -> setEnabled ( false );

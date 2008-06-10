@@ -38,11 +38,12 @@ void akuRatioWidget::paintEvent(QPaintEvent *)
   painter.drawRoundRect(QRect(12,4,width()-25, height()-9),8,8);
   edgeColor.setHsv(200,255,255);
   color.setHsv(lunghezza*1.2, 255,220);
-  painter.setOpacity(0.7);
-  grad.setColorAt(0, color.lighter());
-  grad.setColorAt(0.5, color.lighter());
-  grad.setColorAt(0.85, color.darker());
-  grad.setColorAt(1, color.darker());
+ // painter.setOpacity(0.7);
+  grad.setColorAt(0, color);
+  grad.setColorAt(0.5, color);
+  grad.setColorAt(0.57, color.darker());
+  grad.setColorAt(0.92, color.darker());
+  grad.setColorAt(1, color.lighter());
   painter.setBrush(grad);
   pen.setColor(edgeColor);
   painter.setPen(pen);
