@@ -24,6 +24,7 @@
 - Global progressBar seems to not work when creating an archive with a custom filled folder
 - Deleting an archive with comment still keeps the comment visible after the deletion
 - When creating a new archive using as filename an already existing one makes aku looping..
+- TEST
 
 next features plan:
 
