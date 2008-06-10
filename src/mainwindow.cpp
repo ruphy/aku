@@ -483,6 +483,7 @@ void MainWindow::parseAndShow(QString rarout, bool crypted)
    // rarList -> sortItems ( 1, Qt::AscendingOrder );
     rarList -> header() -> setResizeMode ( 0, QHeaderView::ResizeToContents );
     rarList -> header() -> setResizeMode(9, QHeaderView::ResizeToContents);
+    rarList -> header() -> setResizeMode(3, QHeaderView::ResizeToContents);
     if(globalRestrictions) handleRestrictions(namex, rarout);
     if ( fromNewArchive == true )   //ripristiniamo la gui se proveniamo da un new archive
     {
@@ -590,11 +591,12 @@ void MainWindow::insertComment(QString newcomment)
     temptxt.write(newcomment.toUtf8());
     temptxt.waitForBytesWritten(-1);
     temptxt.flush();
-    rarProcessHandler process(this, "rar", QStringList() << "c" << "-z" + temptxt.fileName(), namex);
-    process.start();
+    rarProcessHandler *process = new rarProcessHandler(this, "rar", QStringList() << "c" << "-z" + temptxt.fileName() <<"-p"+globalArchivePassword, namex);
+    connect(process,SIGNAL(processCompleted(bool)), this, SLOT(reloadArchive(bool)));
+    process->start();
   }
   temptxt.close();
-  raropen(namex); 
+ // raropen(namex); 
 }
 
 void MainWindow::addComment()
@@ -611,12 +613,13 @@ void MainWindow::lockArchive()
   if (KMessageBox::warningContinueCancel(this, i18n("Locking disables archive modifications"), i18n("Lock archive")) == 5)
   {
     rarProcessHandler *proce;
-    if(!globalArchivePassword.isEmpty())
+   // if(!globalArchivePassword.isEmpty())
       proce = new rarProcessHandler(this, archiver, QStringList() << "k"<< "-p"+globalArchivePassword, namex);
-    else
-      proce = new rarProcessHandler(this, archiver, QStringList() << "k", namex);
+      connect(proce,SIGNAL(processCompleted(bool)), this, SLOT(reloadArchive(bool)));
+   // else
+   //   proce = new rarProcessHandler(this, archiver, QStringList() << "k", namex);
     proce -> start();
-    raropen(namex);
+   // raropen(namex);
   }
 }
 
@@ -1017,7 +1020,10 @@ void MainWindow::embeddedViewer()
     {
       QString path = rebuildFullPath(toView);
       QProcess view;
-      view.start ( archiver, QStringList() << "p" << "-inul" << namex << path << QDir::tempPath() );
+      if(globalArchivePassword.isEmpty())
+       view.start ( archiver, QStringList() << "p" << "-inul" << namex << path << QDir::tempPath() );
+      else
+       view.start ( archiver, QStringList() << "p" << "-inul" << "-p"+globalArchivePassword << namex << path << QDir::tempPath() );
       view.waitForFinished();
       view.terminate();
 
@@ -1029,6 +1035,10 @@ void MainWindow::embeddedViewer()
       buffer.clear();
       embedded -> setGeometry ( this -> x() +200, this -> y() +200, 600,600 ); // centriamo e ingrandiamo a sufficienza
       embedded -> show();
+    }else if(!toView -> icon(10).isNull())
+    {
+    tip->setTip(i18n("Cannot preview a password-protected file"));
+    tip->show();
     }
   }
   else  
