@@ -547,8 +547,8 @@ void MainWindow::handleRestrictions(QString nomeFile, QString archList)
   if(!globalArchivePassword.isEmpty())
   {
     infoLock -> setPixmap(KIcon("dialog-password").pixmap(22,18));
-    infoLock -> setToolTip(i18n("This archive has a header password protection.<br>File data, " 
-                                "file names, sizes, attributes, comments are encrypted.<br> Without a password it is"
+    infoLock -> setToolTip(i18n("This archive has a <b>header password</b> protection.<br>File data, " 
+                                "file names, sizes, attributes, comments are encrypted.<br> Without a password it is "
                                 "impossible to view even the list of files in archive.")); 
   }
   if(infoLock ->pixmap()==NULL)
