@@ -14,6 +14,7 @@
 #include <QSpinBox>
 #include <QString>
 
+
 class akuRatioWidget : public QWidget
 {
 
@@ -28,6 +29,7 @@ public slots:
 
 private:
   void paintEvent(QPaintEvent *);
+  QPainterPath drawRoundedRect(const QRectF &rect, qreal radius);
   float lunghezza;
 };
 
