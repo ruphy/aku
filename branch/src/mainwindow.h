@@ -182,6 +182,7 @@ protected:
   QStringList recursiveRebuildForNew ( QTreeWidgetItem* );
   void setupActions();
   void setRecentActions();
+  void handleFlags();
 
 protected slots:
   virtual void lockArchive();

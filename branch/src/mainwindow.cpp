@@ -71,13 +71,23 @@ MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( paren
   //waitDialog = new akuWaitDialog(this);
   showStatusInfo(false);
   //puts("parsing");
-  KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
+  handleFlags();
+}
+
+MainWindow::~MainWindow()
+{
+}
+
+void MainWindow::handleFlags()
+{
+   KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
   if(args->isSet("extracthere")){
     // code to extract the archive
     setVisible(false);
     QDir herepath(args->arg(0));
     KUrl url = herepath.absolutePath();
-    rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",args->arg(0), QStringList(), url.directory() );
+    rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",
+                                                     args->arg(0), QStringList(), url.directory() );
     connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
     pHand->start();
   }
@@ -87,7 +97,8 @@ MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( paren
     KUrl url = KFileDialog::getExistingDirectoryUrl(KUrl(QDir().homePath()),  this, i18n("Extract to"));
     puts(url.pathOrUrl().toAscii());
     if(!url.isEmpty()){
-     rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",args->arg(0), QStringList(), url.path() );
+     rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",
+                                                      args->arg(0), QStringList(), url.path() );
      connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
      pHand->start();
     } else{
@@ -97,10 +108,6 @@ MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( paren
   else{
     for(int i=0; i < args -> count(); i++)  raropen(args -> arg(i));     
    }
-}
-
-MainWindow::~MainWindow()
-{
 }
 
 void MainWindow::closeAll(bool)

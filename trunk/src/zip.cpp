@@ -80,7 +80,7 @@ int zip::parse(QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
 
       QString size = KLocale( QString() ).formatByteSize(dlist[3].toDouble());  // 3 -> dimensione originale del file
       fitem -> setText(1, size);
-      size = KLocale( QString() ).formatByteSize(dlist[5] .toDouble()); // 5 -> dimensione packed del file
+      size = KLocale( QString() ).formatByteSize(dlist[5].toDouble()); // 5 -> dimensione packed del file
       fitem -> setText(2, size);
 
       fitem -> setText(5, dlist[0]);   // attributi 
