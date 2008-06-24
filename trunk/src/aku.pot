@@ -1,0 +1,138 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-06-18 12:57+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: akumaintable.cpp:16
+msgid "File Name"
+msgstr ""
+
+#: akumaintable.cpp:17 akumaintable.cpp:44
+msgid "Size"
+msgstr ""
+
+#: akumaintable.cpp:18 akumaintable.cpp:48
+msgid "Packed Size"
+msgstr ""
+
+#: akumaintable.cpp:19 akumaintable.cpp:52
+msgid "Ratio"
+msgstr ""
+
+#: akumaintable.cpp:20 akumaintable.cpp:56
+msgid "Modified"
+msgstr ""
+
+#: akumaintable.cpp:21 akumaintable.cpp:60
+msgid "Attributes"
+msgstr ""
+
+#: akumaintable.cpp:22 akumaintable.cpp:64
+msgid "CRC"
+msgstr ""
+
+#: akumaintable.cpp:23 akumaintable.cpp:68
+msgid "Method"
+msgstr ""
+
+#: akumaintable.cpp:24 akumaintable.cpp:72
+msgid "Version"
+msgstr ""
+
+#: akumaintable.cpp:25 akumaintable.cpp:76
+msgid "MIME Type"
+msgstr ""
+
+#: akumaintable.cpp:28
+msgid "Status: a key is shown if the file is crypted"
+msgstr ""
+
+#: akumaintable.cpp:42
+msgid "Columns"
+msgstr ""
+
+#: main.cpp:14
+msgid "aKu"
+msgstr ""
+
+#: main.cpp:15
+msgid "The RAR application for KDE4"
+msgstr ""
+
+#: main.cpp:16
+msgid "Copyright (c) 2008"
+msgstr ""
+
+#: main.cpp:18
+msgid "Alessandro Diaferia aka \"The Speedy Coder\""
+msgstr ""
+
+#: main.cpp:19
+msgid "Main Developer"
+msgstr ""
+
+#: main.cpp:21
+msgid "Francesco Grieco aka \"The Japanese GUI stylist\""
+msgstr ""
+
+#: main.cpp:22
+msgid "Developer"
+msgstr ""
+
+#: main.cpp:30
+msgid "Makes aKu open the archive specified"
+msgstr ""
+
+#: main.cpp:31
+msgid "Extracts all files in the archive path"
+msgstr ""
+
+#: main.cpp:32
+msgid "Extracts all files in a selected path"
+msgstr ""
+
+#: mainwindow.cpp:49
+msgid "Information"
+msgstr ""
+
+#: mainwindow.cpp:117
+msgid ""
+"*.rar|Rar archives\n"
+"*.zip|Zip archives\n"
+"*.rar *.zip|All supported types"
+msgstr ""
+
+#. i18n: tag text
+#. i18n: file ./akuui.rc line 4
+#: rc.cpp:3 rc.cpp:3
+msgid "Main Toolbar"
+msgstr ""
+
+#. i18n: tag text
+#. i18n: file ./akuui.rc line 20
+#: rc.cpp:6 rc.cpp:6
+msgid "Commands"
+msgstr ""
+
+#: rc.cpp:7 rc.cpp:7
+msgctxt "NAME OF TRANSLATORS"
+msgid "Your names"
+msgstr ""
+
+#: rc.cpp:8 rc.cpp:8
+msgctxt "EMAIL OF TRANSLATORS"
+msgid "Your emails"
+msgstr ""
