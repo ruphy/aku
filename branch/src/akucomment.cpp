@@ -39,6 +39,7 @@ akuComment::~akuComment()
 
 void akuComment::writeComment()
 { 
+  setCursor(Qt::WaitCursor);
   QString comment = textEdit -> toPlainText();
   if (!comment.isEmpty()) 
   {

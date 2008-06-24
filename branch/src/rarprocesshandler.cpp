@@ -122,12 +122,9 @@ void rarProcessHandler::initProcess()
    // connect(rarProc, SIGNAL(readyReadStandardError()), this, SLOT(getError()));
    // connect(rarProc, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
     rarProc->start(process, QStringList() << params << rarArchive << filesToHandle);
-    if(!hasPasswordParameter) rarProc->waitForFinished(1000); 
+    if(!hasPasswordParameter) rarProc->waitForFinished(); 
     else rarProc->waitForFinished(-1);
-    if (rarProcError.isEmpty() == false) done = false;
-    else done = true;
-    puts("emitting");
-    emit processCompleted(done);
+
   }
   else if(params.size() == 0)
   {
@@ -144,10 +141,6 @@ void rarProcessHandler::initProcess()
      // connect(rarProc, SIGNAL(readyReadStandardError()), this, SLOT(getError()));
      // connect(rarProc, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
       rarProc->start(process, QStringList() << params << rarArchive);
-      if(!hasPasswordParameter) rarProc->waitForFinished(1000); 
-      else rarProc->waitForFinished(-1);
-      if (rarProcError.isEmpty() == false) done = false;
-      else done = true;
     }
     else
     {
@@ -155,13 +148,13 @@ void rarProcessHandler::initProcess()
      // connect(rarProc, SIGNAL(readyReadStandardError()), this, SLOT(getError()));
      // connect(rarProc, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
       rarProc->start(process, QStringList() << params << rarArchive << filesToHandle);
-      if(!hasPasswordParameter) rarProc->waitForFinished(1000); 
-      else rarProc->waitForFinished(-1);
-      if (rarProcError.isEmpty() == false) done = false;
-      else done = true;
     }
-    puts("emitting..");
-    emit processCompleted(done);
+    if(!hasPasswordParameter) rarProc->waitForFinished(); 
+    else rarProc->waitForFinished(-1);
+
+
+    //puts("emitting..");
+    //emit processCompleted(done);
   }
   else if(params[0] == "ch")
   {
@@ -172,8 +165,6 @@ void rarProcessHandler::initProcess()
      // connect(rarProc, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
       rarProc->start(process, QStringList() << params << rarArchive);
       rarProc->waitForFinished(-1);
-      if (rarProcError.isEmpty() == false) done = false;
-      else done = true;
     }
     else
     {
@@ -182,11 +173,7 @@ void rarProcessHandler::initProcess()
      // connect(rarProc, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
       rarProc->start(process, QStringList() << params << rarArchive << filesToHandle);
       rarProc->waitForFinished(-1);
-      if (rarProcError.isEmpty() == false) done = false;
-      else done = true;
     }
-    puts("emitting..");
-    emit processCompleted(done);
   }
   else if(params[0] == "k" || params[0] == "c")
   {
@@ -458,7 +445,15 @@ void rarProcessHandler::giveOutput(int, QProcess::ExitStatus)
 {
  puts("process terminated");
  emit outputReady(standardOutput(), crypted);
- emit processCompleted(true); //check the bool
+ if (rarProcError.isEmpty() == true){
+    puts("emitting true");
+    done = true;
+ }
+ else{
+   puts("emitting false");
+   done = false;
+    }
+ emit processCompleted(done); //check the bool
  showError(rarProcError);
 
 }

@@ -71,7 +71,7 @@ void akuCrazyTip::show()
   t->start(10); 
   d->closeTimer = new QTimer();
   connect(d->closeTimer, SIGNAL(timeout()), this, SLOT(startHide()));
-  d->closeTimer->start(5000);
+  d->closeTimer->start(6000);
  }else{
   disconnect(d->closeTimer,0,this,0);
   setVisible(true);

@@ -14,6 +14,14 @@ QDockWidget *commentDock = 0;
 QTextEdit *commentEdit = 0;
 QSplitter *splitter;
 
+// variabili booleane per la gestione dei tip
+bool bComment = false;
+bool bAddFile = false;
+bool bAddDir = false;
+bool bLock = false;
+bool bDelete = false;
+//
+
 MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( parent, fl )
 {
   baseWindowWidget = new KVBox(this);
@@ -60,9 +68,9 @@ MainWindow::MainWindow ( QWidget* parent, Qt::WFlags fl ): KXmlGuiWindow ( paren
   enableActions(false);
   toolDelete -> setEnabled (false );
   renameAction -> setEnabled ( false );
-  waitDialog = new akuWaitDialog(this);
+  //waitDialog = new akuWaitDialog(this);
   showStatusInfo(false);
-  puts("parsing");
+  //puts("parsing");
   KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
   if(args->isSet("extracthere")){
     // code to extract the archive
@@ -139,6 +147,8 @@ void MainWindow::enableActions(bool enable)
   actionEncryptArchive -> setEnabled(enable);
   actionAddFilePwd -> setEnabled(enable);
   actionAddFolderPwd -> setEnabled(enable);
+  actionLock -> setEnabled(enable);
+  actionAddComment -> setEnabled(enable);
 }
 
 void MainWindow::setupStatusBar()
@@ -326,7 +336,16 @@ void MainWindow::addFolder( bool pwd)
         addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-p"+pwdToSet,namex, QStringList()<<folderUrl.pathOrUrl());
       connect(addingProc, SIGNAL(processCompleted(bool)), this, SLOT(reloadArchive(bool)));
     }
+  
+    // disabilito momentaneamente le action di interfaccia
+    enableActions(false);
+    toolNew -> setEnabled(false);
+    toolOpen -> setEnabled(false);
+    toolDelete -> setEnabled(false);
+    // cursore in stato di attesa
+    setCursor(Qt::WaitCursor);
     addingProc -> start();
+    bAddDir = true;
   }
 }
 
@@ -362,6 +381,7 @@ void MainWindow::addFile(bool pwd)
       pwDialog.setPrompt(i18n("Enter a password"));
       if (pwDialog.exec()) pwdToSet = pwDialog.password();
     }
+
     rarProcessHandler *addingProc;
     if(rarList -> selectedItems().size() == 1 )
     {
@@ -405,7 +425,16 @@ void MainWindow::addFile(bool pwd)
         addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-p"+pwdToSet,namex, QStringList()<<fileList);
       connect(addingProc, SIGNAL(processCompleted(bool)), this, SLOT(reloadArchive(bool)));
     }
+ 
+    // disabilito momentaneamente le action di interfaccia
+    enableActions(false);
+    toolNew -> setEnabled(false);
+    toolOpen -> setEnabled(false);
+    toolDelete -> setEnabled(false);
+    // cursore in stato di attesa
+    setCursor(Qt::WaitCursor);
     addingProc -> start();
+    bAddFile = true;
   }
 }
 
@@ -414,9 +443,48 @@ void MainWindow::reloadArchive(bool correctly)
   disconnect(sender(), 0, this, 0); // this disconnects any signal avoiding multiple unuseful reloading
   if (correctly)
   {
-    if(!namex.isEmpty()) raropen(namex, true);
+    if(!namex.isEmpty()) { // and not error dialog --> AGGIUNGERE
+      raropen(namex, true);
+      if (bAddFile) {
+        tip->setTip(i18n("File(s) correctly added"));
+        tip->show();
+      }
+      else if (bAddDir) {
+        tip->setTip(i18n("Directory correctly added"));
+        tip->show();
+      }
+      else if (bComment) {
+        tip->setTip(i18n("Comment correctly added"));
+        tip->show();
+      }
+      else if (bLock) {
+        tip->setTip(i18n("The archive is locked now"));
+        tip->show();
+      }
+      else if (bDelete) {
+        tip->setTip(i18n("File(s) correctly deleted"));
+        tip->show();
+      }
+      //else 
+      //  tip->setTip(i18n("Changes correctly applied"));
+
+    }
     else if(fromNewArchive) closeNewArchiveGUI(true);
   }
+  else
+  {
+    if (!namex.isEmpty()) raropen(namex, true);
+    enableActions(true);
+    setCursor(QCursor());    
+  }
+  toolNew -> setEnabled(true);
+  toolOpen -> setEnabled(true);
+  toolDelete -> setEnabled(true);
+  bAddFile = false;
+  bAddDir = false;
+  bComment = false;
+  bLock = false;
+  bDelete = false;
 }
 
 void MainWindow::openRecentFile(KUrl url)
@@ -522,6 +590,13 @@ void MainWindow::handleRestrictions(QString nomeFile, QString archList)
     QPixmap lockIcon = KIcon("object-locked").pixmap(22,18);
     infoLock -> setPixmap(lockIcon);
     infoLock -> setToolTip(toolTip); 
+    actionLock -> setEnabled(false);
+    actionAddComment -> setEnabled(false);
+    actionAddFile -> setEnabled(false);
+    actionEncryptArchive -> setEnabled(false);
+    actionAddFilePwd -> setEnabled(false);
+    actionAddFolderPwd -> setEnabled(false);
+    actionAddFolder -> setEnabled(false);
   }
   else
   {
@@ -601,9 +676,11 @@ void MainWindow::insertComment(QString newcomment)
 
 void MainWindow::addComment()
 { 
+  bComment = true;
   akuComment *testdialog = new akuComment(this);
   connect (testdialog, SIGNAL (okClicked(QString)), this, SLOT(insertComment(QString)));
   testdialog -> exec();
+  //setCursor(QCursor());
 }
 
 void MainWindow::lockArchive()
@@ -616,6 +693,7 @@ void MainWindow::lockArchive()
    // if(!globalArchivePassword.isEmpty())
       proce = new rarProcessHandler(this, archiver, QStringList() << "k"<< "-p"+globalArchivePassword, namex);
       connect(proce,SIGNAL(processCompleted(bool)), this, SLOT(reloadArchive(bool)));
+      bLock = true;
    // else
    //   proce = new rarProcessHandler(this, archiver, QStringList() << "k", namex);
     proce -> start();
@@ -647,7 +725,6 @@ void MainWindow::singleExtractInit()
     if(archiver == "rar")
     {
       renameAction -> setEnabled ( true );
-      toolDelete -> setEnabled ( true );
       toolDelete -> setEnabled ( true );
     }
     if ( checkUnselected.size() == 1 )
@@ -686,7 +763,6 @@ void MainWindow::singleExtractInit()
   else
   {
     renameAction -> setEnabled ( false );
-    toolDelete -> setEnabled ( false );
     toolDelete -> setEnabled ( false );
   }
 }
@@ -1117,12 +1193,13 @@ void MainWindow::rarRename ( QTreeWidgetItem *current, int )
 {
   currentToRename = current;
   disconnect ( rarList, SIGNAL ( itemChanged ( QTreeWidgetItem *, int ) ), this, SLOT ( rarRename ( QTreeWidgetItem*, int ) ) );
+  setCursor(Qt::WaitCursor);
   rarProcessHandler *renameProcess;
   if(oldItemName != current -> text(0) && !tempForRename.contains(current->text(0)))
   {
     puts("rename accepted");
-    waitDialog -> setLabelText(i18n("Renaming ") + oldItemName+"...");
-    waitDialog -> exec();
+    //waitDialog -> setLabelText(i18n("Renaming ") + oldItemName+"...");
+    //waitDialog -> exec();
     if(!globalArchivePassword.isEmpty())
     { 
       renameProcess = new rarProcessHandler(this, "rar", QStringList() << "rn"<<"-p"+globalArchivePassword, namex , QStringList() << oldItemPath << rebuildFullPath( current ));
@@ -1134,6 +1211,8 @@ void MainWindow::rarRename ( QTreeWidgetItem *current, int )
       connect(renameProcess, SIGNAL(processCompleted(bool)), this, SLOT(completeRename(bool)));
     }
     renameProcess -> start();
+    tip->setTip(i18n("File renamed"));
+    tip->show();
   }
   else
   {
@@ -1142,12 +1221,12 @@ void MainWindow::rarRename ( QTreeWidgetItem *current, int )
     tip->show();
     //statusBar() -> showMessage(i18n("Rename denied"), 2000);
   }
-  
+  setCursor(QCursor());
 }
 
 void MainWindow::completeRename(bool ok)
 {
-  waitDialog -> quit();
+  //waitDialog -> quit();
   if(!ok) currentToRename -> setText(0, oldItemName);
   tempForRename.clear();
 }
@@ -1188,32 +1267,38 @@ void MainWindow::rarDelete()
       KMessageBox::information ( this,  i18n( "You chose to remove every item from this archive. The entire archive file will be removed." ), i18n( "Deleting items" ) );
       deleteAll = true;
     }
-    waitDialog -> setLabelText(i18n("Deleting file(s)..."));
-    waitDialog -> exec();
+    //waitDialog -> setLabelText(i18n("Deleting file(s)..."));
+    //waitDialog -> exec();
     rarProcessHandler *deleteItem;
     deleteItem = new rarProcessHandler(this, "rar", QStringList() << "d" <<"-p"+globalArchivePassword, namex , itemsToDelete );
-    connect(deleteItem, SIGNAL(processCompleted(bool)), this, SLOT(completeDelete(bool)));
-   
+    connect(deleteItem, SIGNAL(processCompleted(bool)), this, SLOT(completeDelete(bool)));  
+    setCursor(Qt::WaitCursor);
     deleteItem -> start();
+ 
   }
 }
 
 void MainWindow::completeDelete(bool ok)
 {
-  waitDialog -> quit();
-  if(ok)
-  {
-    if ( deleteAll == false ) reloadArchive();
+ 
+  if(ok)  {
+    puts("true");
+    if ( deleteAll == false ) {
+      bDelete = true;
+      reloadArchive();
+    }
     else
     {
+      puts("false");
       rarList -> clear();
-      this -> setWindowTitle ( i18n( "aKu" ) );
+      setCaption(QString());
       enableActions(false);
       showStatusInfo(false);
       tip->setTip(i18n("Archive deleted"));
       tip->show();
       //statusBar() -> showMessage(i18n("Archive deleted"),2000);
       namex.clear();
+      setCursor(QCursor());
     }
   }
 }
@@ -1271,7 +1356,9 @@ void MainWindow::setupActions()
   actionCollection() -> addAction("info", actionInfo);
   toolNew = KStandardAction::openNew(this, SLOT(setupForNew()), actionCollection());
   actionCollection()->addAction( "file_new",toolNew );
-  actionCollection()->addAction( KStandardAction::Open, "file_open", this, SLOT(openDialog()) );
+  toolOpen = KStandardAction::open(this, SLOT(openDialog()), actionCollection());
+  actionCollection()->addAction( "file_open", toolOpen );
+  //actionCollection()->addAction( KStandardAction::Open, "file_open", this, SLOT(openDialog()) );
   recents = KStandardAction::openRecent(this, SLOT(openRecentFile(KUrl)), actionCollection());
   //recents -> setIcon(KIcon("document-open-recent")); //new oxygen icon
   KStandardAction::quit(kapp, SLOT(quit()), actionCollection());
