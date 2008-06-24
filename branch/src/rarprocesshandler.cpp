@@ -240,6 +240,7 @@ void rarProcessHandler::getError()
   {
     
     //rarProcProgress -> setValue ( rarProcProgress -> maximum()); 
+    kDebug()<<"totalFileCount "<<totalFileCount<<"out of "<<filesToHandle.count();     
     QString targetFile = QString().fromAscii(temp); 
     int forParsing = targetFile.indexOf("already"); 
     targetFile.remove(forParsing-1, targetFile.length());
@@ -252,15 +253,17 @@ void rarProcessHandler::getError()
       oDialog -> setDestinationDetails(details.filePath());
       QString currentExtraction = filesToHandle[totalFileCount];
       QString size = rar().getSingleFileSize(globalTOC, filesToHandle[totalFileCount]);
-      oDialog -> setSourceDetails(currentExtraction, rar::getSingleFileModificationTime(globalTOC, filesToHandle[totalFileCount]), size);
+      oDialog -> setSourceDetails(currentExtraction, 
+                                  rar::getSingleFileModificationTime(globalTOC, filesToHandle[totalFileCount]), size);
       rarProcProgress -> hide();
       if( oDialog -> exec() == QDialog::Rejected ) handleCancel();
       else{
+        if(!oDialog->isYes()) totalFileCount++;
         rarProcProgress -> show();
       }
 
-   delete oDialog; 
-   totalFileCount++;             
+   delete oDialog;
+    
   }
   else if(QString().fromAscii(temp).contains("password incorrect ?")) // here we handle a header-password-protected archive
   {
@@ -384,6 +387,7 @@ void rarProcessHandler::showProgress() //gestiamo un progressdialog
      QString size = rar::getSingleFileSize(globalTOC, filesToHandle[totalFileCount]);
      rarProcProgress -> setCurrentFileSize(size);
      totalFileCount++;
+     kDebug()<<"totalFileCount increased: "<<totalFileCount; 
    }
 
   }
