@@ -3,16 +3,14 @@
 
 #include <QProcess>
 #include <QPixmap>
-#include <QFileInfo>
-
 #include <KDialog>
+#include <QFileInfo>
+#include "ui_overwriteui.h"
 #include <KIcon>
 #include <KUrl>
+#include "rar.h"
 #include <KFileItem>
 #include <KDateTime>
-
-#include "ui_overwriteui.h"
-#include "rar.h"
 
 class overwriteDialog : public KDialog, private Ui::OverwriteDialog
 {
@@ -23,10 +21,10 @@ public:
   ~overwriteDialog();
 
   enum clickedButton { Yes, No, YesToAll, NoToAll, Cancel};
-
   bool isToAllChecked();
   bool yesToAllChecked();
   bool noToAllChecked();
+  bool isYes();
 
 public slots:
   virtual void renameAction();
@@ -48,6 +46,7 @@ protected slots:
 private:
   bool yesToAll;
   bool noToAll;
+  bool yes;
   QString destinationPath;
   QString destinationName;
   QString destinationFilePath;

@@ -280,6 +280,7 @@ void rarProcess::getError()
   // the string from rar is like: /the/path/of/the/archive.rar already exists. Overwrite it?
   // so we need to erase everything from already to get the file name
   // then we can call an overwrite dialog to handle user's choice
+
   if(QString().fromAscii(temp).contains("already")) {
     //rarprogressdialog -> setValue ( rarprogressdialog -> maximum()); 
     QString targetFile = QString().fromAscii(temp); 
@@ -288,7 +289,7 @@ void rarProcess::getError()
     targetFile.remove("\n");
     
     overwriteDialog *owDialog = new overwriteDialog(thread -> proc(), parentWidget); //chiamiamo l'overwrite dialog
-    if (toall == false) {
+
       QFileInfo details(targetFile); // generating file info
       owDialog -> setDestinationDetails(details.filePath());
       QString currentExtraction = files[totalFileCount];
@@ -298,17 +299,11 @@ void rarProcess::getError()
       if( owDialog -> exec() == QDialog::Rejected ) handleCancel();
       else {
       // here we handle the "toAll option"
-        if(owDialog -> isToAllChecked() == true) toall = true;
+        if(!oDialog->isYes()) totalFileCount++;
         rarprogressdialog -> show();
       }
-    }
-
-    else {
-      if(owDialog -> yesToAllChecked() == true) owDialog -> yesOverwrite(); //if was toAll checked then we answer the same for next times
-      else owDialog -> noOverwrite();                  
-    }
-   delete owDialog; 
-   totalFileCount++;             
+  
+   delete owDialog;             
   }
   else if(QString().fromAscii(temp).contains("password incorrect ?")) {  // here we handle a header-password-protected archive
     headercrypted = true; //the archive is crypted;
