@@ -37,6 +37,7 @@ MainWindow::MainWindow (QWidget* parent, Qt::WFlags flags): KXmlGuiWindow (paren
 
 MainWindow::~MainWindow()
 {
+  recentFilesAction->saveEntries( KGlobal::config()->group( "Recent Files" ));
 }
 
 void MainWindow::setupStatusBar()
@@ -75,7 +76,7 @@ void MainWindow::setupActions()
   actionCollection()->addAction("file_new",buttonNew );
   buttonOpen = KStandardAction::open(this, SLOT(openDialog()), actionCollection());
   actionCollection()->addAction("file_open", buttonOpen );
-  KStandardAction::quit(kapp, SLOT(quit()), actionCollection());
+  KStandardAction::quit(this, SLOT(quit()), actionCollection());
   buttonInfo = new KAction(this);
   buttonInfo -> setIcon(KIcon("help-about"));
   buttonInfo -> setText(i18n("Information"));
@@ -84,9 +85,12 @@ void MainWindow::setupActions()
   buttonInfo -> setShortcut(Qt::CTRL + Qt::Key_I);
   actionCollection() -> addAction("info", buttonInfo);
   recentFilesAction = KStandardAction::openRecent( this, SLOT(openUrl(const KUrl&)), actionCollection());
-  recentFilesAction->setToolBarMode( KRecentFilesAction::MenuMode );
-  recentFilesAction->setToolButtonPopupMode( QToolButton::DelayedPopup );
+  //recentFilesAction->setToolBarMode( KRecentFilesAction::MenuMode );
+  //recentFilesAction->setToolButtonPopupMode( QToolButton::DelayedPopup );
+  actionCollection()->addAction("file_open_recent", recentFilesAction );
   recentFilesAction->loadEntries( KGlobal::config()->group("Recent Files"));
+  connect(recentFilesAction, SIGNAL( triggered() ), this, SLOT( openDialog() ) );
+
   KAction *lasttip = tip->actionTip();
   actionCollection() -> addAction("lasttip", lasttip);
   connect(lasttip, SIGNAL(triggered()),tip, SLOT(show()));
@@ -226,6 +230,8 @@ void MainWindow::openUrl(const KUrl& url)
     archive = url.pathOrUrl();
     ratioBar -> setVisible(true);
     setCaption(archive);
+    recentFilesAction -> addUrl(url);
+    //recentFilesAction->saveEntries( KGlobal::config()->group( "Recent Files" ));
   }
   else {
     tip->setTip(i18n("The file is not a supported archive") + " (" + (mimetype -> comment()) + ")");
@@ -283,7 +289,6 @@ void MainWindow::buildTarTable(QString taroutput)
      expandTopLevelItems();
      table -> sortItems ( 0, Qt::AscendingOrder );
      setFolderIcons();
-     
    }
    enableActions(true);
    statusBar()->clearMessage();
@@ -328,7 +333,6 @@ void MainWindow::buildRarTable(QString raroutput, bool crypted)
 //     showStatusInfo(true);
       expandTopLevelItems();
       setFolderIcons();
-      statusWidget -> setVisible(true);
   }
   enableActions(true);
   statusBar()->clearMessage();
@@ -514,3 +518,7 @@ void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento 
   }
 }
 
+void MainWindow::quit()
+{
+   close();
+}

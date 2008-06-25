@@ -3,8 +3,8 @@ TODO - aKu - New Generation
 MAIN WINDOW:
   1) aggiungere i file aperti agli openrecents
   2) ordinamento logico per tutti i file della main
-  3) selection filter -> attivarlo per ricerche di almeno 3 caratteri, altrimenti è lentissimo
-  4) exclusion filter -> attivarlo per ricerche di almeno 2 caratteri, altrimenti è lento
+  3) ordinamento su colonne packed, size, data, ratio
+  4) controllare il numero max di open recent
 
 ZIP:
   1) convertire modified in QDate
@@ -17,3 +17,4 @@ TAR:
 
 GENERALE:
   1) ringraziamenti a Ruphy per la ratiobar
+  2) conversioni tra i formati; rar -> zip; rar -> tar e così via

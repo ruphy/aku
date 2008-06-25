@@ -91,6 +91,9 @@ private:
 
   akuMetaWidget *metaWidget;
 
+private slots:
+  void quit();
+
 protected:
   QString rebuildPath(QTreeWidgetItem*);
   QString rebuildFullPath(QTreeWidgetItem*);

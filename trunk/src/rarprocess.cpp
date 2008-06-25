@@ -299,7 +299,7 @@ void rarProcess::getError()
       if( owDialog -> exec() == QDialog::Rejected ) handleCancel();
       else {
       // here we handle the "toAll option"
-        if(!oDialog->isYes()) totalFileCount++;
+        if(!owDialog->isYes()) totalFileCount++;
         rarprogressdialog -> show();
       }
   
