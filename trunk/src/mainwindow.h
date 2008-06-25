@@ -31,6 +31,7 @@
 #include "tar.h"
 #include "akumetawidget.h"
 #include "akuviewer.h"
+#include "extractdialog.h"
 
 class MainWindow : public KXmlGuiWindow
 {
@@ -55,6 +56,7 @@ public slots:
   virtual void sumSelectedItemsSize();
   virtual void embeddedViewer();
   virtual void openItemUrl(QTreeWidgetItem *, int );
+  virtual void extractArchive();
 
 private:
   QWidget *baseWindowWidget;
@@ -67,10 +69,12 @@ private:
   akuSearchWidget *searchWidget;
   
   QLabel *infoArchive;
+  QLabel *infoExtra;
   QLabel *archiveInfo;  
  
+  QAction *buttonExtract;
+
   KAction *buttonNew;
-  KAction *buttonExtract;
   KAction *buttonDelete;
   KAction *buttonOpen;
   KAction *buttonInfo;
@@ -78,6 +82,8 @@ private:
   KAction *buttonExit;
   KAction *buttonView;
   KAction *separator;
+
+  QString archivePassword;
 
   KRecentFilesAction *recentFilesAction;
 
@@ -106,6 +112,7 @@ protected slots:
   virtual void buildZipTable(QString, bool headercrypted = false);
   virtual void buildTarTable(QString);
   virtual void setupActions();
+  virtual void handleAdvancedRar(QString, QString, bool);
 
 };
 

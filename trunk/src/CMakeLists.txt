@@ -21,9 +21,10 @@ SET(
      overwritedialog.cpp
      akuprogressdialog.cpp
      akuprogresstooltip.cpp
+     extractdialog.cpp
    )
 
-KDE4_ADD_UI_FILES(aku_SRCS overwriteui.ui)
+KDE4_ADD_UI_FILES(aku_SRCS overwriteui.ui extractdialog.ui)
 KDE4_ADD_EXECUTABLE(aku ${aku_SRCS})
 TARGET_LINK_LIBRARIES(aku ${KDE4_KDEUI_LIBS} ${KDE4_KIO_LIBS} ${KDE4_KFILE_LIBS})
 INSTALL(TARGETS aku DESTINATION ${BIN_INSTALL_DIR})

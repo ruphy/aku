@@ -29,7 +29,7 @@ class rar
     rar();
     ~rar();
 
-    void parse (QTreeWidget *, QString bf, akuRatioWidget *);
+    bool parse (QTreeWidget *, QString bf, akuRatioWidget *);
     void simpleParse ( QTreeWidget *, QString bf );
 
     QStringList getArchiveDetails();

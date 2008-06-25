@@ -8,12 +8,14 @@ MAIN WINDOW:
 
 ZIP:
   1) convertire modified in QDate
+  2) implementare correttamente preview
  
 RAR:
   
 
 TAR:
   1) convertire modified in QDate
+  2) implementare correttamente preview
 
 GENERALE:
   1) ringraziamenti a Ruphy per la ratiobar

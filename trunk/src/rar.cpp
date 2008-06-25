@@ -10,11 +10,13 @@ rar::~rar()
 {
 }
 
-void rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
+bool rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
 {
-  int numeroPezziPercorso; // questa variabile dichiarata in questo punto ci permette di velocizzare le operazioni di assegnamento dell'icona  
-                           // contiene il numero di elementi di cui è costituita la lista del percorso e.g. /cartella1/cartella2/cartella3
-                           // e verrà assegnata nel momento in cui sarà ricavata la lista del percorso (con singleItem)
+  // variabile che indica la presenza di file con password (header compreso)
+  bool fileswithpass = false;
+  int numeroPezziPercorso; // questa variabile dichiarata in questo punto ci permette di velocizzare le operazioni di assegnamento dell'icona 
+  // contiene il numero di elementi di cui è costituita la lista del percorso e.g. /cartella1/cartella2/cartella3
+  // e verrà assegnata nel momento in cui sarà ricavata la lista del percorso (con singleItem)
  
   QString nomec;
   int target; //mi serve per sapere cosa eliminare dall'output
@@ -100,10 +102,8 @@ void rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
       QStringList dlist = ( flist.at ( i ) ).split ( " ", QString::SkipEmptyParts );// generiamo una lista contenente i parametri dei file
       if ( dlist[7] != "m0" )   //è inutile scrivere gli attributi della cartella
       {
-          for ( int g=0; g < dlist.size(); g++ )  
-           {
-            if(g==3)
-            {
+          for ( int g = 0; g < dlist.size(); g++ ) {
+            if (g == 3) {
               QDateTime ts (QDate::fromString(dlist[ g ], "dd-MM-yy"),
               QTime::fromString(dlist[ g+1 ], "hh:mm"));
                // FIXME wishing to make Qt::TextDate but 0x years (e.g. 07)
@@ -112,8 +112,9 @@ void rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
               fitem -> setData(g+1, Qt::UserRole, ts);
               fitem -> setTextAlignment(g+1, Qt::AlignVCenter | Qt::AlignHCenter);
               dlist.removeAt(g+1);
-            }else  fitem -> setText ( g+1, dlist[ g ] );
-           }
+            }
+            else  fitem -> setText ( g+1, dlist[ g ] );
+          }
 
           QString size = KLocale( QString() ).formatByteSize(dlist[0].toDouble());
           fitem -> setTextAlignment ( 1, Qt::AlignRight | Qt::AlignVCenter );
@@ -124,24 +125,25 @@ void rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
           size = KLocale( QString() ).formatByteSize(dlist[1] .toDouble());
           fitem -> setText(2, size);
 
-            dlist[2].remove("%");                                      
-            float ratio = dlist[2].toFloat();                         
-            if (ratio > 100.0 || ratio == 0.0) ratio = 0.0;            
-            else ratio = abs(ratio -100.0);
-            fitem->setText(3,QString().setNum(ratio)+"%");
-          //  akuRatioWidget *ratioWidget = new akuRatioWidget(ratio);
-          //  listv -> setItemWidget(fitem, 3, ratioWidget); 
-
-
-
-
-        KMimeType::Ptr mimePtr = KMimeType::findByUrl(KUrl(singleItem[numeroPezziPercorso]));
-        KIcon icon(mimePtr -> iconName());
-        fitem -> setIcon ( 0,icon );
-        fitem -> setText(9, mimePtr->name());
+          dlist[2].remove("%");                                      
+          float ratio = dlist[2].toFloat();                         
+          if (ratio > 100.0 || ratio == 0.0) ratio = 0.0;            
+          else ratio = abs(ratio -100.0);
+          fitem->setText(3,QString().setNum(ratio)+"%");
+   
+          KMimeType::Ptr mimePtr = KMimeType::findByUrl(KUrl(singleItem[numeroPezziPercorso]));
+          KIcon icon(mimePtr -> iconName());
+          fitem -> setIcon ( 0,icon );
+          fitem -> setText(9, mimePtr->name());
       }
-      if(crypted == true) fitem -> setIcon(10, KIcon("dialog-password"));
+
+      if (crypted == true) {
+        fitem -> setIcon(10, KIcon("dialog-password"));
+        fileswithpass = true;
+      }
+
     }     
+
   }  
 
   // here we set status bar info
@@ -156,6 +158,7 @@ void rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
   if (ratioNum > 100.0 || ratioNum == 0.0) ratioNum = 0;
   else ratioNum = abs(ratioNum -100);
   ratioBar -> setRatio ( ratioNum );
+  return fileswithpass;
 }
 
 void rar::simpleParse ( QTreeWidget * listv, QString bf )

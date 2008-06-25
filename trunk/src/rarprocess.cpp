@@ -15,7 +15,6 @@ rarProcess::rarProcess(QWidget *parent, QString rararchiver, QStringList raropti
   passwordAsked = false;
   hasPasswordParameter = false;
 
-  passwordRequests = 0;
   totalFileCount = 0;   //this var will increment until getting the same value of files.size()
   
   rarprogressdialog = NULL;
@@ -271,6 +270,11 @@ void rarProcess::showError(QByteArray streamerror)
   errorDialog->show();
 }
 
+QString rarProcess::getArchivePassword()
+{
+  return archivePassword;
+}
+
 void rarProcess::getError()
 { 
   QByteArray temp = thread -> readAllStandardError();
@@ -305,38 +309,40 @@ void rarProcess::getError()
   
    delete owDialog;             
   }
-  else if(QString().fromAscii(temp).contains("password incorrect ?")) {  // here we handle a header-password-protected archive
+
+  else if(QString().fromAscii(temp).contains("password incorrect ?")) { 
+  // here we handle a header-password-protected archive
     headercrypted = true; //the archive is crypted;
     totalFileCount = 0;
 
     disconnect(thread, SIGNAL(readyReadStandardError()), this, SLOT(getError()));
     disconnect(thread, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
     disconnect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
+
     thread -> killProcess();
-    if(rarprogressdialog != NULL) rarprogressdialog -> cancel();
-    if(processTimer != 0) processTimer -> stop();
+
+    //if(rarprogressdialog != NULL) rarprogressdialog -> cancel();
+    //if(processTimer != 0) processTimer -> stop();
+ 
     KPasswordDialog pwD(parentWidget);
     pwD.setPrompt(i18n("This archive is <b>header password protected</b>.<br>Enter the password:"));
     QPixmap pixmap = KIcon("dialog-password").pixmap(64,64);
     pwD.setPixmap(pixmap);
     
-    if (passwordRequests < 3) {
-      if(!pwD.exec()) return;
-      else passwordRequests++;
+    if(!pwD.exec()) { 
+      emit outputReady(QString(""), false);
+      return;
+    }
     
-      QString password = pwD.password();
-      options.removeLast();
-      options << "-p" +password;
+    QString password = pwD.password();
+  
+    if (!password.isEmpty()) {
+      options << "-p" + password;
       archivePassword = password;
       stdoutput.clear();
       passwordAsked = true;
-     // puts("initProcess called");
-      initProcess();
     }
-    else {
-      KMessageBox::information(parentWidget, i18n("Wrong password"), i18n("Wrong password"));
-      return;
-    }
+    initProcess();
   }
 
   else {  //altrimenti lasciamo che l'errore sia gestito da showError

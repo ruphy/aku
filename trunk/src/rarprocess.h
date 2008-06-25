@@ -20,7 +20,8 @@ class rarProcess : public QObject
     ~rarProcess();
 
     void showError(QByteArray);
-
+  
+    QString getArchivePassword();
     QString standardOutput();
 
   signals:
@@ -56,7 +57,6 @@ class rarProcess : public QObject
     bool hasPasswordParameter;
 
     int totalFileCount;
-    int passwordRequests;
 
     QByteArray streamerror;
     QByteArray rawoutput;
