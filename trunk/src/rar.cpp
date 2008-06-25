@@ -10,7 +10,7 @@ rar::~rar()
 {
 }
 
-int rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
+void rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
 {
   int numeroPezziPercorso; // questa variabile dichiarata in questo punto ci permette di velocizzare le operazioni di assegnamento dell'icona  
                            // contiene il numero di elementi di cui è costituita la lista del percorso e.g. /cartella1/cartella2/cartella3
@@ -149,15 +149,13 @@ int rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
   QStringList archinfo;
   archinfo = stbarst.split ( " ", QString::SkipEmptyParts );
   archinfo[4].remove ( "\n" );
-  archiveDetails << archinfo[1] << KLocale(archinfo[2] ).formatByteSize(archinfo[2].toULong())<<KLocale(archinfo[3] ).formatByteSize(archinfo[3].toULong());
+  archiveDetails << archinfo[1] << KLocale(archinfo[2] ).formatByteSize(archinfo[2].toULong()) << KLocale(archinfo[3] ).formatByteSize(archinfo[3].toULong());
   QString ratio = archinfo.at ( 4 );
   ratio.remove ( ratio.length()-1, 1 );
   float ratioNum = ratio.toFloat();
   if (ratioNum > 100.0 || ratioNum == 0.0) ratioNum = 0;
   else ratioNum = abs(ratioNum -100);
   ratioBar -> setRatio ( ratioNum );
-
-  return archinfo[1].toInt();
 }
 
 void rar::simpleParse ( QTreeWidget * listv, QString bf )

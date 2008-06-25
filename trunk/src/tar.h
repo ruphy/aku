@@ -15,12 +15,15 @@
 class tar
 {
   public:
-  tar();
-  ~tar();
+    tar();
+    ~tar();
 
-  int parse (QTreeWidget *, QString bf, akuRatioWidget *);
-  void simpleParse ( QTreeWidget *, QString bf );
+    void parse (QTreeWidget *, QString bf);
+    void simpleParse ( QTreeWidget *, QString bf );
+    QStringList getArchiveDetails();
 
+  private:
+    QStringList archiveDetails;
 };
 
 #endif

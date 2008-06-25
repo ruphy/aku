@@ -8,7 +8,7 @@ tar::~tar()
 {
 }
 
-int tar::parse(QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
+void tar::parse(QTreeWidget * listv, QString bf)
 { 
   QString link;
   bool islink = false;
@@ -17,7 +17,9 @@ int tar::parse(QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
   //puts("----");
   //puts(lastline.toAscii());
   QStringList flist = bf.split ("\n" ); //splitto basandomi sul carattere di newline
+  archiveDetails << QString().setNum(flist.size());
   int numeroPezziPercorso;
+  ulong archivesize = 0;
   QRegExp sep("(\\s+)");
   //inizio il ciclo per la visualizzazione dell'elenco
   for ( int i = 0; i < flist.size(); i++ ) {
@@ -95,9 +97,12 @@ int tar::parse(QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
     QStringList dlist = (flist.at(i)).split(" ", QString::SkipEmptyParts ); // generiamo una lista contenente i parametri dei file
     //puts(dlist[4].toAscii() + dlist[6].toAscii());
     //const QChar firstchar = dlist[0].at[0];   // assegno il primo carattere dei permessi alla variabile per distinguere directory e link
+    
     if (dlist[0][0] != QChar('d')) {  //è inutile scrivere gli attributi della cartella
       fitem -> setText(4, dlist[3] + " " + dlist[4]);  // modified    
-      QString size = KLocale( QString() ).formatByteSize(dlist[2].toDouble());  // 3 -> dimensione originale del file
+      //puts(dlist[2].toAscii());
+      archivesize = archivesize + dlist[2].toULong();
+      QString size = KLocale( QString() ).formatByteSize(dlist[2].toULong());  // 3 -> dimensione originale del file
       fitem -> setText(1, size);
       fitem -> setText(5, dlist[0]);   // attributi 
       fitem -> setText(11, dlist[1]);   // owner/group
@@ -116,5 +121,12 @@ int tar::parse(QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
       fitem -> setIcon (0, icon);
       fitem -> setText(9, mimePtr->name());
     }
+    
   }
+  archiveDetails << QString().setNum(archivesize);
+}
+
+QStringList tar::getArchiveDetails()
+{
+  return QStringList() = archiveDetails;
 }

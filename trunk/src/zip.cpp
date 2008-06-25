@@ -8,7 +8,7 @@ zip::~zip()
 {
 }
 
-int zip::parse(QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
+void zip::parse(QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
 {
   bf.remove(0, (bf.indexOf("\n") + 1)); // elimino la prima riga
   bf.remove(bf.lastIndexOf("\n"), bf.size()); // elimino l'ultima riga
@@ -110,4 +110,18 @@ int zip::parse(QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
       fitem -> setText(9, mimePtr->name());
     }
   }
+
+  QStringList archinfo;
+  archinfo = lastline.split ( " ", QString::SkipEmptyParts );
+  archiveDetails << archinfo[0] << KLocale(archinfo[2] ).formatByteSize(archinfo[2].toULong()) << KLocale(archinfo[5] ).formatByteSize(archinfo[5].toULong());
+  
+  QString ratio = archinfo.at (8);
+  ratio.remove (ratio.length() - 1, 1);
+  ratioBar -> setRatio (int(ratio.toFloat() + 0.5f));
+
+}
+
+QStringList zip::getArchiveDetails()
+{
+  return QStringList() = archiveDetails;
 }

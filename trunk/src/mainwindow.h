@@ -17,6 +17,8 @@
 #include <KUrl>
 #include <KRecentFilesAction>
 #include <KMimeType>
+#include <KGlobalSettings>
+#include <KDebug>
 
 #include "akumaintable.h"
 #include "akutip.h"

@@ -15,11 +15,15 @@
 class zip
 {
   public:
-  zip();
-  ~zip();
+    zip();
+    ~zip();
 
-  int parse (QTreeWidget *, QString bf, akuRatioWidget *);
-  void simpleParse ( QTreeWidget *, QString bf );
+    void parse (QTreeWidget *, QString bf, akuRatioWidget *);
+    void simpleParse ( QTreeWidget *, QString bf );
+    QStringList getArchiveDetails();
+
+  private:
+    QStringList archiveDetails;
 
 };
 

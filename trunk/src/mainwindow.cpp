@@ -41,18 +41,21 @@ MainWindow::~MainWindow()
 
 void MainWindow::setupStatusBar()
 {
-  archiveInfo = new QLabel(this);  
+  archiveInfo = new QLabel(this); 
+  archiveInfo ->  setFont(KGlobalSettings::generalFont());
   statusBar() -> addPermanentWidget(archiveInfo, 0);
   //infoLock = new QLabel(this);
   //infoLock -> setMaximumSize(22,18);
   ratioBar = new akuRatioWidget(0,this);
   ratioBar -> setMinimumSize(120,0);
+  ratioBar -> setVisible(false);
   statusWidget = new QWidget(this);
   QGridLayout *statusLayout = new QGridLayout(statusWidget);
   statusLayout -> addWidget(archiveInfo,1,1);
   statusLayout -> addWidget(ratioBar,1,2);
   //statusLayout -> addWidget(infoLock,1,3);
   statusBar() -> addPermanentWidget(statusWidget);
+  
 }
 
 void MainWindow::setupSearchBar()
@@ -100,6 +103,7 @@ void MainWindow::setupActions()
   buttonView = new KAction(this);
   buttonView -> setIcon(KIcon("document-preview-archive"));
   buttonView -> setText(i18n("Preview"));
+  buttonView -> setEnabled(false);
   actionCollection() -> addAction("preview", buttonView);
   //recents = KStandardAction::openRecent(this, SLOT(openRecentFile(KUrl)), actionCollection());
   
@@ -220,6 +224,8 @@ void MainWindow::openUrl(const KUrl& url)
   // costruisco la tabella
   if (!compressor.isEmpty()) {
     archive = url.pathOrUrl();
+    ratioBar -> setVisible(true);
+    setCaption(archive);
   }
   else {
     tip->setTip(i18n("The file is not a supported archive") + " (" + (mimetype -> comment()) + ")");
@@ -236,6 +242,10 @@ void MainWindow::buildZipTable(QString zipoutput, bool crypted)
      table -> clear(); //ripulisco la lista
      zip nzip;
      nzip.parse(table, zipoutput, ratioBar);
+  
+     QStringList archivedetails = nzip.getArchiveDetails();
+     archiveInfo -> setText(archivedetails[0] + " " + "<b>" + i18n("file(s)") + "  " + i18n("size:") + "</b> " + archivedetails[1] + " <b> " + i18n("packed:") + "</b> " + archivedetails[2] + "  "); 
+
      table -> header() -> setResizeMode(0, QHeaderView::ResizeToContents);
      table -> header() -> setResizeMode(3, QHeaderView::ResizeToContents);
      table -> header() -> setResizeMode(4, QHeaderView::ResizeToContents);
@@ -256,13 +266,24 @@ void MainWindow::buildTarTable(QString taroutput)
      table -> setFormat("tar");
      table -> clear();
      tar ntar;
-     ntar.parse(table, taroutput, ratioBar);
+     ntar.parse(table, taroutput);
+
+     QStringList archivedetails = ntar.getArchiveDetails();
+   
+     KFileItem file(KFileItem::Unknown, KFileItem::Unknown, KUrl(archive));
+     float ratio (100 - ((100.0 * file.size()) / archivedetails[1].toULongLong()));
+   
+     archiveInfo -> setText(archivedetails[0] + " " + "<b>" + i18n("file(s)") + "  " + i18n("size:") + "</b> " + KLocale(archivedetails[1]).formatByteSize(archivedetails[1].toULong()) + " <b> " + i18n("packed:") + "</b> " + KLocale(QString().setNum(file.size())).formatByteSize((QString().setNum(file.size())).toULong()) + "  ");
+
+     ratioBar -> setRatio(int(ratio + 0.5f));    
+ 
      table -> header() -> setResizeMode(0, QHeaderView::ResizeToContents);
      table -> header() -> setResizeMode(4, QHeaderView::ResizeToContents);
      table -> header() -> setResizeMode(11, QHeaderView::ResizeToContents);
      expandTopLevelItems();
      table -> sortItems ( 0, Qt::AscendingOrder );
      setFolderIcons();
+     
    }
    enableActions(true);
    statusBar()->clearMessage();
@@ -275,16 +296,13 @@ void MainWindow::buildRarTable(QString raroutput, bool crypted)
   { 
     table -> setFormat("rar");
     table -> clear(); //ripulisco la lista
-  //inizio il processo per il parsing dell'output
     rar nrar;
-    nrar.parse (table, raroutput, ratioBar); //metaWidget -> ratioBar() 
+    nrar.parse (table, raroutput, ratioBar);  //metaWidget -> ratioBar() 
+    
     QStringList archivedetails = nrar.getArchiveDetails();
     
-    //archiveInfo -> setText(archivedetails[0] + " " + i18n("file(s)") + "  " + i18n("Size:") + " " +archivedetails[1] + "  " + i18n("Packed:") + " " +archivedetails[2] + "  ");
+    archiveInfo -> setText(archivedetails[0] + " " + "<b>" + i18n("file(s)") + "  " + i18n("size:") + "</b> " + archivedetails[1] + " <b> " + i18n("packed:") + "</b> " + archivedetails[2] + "  ");
 
-//     //mi occupo di settare tutte le opzioni che riguardano l'interfaccia
-//     enableActions(true);
-// 
 //     //if(crypted){
 //     //globalArchivePassword = newProcHandler -> getArchivePassword();
 //     //actionAddFolderPwd->setEnabled(false);

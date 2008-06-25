@@ -12,8 +12,13 @@
 #include <QPushButton>
 #include <QImage>
 #include <QSpinBox>
+#include <QString>
 #include <QLinearGradient>
 #include <QPen>
+
+#include <KGlobalSettings>
+#include <KDebug>
+
 
 class akuRatioWidget : public QWidget
 {
@@ -29,6 +34,7 @@ public slots:
 
 private:
   void paintEvent(QPaintEvent *);
+  QPainterPath drawRoundedRect(const QRectF &rect, qreal radius);
   float lunghezza;
 };
 
