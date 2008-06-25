@@ -49,6 +49,7 @@ void overwriteDialog::yesOverwrite()
     yesToAll = true;
   }
   else overwriteProcess -> write("y\n");
+  yes = true;
   this -> accept();
 }
 
@@ -60,6 +61,7 @@ void overwriteDialog::noOverwrite()
     noToAll = true;
   }
   else overwriteProcess -> write("n\n");
+  yes = false;
   this -> accept();
 }
  
@@ -148,4 +150,9 @@ bool overwriteDialog::yesToAllChecked()
 bool overwriteDialog::noToAllChecked()
 {
   return noToAll;
+}
+
+bool overwriteDialog::isYes()
+{
+ return yes;
 }

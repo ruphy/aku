@@ -24,6 +24,7 @@ public:
   bool isToAllChecked();
   bool yesToAllChecked();
   bool noToAllChecked();
+  bool isYes();
 
 public slots:
   virtual void renameAction();
@@ -45,6 +46,7 @@ protected slots:
 private:
   bool yesToAll;
   bool noToAll;
+  bool yes;
   QString destinationPath;
   QString destinationName;
   QString destinationFilePath;
