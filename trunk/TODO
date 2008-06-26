@@ -5,6 +5,7 @@ MAIN WINDOW:
   2) ordinamento logico per tutti i file della main
   3) ordinamento su colonne packed, size, data, ratio
   4) controllare il numero max di open recent
+  5) controllare il numero max di destination dirs
 
 ZIP:
   1) convertire modified in QDate
@@ -20,3 +21,6 @@ TAR:
 GENERALE:
   1) ringraziamenti a Ruphy per la ratiobar
   2) conversioni tra i formati; rar -> zip; rar -> tar e così via
+
+OVERWRITE DIALOG:
+  1) Solito but QLIST quando si fanno più rename

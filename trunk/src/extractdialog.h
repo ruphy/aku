@@ -60,6 +60,7 @@ private:
 signals:
   void closeArchive();
   void cantDelete();
+  void processDialog(bool);
 
 };
 

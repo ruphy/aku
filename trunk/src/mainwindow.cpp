@@ -34,6 +34,8 @@ MainWindow::MainWindow (QWidget* parent, Qt::WFlags flags): KXmlGuiWindow (paren
   setupConnections();
   setupDocks();
   setupGUI (QSize(650,460));
+  dockComment -> setVisible(false);
+  buttonComment -> setVisible(false);
 }
 
 MainWindow::~MainWindow()
@@ -45,6 +47,7 @@ void MainWindow::setupDocks()
 {
   dockComment = new QDockWidget(this);
   dockComment -> setObjectName("dockComment");
+  dockComment -> setVisible(true);
   QLabel *commentTitle = new QLabel(i18n("Comment"),dockComment);
   commentTitle -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   QWidget *baseComment = new QWidget(dockComment);
@@ -58,11 +61,9 @@ void MainWindow::setupDocks()
   // commentEdit -> setReadOnly(true);
   dockComment -> setFloating(true);
   buttonComment = dockComment -> toggleViewAction();
-  buttonComment -> setEnabled(true);
-  buttonComment -> setVisible(false);
   buttonComment -> setText(i18n("Show Comment"));
   actionCollection() -> addAction("comment", buttonComment);
-  dockComment -> setVisible(false);
+  
 }
 
 void MainWindow::setupStatusBar()
@@ -88,8 +89,6 @@ void MainWindow::setupSearchBar()
 {
   searchWidget = new akuSearchWidget(table, baseWindowWidget);
   searchWidget -> setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
- // searchWidget -> setMaximumSize(655555, 35);
- // baseWindowLayout->addWidget( searchWidget);
   searchWidget -> setVisible (false);	
   buttonFind = searchWidget -> getCloseAction();
 }
@@ -149,10 +148,11 @@ void MainWindow::setupActions()
   //actionCollection() -> addAction("lock", buttonLock);
   //KMenu *commands = new KMenu(i18n("Commands"), menuBar());
   //actionCollection() -> addAction("commands", commands->menuAction());
-  //buttonAddComment = new KAction(this);
-  //buttonAddComment -> setText(i18n("Add Archive Comment"));
-  //buttonAddComment -> setIcon(KIcon("kontact-notes"));
-  //actionCollection() -> addAction("add_comment", buttonAddComment);
+  buttonAddComment = new KAction(this);
+  buttonAddComment -> setText(i18n("Add Archive Comment"));
+  buttonAddComment -> setIcon(KIcon("view-pim-notes"));
+  buttonAddComment -> setEnabled(false);
+  actionCollection() -> addAction("add_comment", buttonAddComment);
   //buttonAddFolder = new KAction(this);
   //buttonAddFolder -> setText(i18n("Add Folder"));
   //buttonAddFolder -> setIcon(KIcon("archive-insert-directory"));
@@ -183,6 +183,7 @@ void MainWindow::setupConnections()
 {
   connect (buttonInfo, SIGNAL (toggled (bool)), this, SLOT(viewInformation(bool)));
   connect (buttonView, SIGNAL (triggered()), this, SLOT (embeddedViewer()));
+  connect (buttonAddComment, SIGNAL(triggered()), this, SLOT(addComment()));
   connect (table, SIGNAL (itemSelectionChanged()), this, SLOT (metaBar()));
   connect (table, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(openItemUrl(QTreeWidgetItem *, int)));
   connect (buttonExtract, SIGNAL (triggered() ), this, SLOT (extractArchive()));
@@ -195,6 +196,7 @@ void MainWindow::enableActions(bool enable)
   buttonNew -> setEnabled(enable);
   buttonView -> setEnabled(enable);
   buttonExtract -> setEnabled(enable);
+  buttonAddComment -> setEnabled(enable);
   if (enable) setCursor(QCursor());
   else setCursor(Qt::WaitCursor);
 }
@@ -417,7 +419,7 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput, bool fil
     raroutput.remove(raroutput.indexOf("Pathname"), raroutput.length());
 
     editComment -> setText(raroutput);
-    dockComment -> setGeometry(x() - 200, y(), 200,200);
+    dockComment -> setGeometry(x() - 300, y(), 300, 200);
     dockComment -> setVisible(true);
     buttonComment -> setVisible(true);
   }
@@ -477,11 +479,16 @@ void MainWindow::metaBar()
   if (checkSelected.size() != 0) {
     if (checkSelected.size() == 1) {
       getMetaInfo(checkSelected[0]);
-      if ((checkSelected[0] -> text(9).contains("image")) && metaWidget -> isVisible() ) {
+      if ((checkSelected[0] -> text(9).contains("image")) && metaWidget -> isVisible() && ((checkSelected[0] -> icon(10).isNull()) || !archivePassword.isEmpty())) {
         //if the file is an image we make a preview
         QString itemPath = rebuildFullPath(checkSelected[0]);
         QProcess imagepreview;
-        if (compressor == "rar") imagepreview.start(compressor, QStringList() << "p" << "-inul" << archive << itemPath);
+        if (compressor == "rar") {
+          QStringList options;
+          options << "p" << "-inul";
+          if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
+          imagepreview.start(compressor, options << archive << itemPath);
+        }
         if (compressor == "zip") imagepreview.start("unzip", QStringList() << "-p" << "-qq" << archive << itemPath);
         if (compressor == "tar") imagepreview.start(compressor, QStringList()<< "-xOf" << archive <<itemPath);
         imagepreview.waitForFinished();
@@ -615,7 +622,7 @@ void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento 
     QFile tempFile(tempPath + fileToExtract);
     rarProcess *rarprocess;
     if(!tempFile.exists()) {
-      rarprocess = new rarProcess(this, "rar", QStringList() << "x", archive ,QStringList() << fileToExtract, tempPath); //estraiamo il file nella cartella temporanea
+      rarprocess = new rarProcess(this, "rar", QStringList() << "e", archive ,QStringList() << fileToExtract, tempPath); //estraiamo il file nella cartella temporanea
       rarprocess -> start();
     }
     QString forUrl;
@@ -630,7 +637,6 @@ void MainWindow::extractArchive()
   QStringList itemspath;
   QList<QTreeWidgetItem*> selectedToExtract = table -> selectedItems();
   extractDialog *exdialog;
-
   if(selectedToExtract.size() != 0) {
     for (int i = 0; i < selectedToExtract.size(); i++ ) {
       QTreeWidgetItem *tmp;
@@ -651,6 +657,49 @@ void MainWindow::extractArchive()
     exdialog = new extractDialog (compressor, archive, itemspath, QStringList(), this);
   }
   else exdialog = new extractDialog (compressor, archive, QStringList(), QStringList(), this);
+ // connect(exdialog, SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
+}
+
+void MainWindow::operationCompleted(bool value)
+{
+  if (value) {
+    tip->setTip(i18n("Operation completed"));
+    tip->show();
+  }
+  else {
+    tip->setTip(i18n("One or more errors occurred"));
+    tip->show();
+  }
+}
+
+void MainWindow::addComment()
+{ 
+  dockComment -> setVisible(false);
+  akuComment *dialog = new akuComment(editComment -> toPlainText(), this);
+  connect (dialog, SIGNAL (okClicked(QString)), this, SLOT(insertComment(QString)));
+  dialog -> exec();
+}
+
+void MainWindow::insertComment(QString newcomment)
+{ 
+  KTemporaryFile temptxt;
+  if (temptxt.open()) {
+    temptxt.write(newcomment.toUtf8());
+    temptxt.waitForBytesWritten(-1);
+    temptxt.flush();
+    //QString tmp = 
+    QStringList options;
+    options << "c" << "-z" + temptxt.fileName();
+    if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
+    rarProcess *rarprocess = new rarProcess(this, compressor, options, archive);
+    connect(rarprocess,SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
+    rarprocess->start();
+    editComment -> setText(newcomment.toUtf8());
+    dockComment -> setGeometry(x() - 300, y(), 300, 200);
+    dockComment -> setVisible(true);
+    buttonComment -> setVisible(true);
+  }
+  temptxt.close();
 }
 
 void MainWindow::quit()

@@ -194,12 +194,14 @@ void extractDialog::extraction()
   if (!checkAuthenticity-> isChecked()) switches << "-av-";
  
   puts("extracting with options:"+ command.toAscii() + " "+ options.join(" ").toAscii() + " " +switches.join(" ").toAscii());
+
   if ( !files.isEmpty() ) {
     if (options.isEmpty()) rarprocess = new rarProcess(parentWidget,compressor, QStringList() << command << switches, archivename , files , khistorycombobox -> currentText());
     else rarprocess = new rarProcess(parentWidget,compressor, QStringList()<< command << options << switches, archivename , files , khistorycombobox -> currentText());
     if(checkOpenDestination ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(openDestinationPath(bool)));
     if(radioDeleteAlways ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchive(bool)));
     if(radioDeleteAsk ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchiveAsk(bool)));
+    connect(rarprocess, SIGNAL(processCompleted(bool)), this, SIGNAL(processDialog(bool)));
   }
   else  {
     if(options.isEmpty()) rarprocess = new rarProcess(parentWidget, compressor, QStringList() << command << switches,archivename ,QStringList(), khistorycombobox -> currentText() );
@@ -207,10 +209,12 @@ void extractDialog::extraction()
     if(checkOpenDestination ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(openDestinationPath(bool)));
     if(radioDeleteAlways ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchive(bool)));
     if(radioDeleteAsk ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchiveAsk(bool)));
+    connect(rarprocess, SIGNAL(processCompleted(bool)), this, SIGNAL(processDialog(bool)));
   }
   rarprocess -> start();
+  connect(rarprocess, SIGNAL(processCompleted(bool)), this, SIGNAL(processDialog(bool)));
 
-  tmphistory << khistorycombobox -> currentText();
+  if (!tmphistory.contains(khistorycombobox -> currentText())) tmphistory << khistorycombobox -> currentText();
   KConfig config;
   KConfigGroup options(&config, "Extraction dialog");
   options.writeEntry("destination dirs", tmphistory);

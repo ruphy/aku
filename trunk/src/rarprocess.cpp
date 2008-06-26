@@ -212,7 +212,9 @@ void rarProcess::showProgress()
     }
   }
 
-  if ( QString(gotOutput).contains("All OK"))  rarprogressdialog -> accept(); 
+  if ( QString(gotOutput).contains("All OK")) {
+    rarprogressdialog -> accept(); 
+  }
 
 }
 

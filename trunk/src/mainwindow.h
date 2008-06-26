@@ -19,6 +19,7 @@
 #include <KRecentFilesAction>
 #include <KMimeType>
 #include <KGlobalSettings>
+#include <KTemporaryFile>
 #include <KDebug>
 
 #include "akumaintable.h"
@@ -32,6 +33,7 @@
 #include "tar.h"
 #include "akumetawidget.h"
 #include "akuviewer.h"
+#include "akucomment.h"
 #include "extractdialog.h"
 
 class MainWindow : public KXmlGuiWindow
@@ -58,6 +60,8 @@ public slots:
   virtual void embeddedViewer();
   virtual void openItemUrl(QTreeWidgetItem *, int );
   virtual void extractArchive();
+  virtual void operationCompleted(bool);
+  virtual void insertComment(QString);
 
 private:
   QWidget *baseWindowWidget;
@@ -83,6 +87,7 @@ private:
   KAction *buttonFind;
   KAction *buttonExit;
   KAction *buttonView;
+  KAction *buttonAddComment;
   KAction *separator;
 
   QString archivePassword;
@@ -120,6 +125,7 @@ protected slots:
   virtual void setupActions();
   virtual void setupDocks();
   virtual void handleAdvancedRar(QString, QString, bool);
+  virtual void addComment();
 
 };
 

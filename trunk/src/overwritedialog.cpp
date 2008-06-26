@@ -82,7 +82,6 @@ void overwriteDialog::renameOverwrite()
 { 
   toallButton -> setChecked(false);
   if (!((klineedit -> text()).isEmpty())) {
-    puts("NUOVO NOME INSERITO");
     overwriteProcess -> write("r\n");
     overwriteProcess -> write(klineedit -> text().toAscii()+"\n");
     this -> accept();
