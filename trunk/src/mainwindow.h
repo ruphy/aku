@@ -6,6 +6,7 @@
 #include <QGridLayout>
 #include <QProcess>
 #include <QDesktopServices>
+#include <QDockWidget>
 
 #include <KApplication>
 #include <KXmlGuiWindow>
@@ -73,6 +74,7 @@ private:
   QLabel *archiveInfo;  
  
   QAction *buttonExtract;
+  QAction *buttonComment;
 
   KAction *buttonNew;
   KAction *buttonDelete;
@@ -97,6 +99,10 @@ private:
 
   akuMetaWidget *metaWidget;
 
+  QDockWidget *dockComment;
+
+  KTextEdit *editComment;
+
 private slots:
   void quit();
 
@@ -112,6 +118,7 @@ protected slots:
   virtual void buildZipTable(QString, bool headercrypted = false);
   virtual void buildTarTable(QString);
   virtual void setupActions();
+  virtual void setupDocks();
   virtual void handleAdvancedRar(QString, QString, bool);
 
 };

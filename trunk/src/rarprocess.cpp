@@ -167,6 +167,10 @@ void rarProcess::handlePaused()
   thread -> pauseProcess();
 }
 
+void rarProcess::handleContinued()
+{
+  thread -> continueProcess();
+}
 
 QString rarProcess::standardOutput()
 {

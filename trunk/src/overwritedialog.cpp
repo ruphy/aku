@@ -31,7 +31,7 @@ overwriteDialog::overwriteDialog(QProcess *proc, QWidget* parent, Qt::WFlags fl)
   connect(yesButton, SIGNAL(clicked()),this, SLOT(yesOverwrite()));
   connect(noButton, SIGNAL(clicked()), this, SLOT(noOverwrite()));
   connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancelOverwrite()));
- 
+  connect(klineedit, SIGNAL(returnPressed()), this, SLOT(renameOverwrite()));
 }
 
 // destination -->> hard disk file
@@ -75,14 +75,14 @@ void overwriteDialog::renameAction()
 {
   klineedit -> setEnabled(true);
   klineedit -> setFocus(Qt::MouseFocusReason);
-  connect(klineedit, SIGNAL(returnPressed()), this, SLOT(renameOverwrite()));
+  klineedit -> setClickMessage(i18n("Write the new name and press Enter"));
 }
 
 void overwriteDialog::renameOverwrite()
 { 
   toallButton -> setChecked(false);
-  if(klineedit -> text() != "")
-  {
+  if (!((klineedit -> text()).isEmpty())) {
+    puts("NUOVO NOME INSERITO");
     overwriteProcess -> write("r\n");
     overwriteProcess -> write(klineedit -> text().toAscii()+"\n");
     this -> accept();

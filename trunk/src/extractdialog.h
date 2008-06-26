@@ -33,10 +33,10 @@ public slots:
   virtual void completerBox();
   virtual void updateTreeViewSelection(QString);
   virtual void hiddenFiles(bool);
-  //virtual void extraction();
+  virtual void extraction();
   virtual void closeDialog();
   virtual void defaultSettings();
-  //virtual void loadSettings();
+  virtual void loadSettings();
   //virtual void saveSettings();
   virtual void updateCombo(KUrl);
   virtual void openDestinationPath(bool);
@@ -47,7 +47,15 @@ public slots:
 
 private:
   QWidget *parentWidget;
-  QString globalArchiver;
+ 
+  QString compressor;
+  QString archivename;
+
+  QStringList options;
+  QStringList files;
+  QStringList tmphistory;
+
+  KAction *showhiddenAction;
 
 signals:
   void closeArchive();

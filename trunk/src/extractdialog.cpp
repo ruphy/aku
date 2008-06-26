@@ -1,20 +1,22 @@
 #include "extractdialog.h"
 
-QString rarToExtract;
-QStringList itemsToExtract;
 rarProcess *rarprocess;
-QStringList params;
 
-extractDialog::extractDialog (QString archiver, QString archive, QStringList files, QStringList additionalParameters, QWidget* parent, Qt::WFlags fl ) : KDialog ( parent, fl ), Ui::Dialog()
+extractDialog::extractDialog (QString archiver, QString archive, QStringList filestoextract, QStringList parameters, QWidget* parent, Qt::WFlags fl ) : KDialog ( parent, fl ), Ui::Dialog()
 {
-  globalArchiver = archiver;
-  params = additionalParameters;
+  compressor = archiver;
+  archivename = archive;
+  options = parameters;
   parentWidget = parent;
+  files = filestoextract;
+
   setupUi (this);
-  KAction *actionShow_hidden_files = new KAction(treeView);
-  actionShow_hidden_files -> setText(i18n("Show hidden files"));
-  actionShow_hidden_files -> setCheckable(true);
-  treeView -> addAction ( actionShow_hidden_files );
+
+  showhiddenAction = new KAction(treeView);
+  showhiddenAction -> setText(i18n("Show hidden files"));
+  showhiddenAction -> setCheckable(true);
+
+  treeView -> addAction (showhiddenAction);
   treeView -> setColumnHidden (1, true );
   treeView -> setColumnHidden (2, true );
   treeView -> setColumnHidden (3, true );
@@ -26,10 +28,18 @@ extractDialog::extractDialog (QString archiver, QString archive, QStringList fil
   treeView -> setDirOnlyMode(true);
   treeView -> setEditTriggers(QAbstractItemView::NoEditTriggers);
   treeView -> setCurrentUrl(KUrl(QDir::homePath()));
-  show();
+  
   completerBox();
-  rarToExtract = archive;
-  itemsToExtract = files;
+
+  // modifiche all'interfaccia grafica a seconda del formato da gestire
+  if (compressor == "rar") {
+  }
+  else if (compressor == "zip") {
+    compressor = "unzip";
+  }
+  else if (compressor == "tar") {
+  }
+ 
   enableButtonOk(false);
   enableButtonCancel(false);
   showButton(KDialog::Ok, false);
@@ -42,18 +52,20 @@ extractDialog::extractDialog (QString archiver, QString archive, QStringList fil
   newdirButton -> setGuiItem(guiItem2);
   KGuiItem guiItem3(i18n("Save Settings"), "document-save");
   buttonSave -> setGuiItem(guiItem3);
-  //loadSettings();
-  //connect ( kdialogbuttonbox, SIGNAL (accepted()), this, SLOT (extraction()));
+
+  loadSettings();  
+  show();
+
+  connect ( kdialogbuttonbox, SIGNAL (accepted()), this, SLOT (extraction()));
   connect ( kdialogbuttonbox, SIGNAL (rejected()), this, SLOT (closeDialog()));
   connect ( newdirButton, SIGNAL (clicked()), this, SLOT (createNewFolder()));
   connect ( buttonDefault, SIGNAL (clicked()), this, SLOT (defaultSettings()));
   connect ( buttonSave, SIGNAL (clicked()), this, SLOT (saveSettings()));
-  connect ( actionShow_hidden_files, SIGNAL (toggled(bool)), this, SLOT (hiddenFiles(bool)));
+  connect ( showhiddenAction, SIGNAL (toggled(bool)), this, SLOT (hiddenFiles(bool)));
   connect ( treeView, SIGNAL (currentChanged (KUrl)), this, SLOT (updateCombo(KUrl)));
   connect ( khistorycombobox, SIGNAL(returnPressed(QString)), this, SLOT(updateTreeViewSelection(QString)));
   connect ( khistorycombobox, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateTreeViewSelection(QString)));
   radioAbsolutepath -> setEnabled(false);
-
 }
 
 extractDialog::~extractDialog()
@@ -70,8 +82,7 @@ void extractDialog::createNewFolder()
 {
   bool ok;
   QString folderName = QInputDialog::getText(this, i18n("New Folder"), i18n("Enter a name for the new folder"),  KLineEdit::Normal, i18n("New Folder"),&ok);
-  if(ok && !folderName.isEmpty())
-  {
+  if(ok && !folderName.isEmpty()) {
     QString currentPath = treeView -> currentUrl().pathOrUrl();
     if(!currentPath.endsWith(QDir::separator())) currentPath.append(QDir::separator());
     if(QDir(currentPath).mkdir(folderName)) treeView -> setCurrentUrl(KUrl(currentPath+folderName));
@@ -81,26 +92,15 @@ void extractDialog::createNewFolder()
 void extractDialog::updateTreeViewSelection(QString path)
 {
   KUrl url(path);
-  if(url.isLocalFile())
-    treeView -> setCurrentUrl(url); 
+  if(url.isLocalFile()) treeView -> setCurrentUrl(url); 
 }
 
 void extractDialog::hiddenFiles(bool status)
 {
-  if (status == true) 
-  {
-    //puts ("true");
-    KUrl current = treeView -> currentUrl();
-    treeView -> setShowHiddenFiles(true);
-    treeView -> setCurrentUrl(current);
-  }
-  else
-  {
-    //puts ("false");
-    KUrl current = treeView -> currentUrl();
-    treeView -> setShowHiddenFiles(false);
-    treeView -> setCurrentUrl(current);
-  }
+  KUrl current = treeView -> currentUrl();
+  if (status) treeView -> setShowHiddenFiles(true);
+  else treeView -> setShowHiddenFiles(false);
+  treeView -> setCurrentUrl(current);
 }
 
 void extractDialog::completerBox()
@@ -117,135 +117,122 @@ void extractDialog::checkPath()
     QDir().mkpath(khistorycombobox -> currentText());
 }
 
-// void extractDialog::extraction()
-// {
-//   checkPath();
-// 
-//   QString command;
-//   QString updatemode;
-//   QString overwritemode;
-// 
-//   // update mode
-//   switch (comboUpdateBox -> currentIndex())
-//   {
-//     case 1:
-//     // extract and update files
-//     // Update files. May be used with archive extraction or creation.
-//     // the switch '-u' is used with the commands 'x' or 'e', then files
-//     // not present on the disk and files newer than their copies on the
-//     // disk would extracted from the archive.
-//       updatemode = "-u";
-//       break;
-//     case 2:
-//     // fresh existing files only
-//     // Freshen files. May be used with archive extraction or creation.
-//     // the switch '-f' is used with the commands 'x' or 'e', then only
-//     // old files would be replaced with new versions extracted from the
-//     // archive.
-//       updatemode = "-f";
-//       break;
-//     default:
-//       // extract and replace files
-//       updatemode = "";
-//   }
-//   
-//   // overwrite mode
-//   switch (comboOverwriteBox -> currentIndex())
-//   {
-//     case 1:
-//       // overwrite without prompt
-//       overwritemode = "-o+";
-//       break;
-//     case 2:
-//       // skip existing files 
-//       overwritemode = "-o-";
-//       break;
-//     case 3:
-//       // rename automatically
-//       overwritemode = "-or";
-//       break;
-//     default:
-//       // ask before overwrite
-//       overwritemode = "";
-//   }
-// 
-//   QStringList switches;
-//   if (!updatemode.isEmpty()) switches << updatemode;
-//   else if (!overwritemode.isEmpty()) switches << overwritemode;
-// 
-//   // Keep Broken File
-//   // RAR, by default, deletes files with CRC errors after
-//   // extraction. The switch -kb specifies that files with
-//   // CRC errors should not be deleted.
-//   if (checkKeepBroken -> isChecked()) switches << "-kb";
-// 
-//   // RadioFilePath "rar e" or "rar x"
-//   // non considero per il momento la terza opzione "absolute path"
-//   // checkRadioFilePath
-//   // 1. Extract full paths -->>          x
-//   // 2. Do not extract full paths -->>   e
-//   // 3. Extract absolute paths -->>      ?
-//   if (radioFullpath -> isChecked()) command = "x";
-//   else command = "e";
-//   
-//   if (checkTimeLast -> isChecked()) switches << "-tsa";
-//   if (checkTimeCreation -> isChecked()) switches << "-tsc";
-//   if (checkTimeModification -> isChecked()) switches << "-tsm ";
-//   // -cl     Convert file names to lower case
-//   if (checkLowerCase-> isChecked()) switches << "-cl";
-//   // -av-    Disable authenticity verification checking or adding.
-//   if (!checkAuthenticity-> isChecked()) switches << "-av-";
-// 
-//   puts("extracting with params:"+ command.toAscii() + " "+ params.join(" ").toAscii() + " " +switches.join(" ").toAscii());
-//   if ( !itemsToExtract.isEmpty() )
-//   {
-//     if (params.isEmpty()) rarprocess = new rarProcess(parentWidget,globalArchiver, QStringList() << command << switches, rarToExtract , itemsToExtract , khistorycombobox -> currentText());
-//     else rarprocess = new rarProcess(parentWidget,globalArchiver, QStringList()<< command << params << switches, rarToExtract , itemsToExtract , khistorycombobox -> currentText());
-//     if(checkOpenDestination ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(openDestinationPath(bool)));
-//     if(radioDeleteAlways ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchive(bool)));
-//     if(radioDeleteAsk ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchiveAsk(bool)));
-//   }
-//   else
-//   {
-//     
-//     if(params.isEmpty()) rarprocess = new rarProcess(parentWidget, globalArchiver, QStringList() << command << switches,rarToExtract ,QStringList(), khistorycombobox -> currentText() );
-//     else rarprocess = new rarProcess(parentWidget, globalArchiver, QStringList() << command << params << switches,rarToExtract ,QStringList(), khistorycombobox -> currentText() );
-//     if(checkOpenDestination ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(openDestinationPath(bool)));
-//     if(radioDeleteAlways ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchive(bool)));
-//     if(radioDeleteAsk ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchiveAsk(bool)));
-//     
-//   }
-//   rarprocess -> start();
-//   khistorycombobox -> addToHistory(khistorycombobox -> currentText());
-// 
-//   KConfig config;
-//   QStringList list;
-//   KConfigGroup options(&config, "HistoryList");
-//   list = khistorycombobox -> historyItems();
-//   options.writeEntry("History", list);
-// 
-//   accept();
-//   //ext.waitForFinished();
-// }
+void extractDialog::extraction()
+{
+  checkPath();
+   
+  QString command;
+  QString updatemode;
+  QString overwritemode;
+
+  //update mode
+  switch (comboUpdateBox -> currentIndex())   {
+    case 1:
+     // extract and update files
+     // Update files. May be used with archive extraction or creation.
+     // the switch '-u' is used with the commands 'x' or 'e', then files
+     // not present on the disk and files newer than their copies on the
+     // disk would extracted from the archive.
+       updatemode = "-u";
+       break;
+    case 2:
+     // fresh existing files only
+     // Freshen files. May be used with archive extraction or creation.
+     // the switch '-f' is used with the commands 'x' or 'e', then only
+     // old files would be replaced with new versions extracted from the
+     // archive.
+       updatemode = "-f";
+       break;
+     default:
+     // extract and replace files
+       updatemode = "";
+  }
+   
+     // overwrite mode
+  switch (comboOverwriteBox -> currentIndex()) {
+    case 1:
+     // overwrite without prompt
+      overwritemode = "-o+";
+      break;
+    case 2:
+     // skip existing files 
+      overwritemode = "-o-";
+      break;
+    case 3:
+     // rename automatically
+      overwritemode = "-or";
+      break;
+    default:
+     // ask before overwrite
+      overwritemode = "";
+  }
+ 
+  QStringList switches;
+  if (!updatemode.isEmpty()) switches << updatemode;
+  else if (!overwritemode.isEmpty()) switches << overwritemode;
+ 
+  // Keep Broken File
+  // RAR, by default, deletes files with CRC errors after
+  // extraction. The switch -kb specifies that files with
+  // CRC errors should not be deleted.
+  if (checkKeepBroken -> isChecked()) switches << "-kb";
+  // RadioFilePath "rar e" or "rar x"
+  // non considero per il momento la terza opzione "absolute path"
+  // checkRadioFilePath
+  // 1. Extract full paths -->>          x
+  // 2. Do not extract full paths -->>   e
+  // 3. Extract absolute paths -->>      ?
+  if (radioFullpath -> isChecked()) command = "x";
+  else command = "e";
+   
+  if (checkTimeLast -> isChecked()) switches << "-tsa";
+  if (checkTimeCreation -> isChecked()) switches << "-tsc";
+  if (checkTimeModification -> isChecked()) switches << "-tsm ";
+  // -cl     Convert file names to lower case
+  if (checkLowerCase-> isChecked()) switches << "-cl";
+  // -av-    Disable authenticity verification checking or adding.
+  if (!checkAuthenticity-> isChecked()) switches << "-av-";
+ 
+  puts("extracting with options:"+ command.toAscii() + " "+ options.join(" ").toAscii() + " " +switches.join(" ").toAscii());
+  if ( !files.isEmpty() ) {
+    if (options.isEmpty()) rarprocess = new rarProcess(parentWidget,compressor, QStringList() << command << switches, archivename , files , khistorycombobox -> currentText());
+    else rarprocess = new rarProcess(parentWidget,compressor, QStringList()<< command << options << switches, archivename , files , khistorycombobox -> currentText());
+    if(checkOpenDestination ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(openDestinationPath(bool)));
+    if(radioDeleteAlways ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchive(bool)));
+    if(radioDeleteAsk ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchiveAsk(bool)));
+  }
+  else  {
+    if(options.isEmpty()) rarprocess = new rarProcess(parentWidget, compressor, QStringList() << command << switches,archivename ,QStringList(), khistorycombobox -> currentText() );
+    else rarprocess = new rarProcess(parentWidget, compressor, QStringList() << command << options << switches,archivename ,QStringList(), khistorycombobox -> currentText() );
+    if(checkOpenDestination ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(openDestinationPath(bool)));
+    if(radioDeleteAlways ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchive(bool)));
+    if(radioDeleteAsk ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchiveAsk(bool)));
+  }
+  rarprocess -> start();
+
+  tmphistory << khistorycombobox -> currentText();
+  KConfig config;
+  KConfigGroup options(&config, "Extraction dialog");
+  options.writeEntry("destination dirs", tmphistory);
+
+  accept();
+}
 
 void extractDialog::deleteArchive(bool ok)
 {
-  if (ok)
-  {
-    if (QFile::remove(rarToExtract)) emit closeArchive();
+  if (ok) {
+    if (QFile::remove(archivename)) emit closeArchive();
     else emit cantDelete();
   }
 }
 
 void extractDialog::deleteArchiveAsk(bool ok)
 {
-  if (ok)
-  {
+  if (ok) {
     // Yes = 3
     // No = 4
-    if (KMessageBox::questionYesNo(this, i18n("Do you wish to delete the unpacked archive?"), i18n("Delete archive")) == 3)
-    {
-      if (QFile::remove(rarToExtract)) emit closeArchive();
+    if (KMessageBox::questionYesNo(this, i18n("Do you wish to delete the unpacked archive?"), i18n("Delete archive")) == 3) {
+      if (QFile::remove(archivename)) emit closeArchive();
       else emit cantDelete();
     }
   }
@@ -279,13 +266,14 @@ void extractDialog::defaultSettings()
   checkAuthenticity -> setChecked(true);
 }
 
-// void extractDialog::loadSettings()
-// {
-//   KConfig config;
-//  
-//   KConfigGroup history(&config, "HistoryList");
-//   QStringList list = history.readEntry("History", QStringList());
-//   khistorycombobox -> setHistoryItems(list);
+void extractDialog::loadSettings()
+{
+  KConfig config;
+ 
+  KConfigGroup history(&config, "Extraction dialog");
+  QStringList list = history.readEntry("destination dirs", QStringList());
+  khistorycombobox -> setHistoryItems(list);
+  tmphistory = list;
 // 
 //   KConfigGroup options(&config, "extractOptions");
 //   // tab general
@@ -309,7 +297,7 @@ void extractDialog::defaultSettings()
 //     // others
 //   checkLowerCase -> setChecked(options.readEntry("lowercase", false));
 //   checkAuthenticity -> setChecked(options.readEntry("authenticity", true));
-// }
+}
 
 // void extractDialog::saveSettings()
 // {

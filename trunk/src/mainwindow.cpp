@@ -32,12 +32,37 @@ MainWindow::MainWindow (QWidget* parent, Qt::WFlags flags): KXmlGuiWindow (paren
   setupStatusBar();
   setupActions();
   setupConnections();
+  setupDocks();
   setupGUI (QSize(650,460));
 }
 
 MainWindow::~MainWindow()
 {
   recentFilesAction->saveEntries( KGlobal::config()->group( "Recent Files" ));
+}
+
+void MainWindow::setupDocks()
+{
+  dockComment = new QDockWidget(this);
+  dockComment -> setObjectName("dockComment");
+  QLabel *commentTitle = new QLabel(i18n("Comment"),dockComment);
+  commentTitle -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+  QWidget *baseComment = new QWidget(dockComment);
+  editComment = new KTextEdit(baseComment);
+  editComment -> setReadOnly(true);
+  editComment -> setTextInteractionFlags (Qt::TextSelectableByMouse);
+  QGridLayout *commentLayout = new QGridLayout(baseComment);
+  commentLayout -> addWidget(editComment, 1, 1);
+  dockComment -> setWidget(baseComment);
+  this -> addDockWidget ( Qt::LeftDockWidgetArea, dockComment );   
+  // commentEdit -> setReadOnly(true);
+  dockComment -> setFloating(true);
+  buttonComment = dockComment -> toggleViewAction();
+  buttonComment -> setEnabled(true);
+  buttonComment -> setVisible(false);
+  buttonComment -> setText(i18n("Show Comment"));
+  actionCollection() -> addAction("comment", buttonComment);
+  dockComment -> setVisible(false);
 }
 
 void MainWindow::setupStatusBar()
@@ -304,6 +329,8 @@ void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
 {
   disconnect(rarprocess, SIGNAL(outputReady(QString, bool)), this, SLOT(buildRarTable(QString, bool)));
   if (!raroutput.isEmpty())   { 
+    infoExtra -> clear();
+
     table -> setFormat("rar");
     table -> clear(); //ripulisco la lista
 
@@ -381,7 +408,6 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput, bool fil
     //actionAddFolderPwd -> setEnabled(false);
     //actionAddFolder -> setEnabled(false);
   }
-  else infoExtra -> clear();
 
   if (raroutput.contains("Comment:")) {
   //se troviamo la stringa Comment: vuol dire che c'è un commento, quindi lo estraiamo
@@ -390,10 +416,14 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput, bool fil
     raroutput.remove("Comment:");
     raroutput.remove(raroutput.indexOf("Pathname"), raroutput.length());
 
-    //commentEdit -> setText(archList);
-    //commentDock -> setVisible(true);
-    //commentAction -> setVisible(true);
-    //commentDock -> setGeometry(x() - 200, y(), 200,200);
+    editComment -> setText(raroutput);
+    dockComment -> setGeometry(x() - 200, y(), 200,200);
+    dockComment -> setVisible(true);
+    buttonComment -> setVisible(true);
+  }
+  else {
+    dockComment -> setVisible(false);
+    buttonComment -> setVisible(false);
   }
 
   if (!archivePassword.isEmpty()) {
@@ -402,14 +432,13 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput, bool fil
                                 "file names, sizes, attributes, comments are encrypted.<br> Without a password it is "
                                 "impossible to view even the list of files in archive.")); 
   }
-  
-  if (fileswithpass) {
+  else if (fileswithpass) {
     infoExtra ->setPixmap(KIcon("dialog-ok").pixmap(22,18));
-    QString toolTip(i18n("This archive has one or more password protected files"));
+    QString toolTip(i18n("This archive has one or more <b>password protected files</b>"));
     infoExtra -> setToolTip(toolTip);
   }
 
-  if (infoExtra ->pixmap() == NULL) {
+  if (infoExtra -> pixmap() == NULL) {
     infoExtra ->setPixmap(KIcon("dialog-ok-apply").pixmap(22,18));
     QString toolTip(i18n("This archive has no global restrictions"));
     infoExtra -> setToolTip(toolTip);

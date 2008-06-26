@@ -72,6 +72,7 @@ class rarProcess : public QObject
     virtual void giveOutput(int, QProcess::ExitStatus);
     //virtual void handleProcess();
     virtual void handlePaused();
-    //virtual void handleContinued();
+    virtual void handleContinued();
+    
 };
 #endif
