@@ -20,6 +20,7 @@
 #include <KMimeType>
 #include <KGlobalSettings>
 #include <KTemporaryFile>
+
 #include <KDebug>
 
 #include "akumaintable.h"
@@ -58,10 +59,14 @@ public slots:
   virtual void viewInformation(bool);
   virtual void sumSelectedItemsSize();
   virtual void embeddedViewer();
-  virtual void openItemUrl(QTreeWidgetItem *, int );
+  virtual void openItemUrl(QTreeWidgetItem *, int);
   virtual void extractArchive();
   virtual void operationCompleted(bool);
   virtual void insertComment(QString);
+  virtual void setupPopupMenu();
+  virtual void selectionInverted();
+  virtual void renameItem();
+  virtual void renameProcess(QTreeWidgetItem*, int);
 
 private:
   QWidget *baseWindowWidget;
@@ -88,8 +93,16 @@ private:
   KAction *buttonExit;
   KAction *buttonView;
   KAction *buttonAddComment;
+  
   KAction *separator;
+  KAction *popSelectall;
+  KAction *popInvertselection;
+  KAction *popRename;
+  
+  QStringList tempForRename;
 
+  QString oldItemName;
+  QString oldItemPath;
   QString archivePassword;
   QString archive; // nome dell'archivio in uso
   QString compressor; 
@@ -116,6 +129,8 @@ private:
 
   KTextEdit *editComment;
 
+  QTreeWidgetItem *currentToRename;
+
 private slots:
   void quit();
 
@@ -134,7 +149,8 @@ protected slots:
   virtual void setupDocks();
   virtual void handleAdvancedRar(QString, QString);
   virtual void addComment();
-
+  virtual void renameCompleted(bool);
+ 
 };
 
 #endif

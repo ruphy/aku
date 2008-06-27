@@ -21,8 +21,10 @@ MainWindow::MainWindow (QWidget* parent, Qt::WFlags flags): KXmlGuiWindow (paren
   setupSearchBar();
   setupStatusBar();
   setupActions();
+  setupPopupMenu();
   setupConnections();
   setupDocks();
+
   setupGUI (QSize(650,460));
   dockComment -> setVisible(false);
   buttonComment -> setVisible(false);
@@ -128,10 +130,9 @@ void MainWindow::setupActions()
   buttonView -> setIcon(KIcon("document-preview-archive"));
   buttonView -> setText(i18n("Preview"));
   buttonView -> setEnabled(false);
+  buttonView -> setShortcut(Qt::CTRL + Qt::Key_P);
   actionCollection() -> addAction("preview", buttonView);
-  //recents = KStandardAction::openRecent(this, SLOT(openRecentFile(KUrl)), actionCollection());
   
-
   //KMenu *tool = new KMenu(i18n("Tools"), menuBar());
   //actionCollection() -> addAction("tools", tool->menuAction());
   //buttonLock = new KAction(this);
@@ -176,9 +177,12 @@ void MainWindow::setupConnections()
   connect (buttonInfo, SIGNAL (toggled (bool)), this, SLOT(viewInformation(bool)));
   connect (buttonView, SIGNAL (triggered()), this, SLOT (embeddedViewer()));
   connect (buttonAddComment, SIGNAL(triggered()), this, SLOT(addComment()));
-  connect (table, SIGNAL (itemSelectionChanged()), this, SLOT (metaBar()));
+  connect (table, SIGNAL(itemSelectionChanged()), this, SLOT(metaBar()));
   connect (table, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(openItemUrl(QTreeWidgetItem *, int)));
-  connect (buttonExtract, SIGNAL (triggered() ), this, SLOT (extractArchive()));
+  connect (buttonExtract, SIGNAL(triggered()), this, SLOT(extractArchive()));
+  connect (popSelectall, SIGNAL(triggered()), table, SLOT(selectAll()));
+  connect (popInvertselection, SIGNAL(triggered()), this, SLOT(selectionInverted()));
+  connect (popRename, SIGNAL (triggered()), this, SLOT (renameItem()));
 }
 
 void MainWindow::enableActions(bool enable)
@@ -189,8 +193,35 @@ void MainWindow::enableActions(bool enable)
   buttonView -> setEnabled(enable);
   buttonExtract -> setEnabled(enable);
   buttonAddComment -> setEnabled(enable);
+  popRename -> setEnabled(enable);
   if (enable) setCursor(QCursor());
   else setCursor(Qt::WaitCursor);
+}
+
+void MainWindow::setupPopupMenu()
+{
+  popSelectall = new KAction (i18n("Select All"), table);
+  popSelectall -> setIcon(KIcon("edit-select-all"));
+  table -> addAction (popSelectall);
+  table -> setContextMenuPolicy (Qt::ActionsContextMenu);
+  popInvertselection = new KAction (i18n("Invert Selection"), table);
+  table -> addAction (popInvertselection);
+  separator = new KAction(this);
+  separator -> setSeparator (true);
+  table -> addAction (separator);
+  popRename = new KAction (i18n("&Rename"), table);
+  popRename -> setIcon(KIcon("edit-rename"));
+  popRename -> setEnabled(false);
+  table -> addAction (popRename);
+  popRename -> setShortcut (QKeySequence ("F2"));
+  //toolDelete -> setShortcut ( QKeySequence ( "Del" ) );
+  //table -> addAction (buttonDelete );
+  table -> addAction(buttonView );
+//   KAction *separator2 =new KAction(this);
+//   separator2 -> setSeparator(true);
+//   table -> addAction(separator2);
+  //table -> addAction(actionAddFile);
+  //table -> addAction(actionAddFolder);
 }
 
 void MainWindow::openDialog()
@@ -331,9 +362,11 @@ void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
     rar nrar;
     bool someprotection = nrar.parse (table, raroutput, ratioBar);  //metaWidget -> ratioBar() 
 
+    kDebug() << "PRENDO I DETTAGLI DI ARCHIVIO";
     QStringList archivedetails = nrar.getArchiveDetails();
-    
+    kDebug() << "DETTAGLI DI ARCHIVIO PRESI\n";
     archiveInfo -> setText(archivedetails[0] + " " + "<b>" + i18n("file(s)") + "  " + i18n("size:") + "</b> " + archivedetails[1] + " <b> " + i18n("packed:") + "</b> " + archivedetails[2] + "  ");
+    kDebug() << "DETTAGLI DI ARCHIVIO INSERITI\n";
 
     if (headercrypted) archivePassword = rarprocess -> getArchivePassword();
 //     //actionAddFolderPwd->setEnabled(false);
@@ -398,7 +431,8 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput)
     infoExtra -> setPixmap(lockIcon);
     infoExtra -> setToolTip(toolTip); 
     //actionLock -> setEnabled(false);
-    //actionAddComment -> setEnabled(false);
+    buttonAddComment -> setEnabled(false);
+    popRename -> setEnabled(false);
     //actionAddFile -> setEnabled(false);
     //actionEncryptArchive -> setEnabled(false);
     //actionAddFilePwd -> setEnabled(false);
@@ -578,13 +612,15 @@ void MainWindow::embeddedViewer()
 {
   if (table -> selectedItems().size() == 1) {
     QTreeWidgetItem *toView = table -> selectedItems()[0];
-    if (!toView -> text ( 1 ).isEmpty())  { //&& toView -> icon(10).isNull()) {
+    if (!toView -> text ( 1 ).isEmpty() && !(!toView -> icon(10).isNull() && filespassprotected))  { //&& toView -> icon(10).isNull()) {
       QString path = rebuildFullPath(toView);
       QProcess view;
-      //if(globalArchivePassword.isEmpty())
-      // view.start ( archiver, QStringList() << "p" << "-inul" << namex << path << QDir::tempPath() );
-      //else
-      if (compressor == "rar") view.start (compressor, QStringList() << "p" << "-inul" << archive << path); //<< QDir::tempPath());
+      if (compressor == "rar") {
+        QStringList options;
+        options << "p" << "-inul";
+        if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
+        view.start (compressor, options << archive << path);
+      }
       if (compressor == "zip") view.start("unzip", QStringList() << "-p" << "-qq" << archive << path); //<< QDir::tempPath());
       if (compressor == "tar") view.start(compressor, QStringList() << "-xOf" << archive << path);
       view.waitForFinished();
@@ -599,10 +635,10 @@ void MainWindow::embeddedViewer()
       embedded -> setGeometry ( this -> x() +200, this -> y() +200, 600,600 ); // centriamo e ingrandiamo a sufficienza
       embedded -> show();
     }
-    //else if(!toView -> icon(10).isNull()) {
-    //tip->setTip(i18n("Cannot preview a password-protected file"));
-    //tip->show();
-    //}
+    else {
+      tip->setTip(i18n("Cannot preview a password-protected file"));
+      tip->show();
+    }
   }
   else {
     tip->setTip(i18n("Only one item at time can be viewed"));
@@ -612,20 +648,27 @@ void MainWindow::embeddedViewer()
 
 void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento con la relativa applicazione associata
 {
-  if(!toOpen -> text(1).isEmpty())   {
+  if (!toOpen -> text(1).isEmpty() && !(!toOpen -> icon(10).isNull() && filespassprotected)) {
     QString tempPath = QDir().tempPath();
     if(!tempPath.endsWith(QDir().separator())) tempPath.append(QDir().separator()); //controlliamo che la stringa termini con un separator
     QString fileToExtract= rebuildFullPath(toOpen);
     QFile tempFile(tempPath + fileToExtract);
     rarProcess *rarprocess;
     if(!tempFile.exists()) {
-      rarprocess = new rarProcess(this, "rar", QStringList() << "e", archive ,QStringList() << fileToExtract, tempPath); //estraiamo il file nella cartella temporanea
+      QStringList options;
+      options << "e";
+      if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
+      rarprocess = new rarProcess(this, "rar", options, archive, QStringList() << fileToExtract, tempPath); //estraiamo il file nella cartella temporanea
       rarprocess -> start();
     }
     QString forUrl;
     forUrl = tempPath + fileToExtract;
     KUrl url(tempPath + fileToExtract);
     QDesktopServices::openUrl(url);
+  }
+  else {
+    tip->setTip(i18n("Cannot operate with a password-protected file"));
+    tip->show();
   }
 }
 
@@ -698,6 +741,75 @@ void MainWindow::insertComment(QString newcomment)
   }
   temptxt.close();
 }
+
+void MainWindow::selectionInverted()
+{
+  QList<QTreeWidgetItem*> itemsTounselect = table -> selectedItems();
+  table -> selectAll();
+  for ( int u = 0; u < itemsTounselect.size(); u++ ) {
+    table -> setItemSelected ( itemsTounselect[u], false );
+    QTreeWidgetItem *tmp = ( itemsTounselect[u] )-> parent();
+    while ( tmp != NULL ) {  //questo while evita di selezionare i padri degli elementi da lasciare unselected
+      table -> setItemSelected (tmp, false);
+      tmp = tmp -> parent();
+    }
+  }
+}
+
+void MainWindow::renameItem()
+{
+  QList<QTreeWidgetItem*> selectedItems = table -> selectedItems();
+  if (selectedItems.size() > 1) {
+    tip->setTip(i18n("Only one item at time can be renamed"));
+    tip->show();
+  }
+
+  else {
+    //tempForRename stores item brothers to avoid same naming under same parent
+    if ( selectedItems[0] -> parent() != NULL )
+      for ( int i = 0; i < selectedItems[0] -> parent() -> childCount(); i++ )
+        tempForRename << selectedItems[0] -> parent() -> child ( i ) -> text ( 0 );
+    else 
+      for ( int i = 0; i < table -> topLevelItemCount(); i++ )
+        tempForRename << table -> topLevelItem ( i ) -> text ( 0 );
+    oldItemName = selectedItems[0]-> text ( 0 );
+    //oldItemPath = rebuildPath ( selectedItems[0] );
+    oldItemPath = rebuildFullPath(selectedItems[0]);
+    selectedItems[0] -> setFlags ( Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled );
+    table -> editItem ( selectedItems[0], 0 );
+    connect (table, SIGNAL (itemChanged (QTreeWidgetItem *, int)), this, SLOT (renameProcess(QTreeWidgetItem* , int )));
+  }
+}
+
+void MainWindow::renameProcess (QTreeWidgetItem *current, int)
+{
+  currentToRename = current;
+  disconnect(table, SIGNAL (itemChanged(QTreeWidgetItem *, int)), this, SLOT (renameProcess(QTreeWidgetItem*, int)));
+  rarProcess *renameProcess;
+  if(oldItemName != current -> text(0) && !tempForRename.contains(current->text(0))) {
+    kDebug() << "rename accepted";
+    QStringList options;
+    options << "rn";
+    if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
+    renameProcess = new rarProcess(this, "rar", options, archive, QStringList() << oldItemPath << rebuildFullPath(current));
+    connect(renameProcess, SIGNAL(processCompleted(bool)), this, SLOT(renameCompleted(bool)));
+    renameProcess -> start();
+    tip->setTip(i18n("File renamed"));
+    tip->show();
+  }
+  else {
+    current -> setText(0, oldItemName);
+    tip->setTip(i18n("Rename denied"));
+    tip->show();
+  }
+}
+
+void MainWindow::renameCompleted(bool ok)
+{
+  if (!ok) currentToRename -> setText(0, oldItemName);
+  tempForRename.clear();
+}
+
 
 void MainWindow::quit()
 {

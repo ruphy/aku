@@ -6,6 +6,8 @@
 #include <KPasswordDialog>
 #include <KMessageBox>
 
+#include <KDebug>
+
 #include "threadprocess.h"
 #include "akuerrordialog.h"
 #include "overwritedialog.h"

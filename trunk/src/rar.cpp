@@ -158,6 +158,7 @@ bool rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
   if (ratioNum > 100.0 || ratioNum == 0.0) ratioNum = 0;
   else ratioNum = abs(ratioNum -100);
   ratioBar -> setRatio ( ratioNum );
+  kDebug() << "FASE -->> PARSING RAR.CPP COMPLETA";
   return fileswithpass;
 }
 

@@ -55,13 +55,13 @@ void rarProcess::initProcess()
   connect(thread, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
   connect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
 
-  if(options[0] == "x" || options[0] == "e") { 
+  if (options[0] == "x" || options[0] == "e") { 
     bool fullArchive;
     rar aids;
     thread -> start(archiver, QStringList() << "v" << options.last() << archivename);
     thread -> waitForFinished();
     globalTOC = standardOutput();
-    if(files.isEmpty()) {   //should we extract the entire archive?
+    if (files.isEmpty()) {   //should we extract the entire archive?
       fullArchive = true;
       files = aids.getFileList(globalTOC);
     }
@@ -77,7 +77,7 @@ void rarProcess::initProcess()
     else thread -> start(archiver, QStringList() << options << archivename << files << destination);
   }
 
-  else if(options[0] == "a") {
+  else if (options[0] == "a") {
     disconnect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
     //puts(QString("Launching process: " + archiver + " " + params.join(" ")+ " "+archivename+ " " + files.join(" ") + " "+ destination).toAscii());
     rarprogressdialog = new akuProgressDialog(parentWidget, files.size());
@@ -101,7 +101,7 @@ void rarProcess::initProcess()
   // opzioni passate a rar: v oppure vt
   else if(options[0] == "v" || options[0] == "vt" ) {  //common fast calls to rar
     thread->start(archiver, QStringList() << options << archivename);
-    //puts(("Process: " + archiver + " " + options.join(" ")+ " " + archivename).toAscii());
+    kDebug() << "FASE -->> unrar -v\n";
   }
  
   else if(options[0] == "rn") {
