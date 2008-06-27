@@ -91,6 +91,14 @@ private:
   KAction *separator;
 
   QString archivePassword;
+  QString archive; // nome dell'archivio in uso
+  QString compressor; 
+  // stringa contenente il tipo di compressione
+  // 1. rar 
+  // 2. zip
+  // 3. tar
+ 
+  bool filespassprotected;
 
   KRecentFilesAction *recentFilesAction;
 
@@ -124,7 +132,7 @@ protected slots:
   virtual void buildTarTable(QString);
   virtual void setupActions();
   virtual void setupDocks();
-  virtual void handleAdvancedRar(QString, QString, bool);
+  virtual void handleAdvancedRar(QString, QString);
   virtual void addComment();
 
 };

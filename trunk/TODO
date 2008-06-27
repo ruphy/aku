@@ -21,6 +21,7 @@ TAR:
 GENERALE:
   1) ringraziamenti a Ruphy per la ratiobar
   2) conversioni tra i formati; rar -> zip; rar -> tar e così via
+  3) random crash all'apertura dei rar (INDAGARE)
 
 OVERWRITE DIALOG:
   1) Solito but QLIST quando si fanno più rename

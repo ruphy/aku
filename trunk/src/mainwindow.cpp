@@ -1,15 +1,5 @@
 #include "mainwindow.h"
 
-//#include <QIODevice>
-
-// stringa contenente il tipo di compressione
-// 1. rar
-// 2. zip
-// 3. tar
-QString compressor;
-// nome dell'archivio in uso
-QString archive;
-
 MainWindow::MainWindow (QWidget* parent, Qt::WFlags flags): KXmlGuiWindow (parent, flags)
 {
   baseWindowWidget = new KVBox(this);
@@ -36,6 +26,8 @@ MainWindow::MainWindow (QWidget* parent, Qt::WFlags flags): KXmlGuiWindow (paren
   setupGUI (QSize(650,460));
   dockComment -> setVisible(false);
   buttonComment -> setVisible(false);
+
+  filespassprotected = false;
 }
 
 MainWindow::~MainWindow()
@@ -337,8 +329,8 @@ void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
     table -> clear(); //ripulisco la lista
 
     rar nrar;
-    bool fileswithpass = nrar.parse (table, raroutput, ratioBar);  //metaWidget -> ratioBar() 
-    
+    bool someprotection = nrar.parse (table, raroutput, ratioBar);  //metaWidget -> ratioBar() 
+
     QStringList archivedetails = nrar.getArchiveDetails();
     
     archiveInfo -> setText(archivedetails[0] + " " + "<b>" + i18n("file(s)") + "  " + i18n("size:") + "</b> " + archivedetails[1] + " <b> " + i18n("packed:") + "</b> " + archivedetails[2] + "  ");
@@ -348,6 +340,10 @@ void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
 //     //actionAddFilePwd->setEnabled(false);
 //     //}
     else archivePassword.clear();
+
+    if ((someprotection) && (archivePassword.isEmpty()))
+      filespassprotected = true;
+    else filespassprotected = false;
 //     
     table -> header() -> setResizeMode(0, QHeaderView::ResizeToContents); // filename
     table -> header() -> setResizeMode(3, QHeaderView::ResizeToContents); // ratio
@@ -367,7 +363,7 @@ void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
     enableActions(true);
     statusBar()->clearMessage();
     setCaption(archive);
-    handleAdvancedRar(archive, raroutput, fileswithpass);
+    handleAdvancedRar(archive, raroutput);
   }
   else {
     enableActions(true);
@@ -375,7 +371,7 @@ void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
   }
 }
 
-void MainWindow::handleAdvancedRar(QString filename, QString raroutput, bool fileswithpass)
+void MainWindow::handleAdvancedRar(QString filename, QString raroutput)
 {
   // here we parse rar listing to find out comments and lock info
   // to know whether we have comments or not we can simply use the QString
@@ -385,11 +381,10 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput, bool fil
   // even if it handles better rar errors. However QProcess seems better for this fast call
 
   QProcess *process = new QProcess();
-  
-  if(!archivePassword.isEmpty())
-    process->start(compressor, QStringList() << "vt" << "-p" + archivePassword << filename);
-  else
-    process->start(compressor, QStringList() << "vt" << filename);
+  QStringList options;
+  options << "vt";
+  if(!archivePassword.isEmpty()) options << "-p" + archivePassword;
+  process->start(compressor, options << filename);
   
   process->waitForFinished();
   
@@ -425,6 +420,7 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput, bool fil
   }
   else {
     dockComment -> setVisible(false);
+    editComment -> clear();
     buttonComment -> setVisible(false);
   }
 
@@ -434,7 +430,7 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput, bool fil
                                 "file names, sizes, attributes, comments are encrypted.<br> Without a password it is "
                                 "impossible to view even the list of files in archive.")); 
   }
-  else if (fileswithpass) {
+  else if (filespassprotected) {
     infoExtra ->setPixmap(KIcon("dialog-ok").pixmap(22,18));
     QString toolTip(i18n("This archive has one or more <b>password protected files</b>"));
     infoExtra -> setToolTip(toolTip);
@@ -479,7 +475,8 @@ void MainWindow::metaBar()
   if (checkSelected.size() != 0) {
     if (checkSelected.size() == 1) {
       getMetaInfo(checkSelected[0]);
-      if ((checkSelected[0] -> text(9).contains("image")) && metaWidget -> isVisible() && ((checkSelected[0] -> icon(10).isNull()) || !archivePassword.isEmpty())) {
+      if ((checkSelected[0] -> text(9).contains("image")) && metaWidget -> isVisible() && (!(!checkSelected[0] -> icon(10).isNull() && filespassprotected))) {
+        
         //if the file is an image we make a preview
         QString itemPath = rebuildFullPath(checkSelected[0]);
         QProcess imagepreview;

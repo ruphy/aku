@@ -3,7 +3,6 @@
 
 akuComment::akuComment(QString comment, QWidget *parent) : QDialog(parent)
 {
-  oldcomment = comment;
   setModal (true);
   textEdit = new KTextEdit(this);
   setWindowTitle(i18n("Add archive comment"));
@@ -27,10 +26,15 @@ akuComment::akuComment(QString comment, QWidget *parent) : QDialog(parent)
   QGridLayout *baseLayout = new QGridLayout(this);
   baseLayout -> addWidget(textEdit, 1, 1);
   baseLayout -> addLayout(buttonLayout, 2, 1);
+
+  oldcomment = comment;
+  if (oldcomment.isEmpty()) previousButton -> setEnabled(false);
+ 
   connect(kdialogbuttonbox, SIGNAL(accepted()), this, SLOT(writeComment()));
   connect(kdialogbuttonbox, SIGNAL(rejected()), this, SLOT(reject()));
   connect(loadButton, SIGNAL(clicked()), this, SLOT(loadFromFile()));
   connect(previousButton, SIGNAL(clicked()), this, SLOT(loadPreviousText()));
+
 }
 
 akuComment::~akuComment()
