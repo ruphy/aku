@@ -200,3 +200,56 @@ void akuMainTable::showmime(bool hide) {
 void akuMainTable::showcrc(bool hide) {
   setColumnHidden(6, !hide);
 }
+
+QString akuMainTable::rebuildFullPath(QTreeWidgetItem *toRebuild)
+{
+  QString rebuilded = rebuildPath(toRebuild);
+  if (!rebuilded.isEmpty()) return rebuilded + QDir().separator() + toRebuild -> text(0);
+  else return toRebuild -> text(0);
+}
+
+QString akuMainTable::rebuildPath (QTreeWidgetItem *toRebuild) //missing item name.. see rebuildFullPath for complete string
+{
+  QTreeWidgetItem *tmp; //elemento temporaneo
+  QStringList pathlist; //lista delle cartelle di percorso
+  tmp = toRebuild -> parent();
+  while (tmp != NULL) {
+    pathlist << tmp -> text (0);
+    tmp = tmp -> parent();
+  }
+  QString path;
+  for ( int i = pathlist.size()-1; i>=0; i-- )   {
+    path.append (pathlist[i]);
+    if ( i!=0 ) path.append (QDir().separator());
+  }
+  return path;
+}
+
+void akuMainTable::expandTopLevelItems()
+{
+  for (int i = 0; i < this -> topLevelItemCount(); i++ )
+    this -> setItemExpanded (this -> topLevelItem(i), true);
+}
+
+void akuMainTable::setFolderIcons()
+{
+  for (int i = 0; i < this -> topLevelItemCount(); i++ )
+    if ((this -> topLevelItem(i)) -> text ( 5 ).isEmpty())
+    {
+      (this -> topLevelItem ( i ) ) -> setIcon (0, KIcon( "inode-directory" ));
+       recursiveFolderIcons (this -> topLevelItem (i));
+    }
+}
+
+void akuMainTable::recursiveFolderIcons (QTreeWidgetItem *checkParent)
+{
+  for ( int i = 0; i < checkParent -> childCount(); i++ )
+    if ( ( checkParent -> child ( i ) ) -> text ( 5 ).isEmpty() )
+    {
+      (checkParent -> child ( i ) ) -> setIcon ( 0, KIcon ( "inode-directory" ));
+      recursiveFolderIcons (checkParent -> child ( i ));
+    } 
+}
+
+
+

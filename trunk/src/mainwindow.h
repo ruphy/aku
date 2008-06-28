@@ -20,6 +20,7 @@
 #include <KMimeType>
 #include <KGlobalSettings>
 #include <KTemporaryFile>
+#include <KCmdLineArgs>
 
 #include <KDebug>
 
@@ -51,11 +52,8 @@ public slots:
   virtual void setupConnections();
   virtual void enableActions(bool);
   virtual void openUrl(const KUrl& url);
-  virtual void setFolderIcons();
-  virtual void recursiveFolderIcons(QTreeWidgetItem*);
   virtual void getMetaInfo(QTreeWidgetItem*);
   virtual void metaBar();
-  virtual void expandTopLevelItems();
   virtual void viewInformation(bool);
   virtual void sumSelectedItemsSize();
   virtual void embeddedViewer();
@@ -135,10 +133,8 @@ private slots:
   void quit();
 
 protected:
-  QString rebuildPath(QTreeWidgetItem*);
-  QString rebuildFullPath(QTreeWidgetItem*);
-
   void setupSearchBar();
+  void cmdlineOptions();
 
 protected slots:
   virtual void setupStatusBar();

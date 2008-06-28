@@ -30,6 +30,8 @@ MainWindow::MainWindow (QWidget* parent, Qt::WFlags flags): KXmlGuiWindow (paren
   buttonComment -> setVisible(false);
 
   filespassprotected = false;
+
+  cmdlineOptions();
 }
 
 MainWindow::~MainWindow()
@@ -233,10 +235,7 @@ void MainWindow::openDialog()
 
 void MainWindow::openUrl(const KUrl& url)
 {
-  // determino l'estensione dell'archivio
   KMimeType::Ptr mimetype = KMimeType::findByUrl(url);
-  //QString string = mimetype -> name();
-  //puts (string.toAscii());
 
   if (mimetype -> name() == "application/x-rar") {
     compressor = "rar";
@@ -311,9 +310,9 @@ void MainWindow::buildZipTable(QString zipoutput, bool crypted)
      table -> header() -> setResizeMode(4, QHeaderView::ResizeToContents);
      table -> header() -> setResizeMode(7, QHeaderView::ResizeToContents);
      table -> header() -> setResizeMode(8, QHeaderView::ResizeToContents);
-     expandTopLevelItems();
+     table -> expandTopLevelItems();
      table -> sortItems ( 0, Qt::AscendingOrder );
-     setFolderIcons();
+     table -> setFolderIcons();
      setCaption(archive);
    }
    enableActions(true);
@@ -341,9 +340,9 @@ void MainWindow::buildTarTable(QString taroutput)
      table -> header() -> setResizeMode(0, QHeaderView::ResizeToContents);
      table -> header() -> setResizeMode(4, QHeaderView::ResizeToContents);
      table -> header() -> setResizeMode(11, QHeaderView::ResizeToContents);
-     expandTopLevelItems();
+     table -> expandTopLevelItems();
      table -> sortItems ( 0, Qt::AscendingOrder );
-     setFolderIcons();
+     table -> setFolderIcons();
      setCaption(archive);
    }
    enableActions(true);
@@ -391,8 +390,8 @@ void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
 //       fromNewArchive = false;
 //     }
 //     showStatusInfo(true);
-    expandTopLevelItems();
-    setFolderIcons();
+    table -> expandTopLevelItems();
+    table -> setFolderIcons();
     enableActions(true);
     statusBar()->clearMessage();
     setCaption(archive);
@@ -477,26 +476,6 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput)
   }
 }
 
-void MainWindow::setFolderIcons()
-{
-  for (int i = 0; i < table -> topLevelItemCount(); i++ )
-    if ((table -> topLevelItem(i)) -> text ( 5 ).isEmpty())
-    {
-      (table -> topLevelItem ( i ) ) -> setIcon (0, KIcon( "inode-directory" ));
-       recursiveFolderIcons (table -> topLevelItem (i));
-    }
-}
-
-void MainWindow::recursiveFolderIcons (QTreeWidgetItem *checkParent)
-{
-  for ( int i = 0; i < checkParent -> childCount(); i++ )
-    if ( ( checkParent -> child ( i ) ) -> text ( 5 ).isEmpty() )
-    {
-      (checkParent -> child ( i ) ) -> setIcon ( 0, KIcon ( "inode-directory" ));
-      recursiveFolderIcons (checkParent -> child ( i ));
-    } 
-}
-
 void MainWindow::viewInformation (bool visible)
 {
   metaWidget -> setVisible(visible);
@@ -512,7 +491,7 @@ void MainWindow::metaBar()
       if ((checkSelected[0] -> text(9).contains("image")) && metaWidget -> isVisible() && (!(!checkSelected[0] -> icon(10).isNull() && filespassprotected))) {
         
         //if the file is an image we make a preview
-        QString itemPath = rebuildFullPath(checkSelected[0]);
+        QString itemPath = table -> rebuildFullPath(checkSelected[0]);
         QProcess imagepreview;
         if (compressor == "rar") {
           QStringList options;
@@ -578,42 +557,12 @@ void MainWindow::getMetaInfo (QTreeWidgetItem *item) //setta le informazioni del
     metaWidget -> setFileName(item -> text(0), true );
 }
 
-QString MainWindow::rebuildFullPath(QTreeWidgetItem *toRebuild)
-{
-  QString rebuilded = rebuildPath(toRebuild);
-  if (!rebuilded.isEmpty()) return rebuilded + QDir().separator() + toRebuild -> text(0);
-  else return toRebuild -> text(0);
-}
-
-QString MainWindow::rebuildPath (QTreeWidgetItem *toRebuild) //missing item name.. see rebuildFullPath for complete string
-{
-  QTreeWidgetItem *tmp; //elemento temporaneo
-  QStringList pathlist; //lista delle cartelle di percorso
-  tmp = toRebuild -> parent();
-  while (tmp != NULL) {
-    pathlist << tmp -> text (0);
-    tmp = tmp -> parent();
-  }
-  QString path;
-  for ( int i = pathlist.size()-1; i>=0; i-- )   {
-    path.append (pathlist[i]);
-    if ( i!=0 ) path.append (QDir().separator());
-  }
-  return path;
-}
-
-void MainWindow::expandTopLevelItems()
-{
-  for (int i = 0; i < table -> topLevelItemCount(); i++ )
-    table -> setItemExpanded (table -> topLevelItem(i), true);
-}
-
 void MainWindow::embeddedViewer()
 {
   if (table -> selectedItems().size() == 1) {
     QTreeWidgetItem *toView = table -> selectedItems()[0];
     if (!toView -> text ( 1 ).isEmpty() && !(!toView -> icon(10).isNull() && filespassprotected))  { //&& toView -> icon(10).isNull()) {
-      QString path = rebuildFullPath(toView);
+      QString path = table -> rebuildFullPath(toView);
       QProcess view;
       if (compressor == "rar") {
         QStringList options;
@@ -635,7 +584,7 @@ void MainWindow::embeddedViewer()
       embedded -> setGeometry ( this -> x() +200, this -> y() +200, 600,600 ); // centriamo e ingrandiamo a sufficienza
       embedded -> show();
     }
-    else {
+    else if (!toView -> text ( 1 ).isEmpty()) {
       tip->setTip(i18n("Cannot preview a password-protected file"));
       tip->show();
     }
@@ -646,12 +595,47 @@ void MainWindow::embeddedViewer()
   }
 }
 
+void MainWindow::cmdlineOptions()
+{
+  KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
+//   if(args->isSet("extracthere")){
+//     // code to extract the archive
+//     setVisible(false);
+//     QDir herepath(args->arg(0));
+//     KUrl url = herepath.absolutePath();
+//     rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",
+//                                                      args->arg(0), QStringList(), url.directory() );
+//     connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
+//     pHand->start();
+//   }
+//   else if(args->isSet("extractto")){
+//     // code to extract the archive
+//     setVisible(false);
+//     KUrl url = KFileDialog::getExistingDirectoryUrl(KUrl(QDir().homePath()),  this, i18n("Extract to"));
+//     puts(url.pathOrUrl().toAscii());
+//     if(!url.isEmpty()){
+//      rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",
+//                                                       args->arg(0), QStringList(), url.path() );
+//      connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
+//      pHand->start();
+//     } else{
+//      kapp->quit(); //FIXME does not work!
+//      }
+//  }
+//  else{
+    for (int i=0; i < args -> count(); i++) openUrl(args -> url(i));
+
+    args -> clear();
+//   }
+}
+
+
 void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento con la relativa applicazione associata
 {
   if (!toOpen -> text(1).isEmpty() && !(!toOpen -> icon(10).isNull() && filespassprotected)) {
     QString tempPath = QDir().tempPath();
     if(!tempPath.endsWith(QDir().separator())) tempPath.append(QDir().separator()); //controlliamo che la stringa termini con un separator
-    QString fileToExtract= rebuildFullPath(toOpen);
+    QString fileToExtract= table -> rebuildFullPath(toOpen);
     QFile tempFile(tempPath + fileToExtract);
     rarProcess *rarprocess;
     if(!tempFile.exists()) {
@@ -666,7 +650,7 @@ void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento 
     KUrl url(tempPath + fileToExtract);
     QDesktopServices::openUrl(url);
   }
-  else {
+  else if (!toOpen -> text ( 1 ).isEmpty()) {
     tip->setTip(i18n("Cannot operate with a password-protected file"));
     tip->show();
   }
@@ -774,7 +758,7 @@ void MainWindow::renameItem()
         tempForRename << table -> topLevelItem ( i ) -> text ( 0 );
     oldItemName = selectedItems[0]-> text ( 0 );
     //oldItemPath = rebuildPath ( selectedItems[0] );
-    oldItemPath = rebuildFullPath(selectedItems[0]);
+    oldItemPath = table -> rebuildFullPath(selectedItems[0]);
     selectedItems[0] -> setFlags ( Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled );
     table -> editItem ( selectedItems[0], 0 );
     connect (table, SIGNAL (itemChanged (QTreeWidgetItem *, int)), this, SLOT (renameProcess(QTreeWidgetItem* , int )));
@@ -791,7 +775,7 @@ void MainWindow::renameProcess (QTreeWidgetItem *current, int)
     QStringList options;
     options << "rn";
     if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
-    renameProcess = new rarProcess(this, "rar", options, archive, QStringList() << oldItemPath << rebuildFullPath(current));
+    renameProcess = new rarProcess(this, "rar", options, archive, QStringList() << oldItemPath << table -> rebuildFullPath(current));
     connect(renameProcess, SIGNAL(processCompleted(bool)), this, SLOT(renameCompleted(bool)));
     renameProcess -> start();
     tip->setTip(i18n("File renamed"));

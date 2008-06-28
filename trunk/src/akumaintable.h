@@ -4,6 +4,7 @@
 #include <QTreeWidget>
 #include <QHeaderView>
 #include <QPoint>
+#include <QDir>
 
 #include <KMenu>
 #include <KAction>
@@ -21,6 +22,12 @@ public:
 
 public slots:
   void setFormat(QString);
+  virtual void expandTopLevelItems();
+  virtual void setFolderIcons();
+  virtual void recursiveFolderIcons(QTreeWidgetItem*);
+  QString rebuildPath(QTreeWidgetItem*);
+  QString rebuildFullPath(QTreeWidgetItem*);
+  
  
 protected slots:
   virtual void setupActions();  
@@ -36,6 +43,7 @@ protected slots:
   virtual void showmime(bool);
   virtual void showog(bool);
 
+protected:
 
 private:
    // header actions
