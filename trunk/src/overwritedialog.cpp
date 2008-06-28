@@ -75,7 +75,6 @@ void overwriteDialog::renameAction()
 {
   klineedit -> setEnabled(true);
   klineedit -> setFocus(Qt::MouseFocusReason);
-  klineedit -> setClickMessage(i18n("Write the new name and press Enter"));
 }
 
 void overwriteDialog::renameOverwrite()

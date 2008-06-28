@@ -8,16 +8,16 @@ zip::~zip()
 {
 }
 
-void zip::parse(QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
+bool zip::parse(QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
 {
+  // variabile che indica la presenza di file con password (header compreso)
+  bool fileswithpass = false;
   bf.remove(0, (bf.indexOf("\n") + 1)); // elimino la prima riga
   bf.remove(bf.lastIndexOf("\n"), bf.size()); // elimino l'ultima riga
   // memorizzo l'ultima riga per conservare delle informazioni utili
   QString lastline = bf.mid((bf.lastIndexOf("\n") + 1), bf.size());
   bf.remove(bf.lastIndexOf("\n"), bf.size()); 
-  //puts(bf.toAscii());
-  //puts("----");
-  //puts(lastline.toAscii());
+  bool crypted = false;
   QStringList flist = bf.split ( "\n" ); //splitto basandomi sul carattere di newline
   int numeroPezziPercorso;
   QRegExp sep("(\\s+)");
@@ -85,6 +85,10 @@ void zip::parse(QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
 
       fitem -> setText(5, dlist[0]);   // attributi 
       fitem -> setText(7, dlist[4] + " " + dlist[6]); // metodo
+      
+      if ((dlist[4][0] == QChar('B')) || (dlist[4][0] == QChar('T'))) crypted = true; 
+      else crypted = false;
+
       fitem -> setText(8, dlist[1] + " " + dlist[2]); // version and so
       // calcolo il ratio
       float ratio = 0;
@@ -109,6 +113,10 @@ void zip::parse(QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
       fitem -> setIcon (0, icon);
       fitem -> setText(9, mimePtr->name());
     }
+    if (crypted == true) {
+      fitem -> setIcon(10, KIcon("dialog-password"));
+      fileswithpass = true;
+    }
   }
 
   QStringList archinfo;
@@ -118,7 +126,8 @@ void zip::parse(QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
   QString ratio = archinfo.at (8);
   ratio.remove (ratio.length() - 1, 1);
   ratioBar -> setRatio (int(ratio.toFloat() + 0.5f));
-
+  
+  return fileswithpass;
 }
 
 QStringList zip::getArchiveDetails()

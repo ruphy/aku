@@ -144,6 +144,7 @@ protected slots:
   virtual void setupActions();
   virtual void setupDocks();
   virtual void handleAdvancedRar(QString, QString);
+  virtual void handleAdvancedZip(QString);
   virtual void addComment();
   virtual void renameCompleted(bool);
  

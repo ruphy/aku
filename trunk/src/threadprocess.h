@@ -25,6 +25,8 @@ class threadProcess : public QThread
   public slots:
     void start(QString, QStringList, QThread::Priority = QThread::InheritPriority);
     void killProcess();
+    qint64 write(QByteArray);
+
   signals:
    void readyReadStandardError(); 
    void readyReadStandardOutput();

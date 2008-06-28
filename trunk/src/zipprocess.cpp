@@ -10,6 +10,8 @@ zipProcess::zipProcess(QWidget *parent, QString ziparchiver, QStringList zipopti
   destination = zipdestination;
   noproblem = false;
   headercrypted = false;
+ 
+  errorDialog = new akuErrorDialog();
 }
 
 zipProcess::~zipProcess()
@@ -27,16 +29,21 @@ void zipProcess::initProcess()
   puts("Avvio del threadProcess (ZIP)...");
   thread = new threadProcess(this);
   // setUp firstTime connections
-  //connect(thread, SIGNAL(readyReadStandardError()), this, SLOT(getError()));
+  connect(thread, SIGNAL(readyReadStandardError()), this, SLOT(getError()));
   connect(thread, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
   connect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
-
+  
   if(options[0] == "-Zl") 
   { 
-   // connect(rarProc, SIGNAL(readyReadStandardError()), this, SLOT(getError()));
-   // connect(rarProc, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
-    thread->start(archiver, QStringList() << options << archivename);
-    //puts(("Process: " + archiver + " " + options.join(" ")+ " " + archivename).toAscii());
+    thread -> start(archiver, QStringList() << options << archivename);
+  }
+  else if (options[0] == "-z") {
+    // options[1] è proprio testo da passare
+    thread -> start(archiver, QStringList() << options << archivename);
+    //QByteArray text(options[1]);
+    //kDebug() << text;
+    //thread -> write(text);
+    thread -> waitForFinished();
   }
   puts("initProcess (ZIP) terminato");
 }
@@ -67,7 +74,9 @@ void zipProcess::giveOutput(int, QProcess::ExitStatus)
 
 void zipProcess::showError(QByteArray streamerror)
 {
-  QByteArray error = streamerror;
-  errorDialog->setError(error);
-  errorDialog->show();
+  if (!streamerror.isEmpty()) {
+    QByteArray error = streamerror;
+    errorDialog -> setError(error);
+    errorDialog -> show();
+  }
 }

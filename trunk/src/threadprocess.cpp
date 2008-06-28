@@ -52,6 +52,11 @@ void threadProcess::killProcess()
   d->process->kill();
 }
 
+qint64 threadProcess::write(QByteArray text)
+{
+  d -> process -> write(text);
+}
+
 void threadProcess::pauseProcess()
 {
 #ifdef Q_WS_X11

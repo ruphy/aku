@@ -2,23 +2,25 @@
 
 rarProcess::rarProcess(QWidget *parent, QString rararchiver, QStringList raroptions, QString rararchivename, QStringList rarfiles, QString rardestination) : QObject(parent)
 {
-  parentWidget = parent;
-  archiver = rararchiver;
-  options = raroptions;
-  archivename = rararchivename;
-  files = rarfiles;
-  destination = rardestination;
+    parentWidget = parent;
+    archiver = rararchiver;
+    options = raroptions;
+    archivename = rararchivename;
+    files = rarfiles;
+    destination = rardestination;
   
-  noproblem = false;
-  headercrypted = false;
-  toall = false;
-  passwordAsked = false;
-  hasPasswordParameter = false;
+    noproblem = false;
+    headercrypted = false;
+    toall = false;
+    passwordAsked = false;
+    hasPasswordParameter = false;
 
-  totalFileCount = 0;   //this var will increment until getting the same value of files.size()
+    totalFileCount = 0;   //this var will increment until getting the same value of files.size()
   
-  rarprogressdialog = NULL;
-  processTimer = NULL;
+    rarprogressdialog = NULL;
+    processTimer = NULL;
+
+    errorDialog = new akuErrorDialog();
 }
 
 rarProcess::~rarProcess()
@@ -238,42 +240,45 @@ void rarProcess::giveOutput(int, QProcess::ExitStatus)
 
 void rarProcess::showError(QByteArray streamerror)
 {
-  QByteArray error = streamerror;
-  QByteArray original(QString("Cannot create").toAscii());
-  QByteArray translated(QString("<b>" + tr("\nCannot create") + "</b>").toAscii());
-  error.replace(original, translated);
-  original = QString("ERROR:").toAscii();
-  translated = QString("<b>" + tr("ERROR:") + "</b>").toAscii();
-  error.replace(original, translated);
-  original = QString("Locked archive").toAscii();
-  translated = QString("<font color=red>" + tr("Locked archive") + "</font>").toAscii();
-  error.replace(original, translated);
-  original = QString("Cannot open").toAscii();
-  translated = QString("<b>" + tr("Cannot open") + "</b>").toAscii();
-  error.replace(original, translated);
-  original = QString("Cannot create").toAscii();
-  translated = QString("<b>" + tr("Cannot create") + "</b>").toAscii();
-  error.replace(original, translated);
-  original = QString("Cannot create directory").toAscii();
-  translated = QString("<b>" + tr("Cannot create directory") + "</b>").toAscii();
-  error.replace(original, translated);
-  original = QString("Permission denied").toAscii();
-  translated = QString("<br><font color=red>" + tr("Permission denied") + "<br></font>").toAscii();
-  error.replace(original, translated);
-  original = QString("is read-only").toAscii();
-  translated = QString("<br><font color=red>" + tr("is read-only") + "<br></font>").toAscii();
-  error.replace(original, translated);
-  original = QString("No such file or directory").toAscii();
-  translated = QString("</i><br><font color=red>" + tr("No such file or directory") + "<br></font>").toAscii();
-  error.replace(original, translated);
-  original = QString("Encrypted file:").toAscii();
-  translated = QString("</i><br><font color=red>" + tr("Encrypted file") + "<br></font>").toAscii();
-  error.replace(original, translated);
-  original = QString("CRC failed").toAscii();
-  translated = QString("<b>" + tr("CRC failed") + "</b>").toAscii();
-  error.replace(original, translated);
-  errorDialog->setError(error);
-  errorDialog->show();
+  if(!streamerror.isEmpty()) {
+    QByteArray error = streamerror;
+    QByteArray original(QString("Cannot create").toAscii());
+    QByteArray translated(QString("<b>" + i18n("\nCannot create") + "</b>").toAscii());
+    error.replace(original, translated);
+    original = QString("ERROR:").toAscii();
+    translated = QString("<b>" + i18n("ERROR:") + "</b>").toAscii();
+    error.replace(original, translated);
+    original = QString("Locked archive").toAscii();
+    translated = QString("<font color=red>" + i18n("Locked archive") + "</font>").toAscii();
+    error.replace(original, translated);
+    original = QString("Cannot open").toAscii();
+    translated = QString("<b>" + i18n("Cannot open") + "</b>").toAscii();
+    error.replace(original, translated);
+    original = QString("Cannot create").toAscii();
+    translated = QString("<b>" + i18n("Cannot create") + "</b>").toAscii();
+    error.replace(original, translated);
+    original = QString("Cannot create directory").toAscii();
+    translated = QString("<b>" + i18n("Cannot create directory") + "</b>").toAscii();
+    error.replace(original, translated);
+    original = QString("Permission denied").toAscii();
+    translated = QString("<br><font color=red>" + i18n("Permission denied") + "<br></font>").toAscii();
+    error.replace(original, translated);
+    original = QString("is read-only").toAscii();
+    translated = QString("<br><font color=red>" + i18n("is read-only") + "<br></font>").toAscii();
+    error.replace(original, translated);
+    original = QString("No such file or directory").toAscii();
+    translated = QString("</i><br><font color=red>" + i18n("No such file or directory") + "<br></font>").toAscii();
+    error.replace(original, translated);
+    original = QString("Encrypted file:").toAscii();
+    translated = QString("</i><br><font color=red>" + i18n("Encrypted file") + "<br></font>").toAscii();
+    error.replace(original, translated);
+    original = QString("CRC failed").toAscii();
+    translated = QString("<b>" + i18n("CRC failed") + "</b>").toAscii();
+    error.replace(original, translated);
+
+    errorDialog->setError(error);
+    errorDialog->show();
+  }
 }
 
 QString rarProcess::getArchivePassword()

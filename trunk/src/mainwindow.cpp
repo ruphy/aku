@@ -43,7 +43,7 @@ void MainWindow::setupDocks()
 {
   dockComment = new QDockWidget(this);
   dockComment -> setObjectName("dockComment");
-  dockComment -> setVisible(true);
+  dockComment -> setVisible(false);
   QLabel *commentTitle = new QLabel(i18n("Comment"),dockComment);
   commentTitle -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   QWidget *baseComment = new QWidget(dockComment);
@@ -228,7 +228,7 @@ void MainWindow::setupPopupMenu()
 
 void MainWindow::openDialog()
 {
-  KUrl url = KFileDialog::getOpenUrl(KUrl(QDir().homePath()), i18n("*.rar *.zip *.bz2 *.gz|All supported types\n*.rar|Rar archives\n*.zip|Zip archives\n*.bz2|Tar archives (bzip)\n*.gz|Tar archives (gzip)\n*.*|All files"), this);
+  KUrl url = KFileDialog::getOpenUrl(KUrl("kfiledialog:///AkuOpenDir"), i18n("*.rar *.zip *.bz2 *.gz|All supported types\n*.rar|Rar archives\n*.zip|Zip archives\n*.bz2|Tar archives (bzip)\n*.gz|Tar archives (gzip)\n*.*|All files"), this);
   if (!url.isEmpty())
     openUrl(url);
 }
@@ -297,11 +297,17 @@ void MainWindow::buildZipTable(QString zipoutput, bool crypted)
    disconnect(zipprocess, SIGNAL(outputReady(QString, bool)), this, SLOT(buildZipTable(QString, bool)));
    if (!zipoutput.isEmpty())
    { 
-     table -> setFormat("zip");
      table -> clear(); //ripulisco la lista
+     table -> setFormat("zip");
      zip nzip;
-     nzip.parse(table, zipoutput, ratioBar);
+
+     bool someprotection = nzip.parse(table, zipoutput, ratioBar);
+     // non credo ci siano archivi zip con header password protected
+     archivePassword.clear();
   
+     if (someprotection) filespassprotected = true;
+     else filespassprotected = false;
+
      QStringList archivedetails = nzip.getArchiveDetails();
      archiveInfo -> setText(archivedetails[0] + " " + "<b>" + i18n("file(s)") + "  " + i18n("size:") + "</b> " + archivedetails[1] + " <b> " + i18n("packed:") + "</b> " + archivedetails[2] + "  "); 
 
@@ -314,6 +320,7 @@ void MainWindow::buildZipTable(QString zipoutput, bool crypted)
      table -> sortItems ( 0, Qt::AscendingOrder );
      table -> setFolderIcons();
      setCaption(archive);
+     handleAdvancedZip(archive);
    }
    enableActions(true);
    statusBar()->clearMessage();
@@ -327,6 +334,8 @@ void MainWindow::buildTarTable(QString taroutput)
      table -> clear();
      tar ntar;
      ntar.parse(table, taroutput);
+     // non credo ci siano archivi tar con header password protected
+     archivePassword.clear();
 
      QStringList archivedetails = ntar.getArchiveDetails();
    
@@ -403,6 +412,42 @@ void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
   }
 }
 
+void MainWindow::handleAdvancedZip(QString filename)
+{  
+  QProcess *process = new QProcess();
+  QStringList options;
+  options << "-z";
+  process->start("unzip", options << filename);  
+  process->waitForFinished();
+  
+  QString extrainfo = process -> readAllStandardOutput();
+  delete process;
+
+  extrainfo.remove(0, extrainfo.indexOf("\n") + 1);
+  if (!extrainfo.isEmpty()) {
+    editComment -> setText(extrainfo);
+    dockComment -> setGeometry(x() - 300, y(), 300, 200);
+    dockComment -> setVisible(true);
+    buttonComment -> setVisible(true);
+  }
+  else {
+    dockComment -> setVisible(false);
+    editComment -> clear();
+    buttonComment -> setVisible(false);
+  }
+
+  if (filespassprotected) {
+    infoExtra -> setPixmap(KIcon("dialog-ok").pixmap(22,18));
+    QString toolTip(i18n("This archive has one or more <b>password protected files</b>"));
+    infoExtra -> setToolTip(toolTip);
+  }
+  else {
+    infoExtra -> setPixmap(KIcon("dialog-ok-apply").pixmap(22,18));
+    QString toolTip(i18n("This archive has no global restrictions"));
+    infoExtra -> setToolTip(toolTip);
+  }
+}
+
 void MainWindow::handleAdvancedRar(QString filename, QString raroutput)
 {
   // here we parse rar listing to find out comments and lock info
@@ -464,13 +509,13 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput)
                                 "impossible to view even the list of files in archive.")); 
   }
   else if (filespassprotected) {
-    infoExtra ->setPixmap(KIcon("dialog-ok").pixmap(22,18));
+    infoExtra -> setPixmap(KIcon("dialog-ok").pixmap(22,18));
     QString toolTip(i18n("This archive has one or more <b>password protected files</b>"));
     infoExtra -> setToolTip(toolTip);
   }
 
   if (infoExtra -> pixmap() == NULL) {
-    infoExtra ->setPixmap(KIcon("dialog-ok-apply").pixmap(22,18));
+    infoExtra -> setPixmap(KIcon("dialog-ok-apply").pixmap(22,18));
     QString toolTip(i18n("This archive has no global restrictions"));
     infoExtra -> setToolTip(toolTip);
   }
@@ -711,17 +756,29 @@ void MainWindow::insertComment(QString newcomment)
     temptxt.write(newcomment.toUtf8());
     temptxt.waitForBytesWritten(-1);
     temptxt.flush();
-    //QString tmp = 
     QStringList options;
-    options << "c" << "-z" + temptxt.fileName();
-    if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
-    rarProcess *rarprocess = new rarProcess(this, compressor, options, archive);
-    connect(rarprocess,SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
-    rarprocess->start();
+    
+    if (compressor == "rar") {
+      options << "c" << "-z" + temptxt.fileName();
+      kDebug() << temptxt.readAll();
+      if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
+      rarProcess *rarprocess = new rarProcess(this, compressor, options, archive);
+      connect(rarprocess,SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
+      rarprocess->start();
+    }
+    
+    else if (compressor == "zip") {
+      options << "-z";
+      zipProcess *zipprocess = new zipProcess(this, compressor, options, archive);
+      connect(zipprocess,SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool))); 
+      zipprocess -> start();
+    }
+ 
     editComment -> setText(newcomment.toUtf8());
     dockComment -> setGeometry(x() - 300, y(), 300, 200);
     dockComment -> setVisible(true);
     buttonComment -> setVisible(true);
+
   }
   temptxt.close();
 }

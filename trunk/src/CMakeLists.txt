@@ -23,6 +23,7 @@ SET(
      akuprogresstooltip.cpp
      extractdialog.cpp
      akucomment.cpp
+     akuerrordialog.cpp
    )
 
 KDE4_ADD_UI_FILES(aku_SRCS overwriteui.ui extractdialog.ui)

@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include <KDebug>
+
 #include "threadprocess.h"
 #include "akuerrordialog.h"
 
