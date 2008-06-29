@@ -3,6 +3,7 @@
 
 #include <QWidget>
 
+#include <KFileItem>
 #include <KDebug>
 
 #include "threadprocess.h"
@@ -50,6 +51,7 @@ class zipProcess : public QObject
   public slots:
     virtual void start();
     virtual void showProgress();
+    virtual void getError();
  
    protected slots:
      virtual void initProcess();

@@ -734,6 +734,7 @@ void MainWindow::operationCompleted(bool value)
   if (value) {
     tip->setTip(i18n("Operation completed"));
     tip->show();
+    openUrl(archive);
   }
   else {
     tip->setTip(i18n("One or more errors occurred"));
@@ -751,36 +752,29 @@ void MainWindow::addComment()
 
 void MainWindow::insertComment(QString newcomment)
 { 
-  KTemporaryFile temptxt;
-  if (temptxt.open()) {
-    temptxt.write(newcomment.toUtf8());
-    temptxt.waitForBytesWritten(-1);
-    temptxt.flush();
-    QStringList options;
-    
-    if (compressor == "rar") {
+  QStringList options;
+  if (compressor == "rar") {
+    KTemporaryFile temptxt;
+    if (temptxt.open()) {
+      temptxt.write(newcomment.toUtf8());
+      temptxt.waitForBytesWritten(-1);
+      temptxt.flush();
       options << "c" << "-z" + temptxt.fileName();
-      kDebug() << temptxt.readAll();
       if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
       rarProcess *rarprocess = new rarProcess(this, compressor, options, archive);
       connect(rarprocess,SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
       rarprocess->start();
     }
-    
-    else if (compressor == "zip") {
-      options << "-z";
-      zipProcess *zipprocess = new zipProcess(this, compressor, options, archive);
-      connect(zipprocess,SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool))); 
-      zipprocess -> start();
-    }
- 
-    editComment -> setText(newcomment.toUtf8());
-    dockComment -> setGeometry(x() - 300, y(), 300, 200);
-    dockComment -> setVisible(true);
-    buttonComment -> setVisible(true);
-
+    temptxt.close();
   }
-  temptxt.close();
+    
+  else if (compressor == "zip") {
+    options << "-z" << newcomment;
+    zipProcess *zipprocess = new zipProcess(this, compressor, options, archive);
+    connect(zipprocess,SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool))); 
+    zipprocess -> start();
+  }
+
 }
 
 void MainWindow::selectionInverted()

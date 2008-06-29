@@ -38,11 +38,12 @@ void zipProcess::initProcess()
     thread -> start(archiver, QStringList() << options << archivename);
   }
   else if (options[0] == "-z") {
-    // options[1] è proprio testo da passare
-    thread -> start(archiver, QStringList() << options << archivename);
-    //QByteArray text(options[1]);
-    //kDebug() << text;
-    //thread -> write(text);
+    thread -> start(archiver, QStringList() << options[0] << archivename );
+    QString text = options[1];
+    kDebug() << text;
+    text.append("\n.\n");
+    kDebug() << text;
+    thread -> write(text.toUtf8());
     thread -> waitForFinished();
   }
   puts("initProcess (ZIP) terminato");
@@ -54,6 +55,7 @@ void zipProcess::showProgress()
   QByteArray gotOutput = thread -> readAllStandardOutput();
   stdoutput.append(gotOutput);
   rawoutput.append(gotOutput);
+  
 }
 
 void zipProcess::giveOutput(int, QProcess::ExitStatus)
@@ -79,4 +81,10 @@ void zipProcess::showError(QByteArray streamerror)
     errorDialog -> setError(error);
     errorDialog -> show();
   }
+}
+
+void zipProcess::getError()
+{ 
+  QByteArray temp = thread -> readAllStandardError();
+  streamerror.append(temp);
 }
