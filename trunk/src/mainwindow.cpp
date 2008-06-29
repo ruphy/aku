@@ -69,6 +69,8 @@ void MainWindow::setupStatusBar()
   statusBar() -> addPermanentWidget(archiveInfo, 0);
   infoExtra = new QLabel(this);
   infoExtra -> setMaximumSize(22,18);
+  infoExtrabis = new QLabel(this);
+  infoExtrabis -> setMaximumSize(22,18);
   ratioBar = new akuRatioWidget(0,this);
   ratioBar -> setMinimumSize(120,0);
   ratioBar -> setVisible(false);
@@ -77,6 +79,8 @@ void MainWindow::setupStatusBar()
   statusLayout -> addWidget(archiveInfo,1,1);
   statusLayout -> addWidget(ratioBar,1,2);
   statusLayout -> addWidget(infoExtra,1,3);
+  statusLayout -> addWidget(infoExtrabis,1,4);
+  infoExtrabis -> setVisible(false);
   statusBar() -> addPermanentWidget(statusWidget);
   
 }
@@ -113,6 +117,15 @@ void MainWindow::setupActions()
   KMenu *quickextractMenu = new KMenu(this);
   quickextractMenu -> addTitle(KIcon("archive-extract"), i18n("Quick extracto to"));
 
+  KConfig config;
+  QStringList actionList = KConfigGroup(&config, "Extraction dialog").readEntry("destination dirs", QStringList());
+  quickextractMenu -> addAction(KIcon("user-home"), QDir().homePath());
+  quickextractMenu -> addAction(KIcon("user-desktop"), KGlobalSettings::desktopPath());
+  if (!actionList.isEmpty()) {
+    for (int i = 0; i < actionList.size(); i++)
+      quickextractMenu -> addAction(KIcon("folder-blue"), actionList[i]); //and set new ones
+  }
+
   buttonExtract = (quickextractMenu -> menuAction());
   buttonExtract -> setIcon(KIcon("archive-extract.png")); 
   buttonExtract -> setText(i18n("Extract"));
@@ -122,6 +135,7 @@ void MainWindow::setupActions()
   KAction *lasttip = tip->actionTip();
   actionCollection() -> addAction("lasttip", lasttip);
   connect(lasttip, SIGNAL(triggered()),tip, SLOT(show()));
+  lasttip -> setShortcut(Qt::CTRL + Qt::Key_T);
   buttonFind -> setShortcut(Qt::CTRL + Qt::Key_F);
   actionCollection() -> addAction("find", buttonFind);
   //buttonDelete = new KAction(this);
@@ -137,10 +151,11 @@ void MainWindow::setupActions()
   
   //KMenu *tool = new KMenu(i18n("Tools"), menuBar());
   //actionCollection() -> addAction("tools", tool->menuAction());
-  //buttonLock = new KAction(this);
-  //buttonLock -> setText(i18n("Lock Archive"));
-  //buttonLock -> setIcon(KIcon("document-encrypt"));
-  //actionCollection() -> addAction("lock", buttonLock);
+  buttonLock = new KAction(this);
+  buttonLock -> setText(i18n("Lock Archive"));
+  buttonLock -> setIcon(KIcon("document-encrypt"));
+  actionCollection() -> addAction("lock", buttonLock);
+  buttonLock -> setEnabled(false);
   //KMenu *commands = new KMenu(i18n("Commands"), menuBar());
   //actionCollection() -> addAction("commands", commands->menuAction());
   buttonAddComment = new KAction(this);
@@ -182,6 +197,7 @@ void MainWindow::setupConnections()
   connect (table, SIGNAL(itemSelectionChanged()), this, SLOT(metaBar()));
   connect (table, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(openItemUrl(QTreeWidgetItem *, int)));
   connect (buttonExtract, SIGNAL(triggered()), this, SLOT(extractArchive()));
+  connect (buttonLock, SIGNAL (triggered()), this, SLOT(lockArchive()));
   connect (popSelectall, SIGNAL(triggered()), table, SLOT(selectAll()));
   connect (popInvertselection, SIGNAL(triggered()), this, SLOT(selectionInverted()));
   connect (popRename, SIGNAL (triggered()), this, SLOT (renameItem()));
@@ -196,6 +212,7 @@ void MainWindow::enableActions(bool enable)
   buttonExtract -> setEnabled(enable);
   buttonAddComment -> setEnabled(enable);
   popRename -> setEnabled(enable);
+  buttonLock -> setEnabled(enable);
   if (enable) setCursor(QCursor());
   else setCursor(Qt::WaitCursor);
 }
@@ -238,10 +255,16 @@ void MainWindow::openUrl(const KUrl& url)
   KMimeType::Ptr mimetype = KMimeType::findByUrl(url);
 
   if (mimetype -> name() == "application/x-rar") {
+    infoExtrabis -> setVisible(false);
     compressor = "rar";
     enableActions(false);
     statusBar()->showMessage(i18n("Loading archive..."));
-    rarprocess = new rarProcess(this, "rar", QStringList() << "v", url.pathOrUrl());
+    QStringList options;
+    options << "v";
+    if (!archivePassword.isEmpty() && archive == url.pathOrUrl())
+      options << "-p" + archivePassword;
+    else archivePassword.clear();
+    rarprocess = new rarProcess(this, "rar", options, url.pathOrUrl());
     connect(rarprocess, SIGNAL(outputReady(QString, bool)), this, SLOT(buildRarTable(QString, bool)));
     rarprocess -> start();
     metaWidget -> clear();
@@ -252,6 +275,7 @@ void MainWindow::openUrl(const KUrl& url)
   }
 
   else if (mimetype -> name() == "application/zip") {
+    infoExtrabis -> setVisible(false);
     compressor = "zip";
     enableActions(false);
     statusBar()->showMessage(i18n("Loading archive..."));
@@ -266,6 +290,7 @@ void MainWindow::openUrl(const KUrl& url)
   }
 
   else if ((mimetype -> name() == "application/x-bzip-compressed-tar") || (mimetype -> name() == "application/x-compressed-tar")) { 
+    infoExtrabis -> setVisible(false);
     compressor = "tar";
     enableActions(false);
     statusBar()->showMessage(i18n("Loading archive..."));
@@ -324,6 +349,7 @@ void MainWindow::buildZipTable(QString zipoutput, bool crypted)
    }
    enableActions(true);
    statusBar()->clearMessage();
+   buttonLock -> setEnabled(false);
 }
 
 void MainWindow::buildTarTable(QString taroutput)
@@ -356,6 +382,7 @@ void MainWindow::buildTarTable(QString taroutput)
    }
    enableActions(true);
    statusBar()->clearMessage();
+   buttonLock -> setEnabled(false);
 }
 
 void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
@@ -375,13 +402,16 @@ void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
     kDebug() << "DETTAGLI DI ARCHIVIO PRESI\n";
     archiveInfo -> setText(archivedetails[0] + " " + "<b>" + i18n("file(s)") + "  " + i18n("size:") + "</b> " + archivedetails[1] + " <b> " + i18n("packed:") + "</b> " + archivedetails[2] + "  ");
     kDebug() << "DETTAGLI DI ARCHIVIO INSERITI\n";
+    if (!archivePassword.isEmpty()) headercrypted = false;
+    else archivePassword = rarprocess -> getArchivePassword();
 
-    if (headercrypted) archivePassword = rarprocess -> getArchivePassword();
+    //if ((archivePassword.isEmpty() && (headercrypted)) 
+    //  archivePassword = rarprocess -> getArchivePassword();
 //     //actionAddFolderPwd->setEnabled(false);
 //     //actionAddFilePwd->setEnabled(false);
 //     //}
-    else archivePassword.clear();
-
+//    else archivePassword.clear();
+    kDebug() << archivePassword;
     if ((someprotection) && (archivePassword.isEmpty()))
       filespassprotected = true;
     else filespassprotected = false;
@@ -460,23 +490,30 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput)
   QProcess *process = new QProcess();
   QStringList options;
   options << "vt";
+  kDebug() << options;
   if(!archivePassword.isEmpty()) options << "-p" + archivePassword;
+  kDebug() << options;
   process->start(compressor, options << filename);
   
   process->waitForFinished();
   
   QString extrainfo = process -> readAllStandardOutput();
   delete process;
-
+  
+  bool locked = false;
+ 
   if (extrainfo.contains("Lock is present\n")) {
     extrainfo.clear();
     QString toolTip(i18n("<b><font color=red>Locked archive</u></b></font><p><i>Any attempt to change the archive will be ignored</i>"));
     QPixmap lockIcon = KIcon("object-locked").pixmap(22,18);
+    locked = true;
     infoExtra -> setPixmap(lockIcon);
     infoExtra -> setToolTip(toolTip); 
     //actionLock -> setEnabled(false);
     buttonAddComment -> setEnabled(false);
+    buttonLock -> setEnabled(false);
     popRename -> setEnabled(false);
+    
     //actionAddFile -> setEnabled(false);
     //actionEncryptArchive -> setEnabled(false);
     //actionAddFilePwd -> setEnabled(false);
@@ -507,6 +544,13 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput)
     infoExtra -> setToolTip(i18n("This archive has a <b>header password</b> protection.<br>File data, " 
                                 "file names, sizes, attributes, comments are encrypted.<br> Without a password it is "
                                 "impossible to view even the list of files in archive.")); 
+    if (locked) {
+      QString toolTip(i18n("<b><font color=red>Locked archive</u></b></font><p><i>Any attempt to change the archive will be ignored</i>"));
+      QPixmap lockIcon = KIcon("object-locked").pixmap(22,18);
+      infoExtrabis -> setPixmap(lockIcon);
+      infoExtrabis -> setToolTip(toolTip);
+      infoExtrabis -> setVisible(true);
+    }
   }
   else if (filespassprotected) {
     infoExtra -> setPixmap(KIcon("dialog-ok").pixmap(22,18));
@@ -845,6 +889,19 @@ void MainWindow::renameCompleted(bool ok)
   tempForRename.clear();
 }
 
+void MainWindow::lockArchive()
+{
+  // 5 = Continue
+  // 2 = Cancel
+  if (KMessageBox::warningContinueCancel(this, i18n("Locking disables archive modifications"), i18n("Lock archive")) == 5) {
+    QStringList options;
+    options << "k";
+    if(!archivePassword.isEmpty()) options << "-p" + archivePassword;
+    rarprocess = new rarProcess(this, "rar", options, archive);
+    connect(rarprocess,SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
+    rarprocess -> start();
+  }
+}
 
 void MainWindow::quit()
 {

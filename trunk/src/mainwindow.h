@@ -78,6 +78,7 @@ private:
   
   QLabel *infoArchive;
   QLabel *infoExtra;
+  QLabel *infoExtrabis;
   QLabel *archiveInfo;  
  
   QAction *buttonExtract;
@@ -91,6 +92,7 @@ private:
   KAction *buttonExit;
   KAction *buttonView;
   KAction *buttonAddComment;
+  KAction *buttonLock;
   
   KAction *separator;
   KAction *popSelectall;
@@ -147,6 +149,7 @@ protected slots:
   virtual void handleAdvancedZip(QString);
   virtual void addComment();
   virtual void renameCompleted(bool);
+  virtual void lockArchive();
  
 };
 

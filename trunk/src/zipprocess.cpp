@@ -78,6 +78,20 @@ void zipProcess::showError(QByteArray streamerror)
 {
   if (!streamerror.isEmpty()) {
     QByteArray error = streamerror;
+    QByteArray original = QString("Permission denied").toAscii();
+    QByteArray translated = QString("<b><font color=red>" + i18n("Permission denied") + "</b></font>").toAscii();
+    error.replace(original, translated);
+    original = QString("zip I/O error:").toAscii();
+    translated = QString("<b>" + i18n("zip I/O error:") + "</b>").toAscii();
+    error.replace(original, translated);
+    original = QString("zip error:").toAscii();
+    translated = QString("<b>" + i18n("zip error:") + "</b>").toAscii();
+    error.replace(original, translated);
+    original = QString("Could not create output file").toAscii();
+    translated = QString("<b><font color=red>" + i18n("Could not create output file") + "</b></font>").toAscii();
+    error.replace(original, translated);
+
+  
     errorDialog -> setError(error);
     errorDialog -> show();
   }

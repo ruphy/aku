@@ -107,7 +107,6 @@ void rarProcess::initProcess()
   }
  
   else if(options[0] == "rn") {
-    //puts(QString("Launching process: " + process + " " + params.join(" ")+ " "+rarArchive+ " " + filesToHandle.join(" ") + " "+pathTarget).toAscii());
     thread -> start(archiver, QStringList() << options << archivename << files);
     if(!hasPasswordParameter) thread ->waitForFinished(); 
     else thread -> waitForFinished(-1);
@@ -120,12 +119,10 @@ void rarProcess::initProcess()
 
   else if (options[0] == "d" ) {
     if (files.isEmpty()) {
-      //puts(QString("Launching process: " + process + " " + params.join(" ")+ " "+rarArchive + " "+filesToHandle.join(" ")+pathTarget).toAscii());
-      thread -> start(archiver, QStringList() << options << archivename);
+     thread -> start(archiver, QStringList() << options << archivename);
     }
     else {
-      //puts(QString("Launching process: " + process + " " + params.join(" ")+ " "+rarArchive + " "+filesToHandle.join(" ")).toAscii());
-      thread -> start(archiver, QStringList() << options << archivename << files);
+     thread -> start(archiver, QStringList() << options << archivename << files);
     }
 
     if (!hasPasswordParameter) thread -> waitForFinished(); 
@@ -134,26 +131,21 @@ void rarProcess::initProcess()
  
   else if(options[0] == "ch") {
     if(files.isEmpty()) {
-     //puts(QString("Launching process: " + process + " " + params.join(" ")+ " "+rarArchive + " "+filesToHandle.join(" ")+pathTarget).toAscii());
-      thread -> start(archiver, QStringList() << options << archivename);
+     thread -> start(archiver, QStringList() << options << archivename);
       thread -> waitForFinished(-1);
     }
     else {
-      //puts(QString("Launching process: " + process + " " + params.join(" ")+ " "+rarArchive + " "+filesToHandle.join(" ")).toAscii());
       thread -> start(archiver, QStringList() << options << archivename << files);
       thread -> waitForFinished(-1);
     }
   }
 
   else if(options[0] == "k" || options[0] == "c") {
-    //puts(QString("Launching process: " + process + " " + params.join(" ")+ " "+rarArchive+ " " + filesToHandle.join(" ") + " "+pathTarget).toAscii());
     thread -> start(archiver, QStringList() << options << archivename);
     thread -> waitForFinished();
   }
 
-  puts("initProcess terminata");
-
-  // puts("initProcess terminato (RAR)");
+  kDebug() << "initProcess terminata";
 }
 
 void rarProcess::handleCancel()
