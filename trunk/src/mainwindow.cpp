@@ -383,6 +383,7 @@ void MainWindow::buildTarTable(QString taroutput)
    enableActions(true);
    statusBar()->clearMessage();
    buttonLock -> setEnabled(false);
+   popRename -> setEnabled(false);
 }
 
 void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
@@ -868,15 +869,13 @@ void MainWindow::renameProcess (QTreeWidgetItem *current, int)
   rarProcess *renameProcess;
   if (oldItemName != current -> text(0) && !tempForRename.contains(current->text(0))) {
     kDebug() << "rename accepted";
+    QStringList options;
     if (compressor == "rar") {
-      QStringList options;
       options << "rn";
       if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
       renameProcess = new rarProcess(this, "rar", options, archive, QStringList() << oldItemPath << table -> rebuildFullPath(current));
       connect(renameProcess, SIGNAL(processCompleted(bool)), this, SLOT(renameCompleted(bool)));
-      renameProcess -> start();
-      tip->setTip(i18n("File renamed"));
-      tip->show();
+      renameProcess -> start();     
     }
     else if (compressor == "zip") {
       // zip è assurdo nel rinominare i file
@@ -896,19 +895,17 @@ void MainWindow::renameProcess (QTreeWidgetItem *current, int)
         
         writetxt.write(zipstructure);
         writetxt.waitForBytesWritten(-1);
+        writetxt.flush();
         QProcess *writeprocess = new QProcess();
         writeprocess -> setStandardInputFile(writetxt.fileName());
         writeprocess -> start("zipnote",  QStringList() << "-w" << archive);
-        
-        //kDebug() << writeprocess -> readAllStandardError();
-        //kDebug() << writeprocess -> readAllStandardOutput();
-        //kDebug() << writeprocess -> exitCode();
         writeprocess -> waitForFinished();
-        kDebug() << writetxt.fileName();
-        writetxt.setAutoRemove(false);
-      //temptxt.flush();
-      //temptxt.close();
+        int exitcode = writeprocess -> exitCode();
+        if (exitcode == 0) renameCompleted(true);
+        else renameCompleted(false);
       }
+      readtxt.close();
+      writetxt.close();
     }
   }
   else {
@@ -920,7 +917,15 @@ void MainWindow::renameProcess (QTreeWidgetItem *current, int)
 
 void MainWindow::renameCompleted(bool ok)
 {
-  if (!ok) currentToRename -> setText(0, oldItemName);
+  if (!ok) {
+    currentToRename -> setText(0, oldItemName);
+    tip->setTip(i18n("Cannot rename the file"));
+    tip->show();
+  }
+  else {
+    tip->setTip(i18n("File renamed"));
+    tip->show();
+  }
   tempForRename.clear();
 }
 

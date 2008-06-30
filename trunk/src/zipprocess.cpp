@@ -46,6 +46,10 @@ void zipProcess::initProcess()
     thread -> write(text.toUtf8());
     thread -> waitForFinished();
   }
+
+  else if(options[0] == "-w") {
+    thread -> start(archiver, QStringList() << options << archivename << files);
+  }
   puts("initProcess (ZIP) terminato");
 }
 
