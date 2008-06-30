@@ -167,10 +167,10 @@ void MainWindow::setupActions()
   //buttonAddFolder -> setText(i18n("Add Folder"));
   //buttonAddFolder -> setIcon(KIcon("archive-insert-directory"));
   //actionCollection() -> addAction("add_folder", buttonAddFolder);
-  //buttonAddFile = new KAction(this);
-  //buttonAddFile -> setText(i18n("Add File"));
-  //buttonAddFile -> setIcon(KIcon("archive-insert"));
-  //actionCollection() -> addAction("add_file", buttonAddFile);
+  buttonAddFile = new KAction(this);
+  buttonAddFile -> setText(i18n("Add File"));
+  buttonAddFile -> setIcon(KIcon("archive-insert"));
+  actionCollection() -> addAction("add_file", buttonAddFile);
   /*buttonEncryptArchive = new KAction(this);
   buttonEncryptArchive -> setText(i18n("Encrypt this archive"));
   buttonEncryptArchive -> setIcon(KIcon("dialog-password"));
@@ -402,6 +402,7 @@ void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
     kDebug() << "DETTAGLI DI ARCHIVIO PRESI\n";
     archiveInfo -> setText(archivedetails[0] + " " + "<b>" + i18n("file(s)") + "  " + i18n("size:") + "</b> " + archivedetails[1] + " <b> " + i18n("packed:") + "</b> " + archivedetails[2] + "  ");
     kDebug() << "DETTAGLI DI ARCHIVIO INSERITI\n";
+
     if (!archivePassword.isEmpty()) headercrypted = false;
     else archivePassword = rarprocess -> getArchivePassword();
 
@@ -411,7 +412,7 @@ void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
 //     //actionAddFilePwd->setEnabled(false);
 //     //}
 //    else archivePassword.clear();
-    kDebug() << archivePassword;
+    //kDebug() << archivePassword;
     if ((someprotection) && (archivePassword.isEmpty()))
       filespassprotected = true;
     else filespassprotected = false;
@@ -865,16 +866,50 @@ void MainWindow::renameProcess (QTreeWidgetItem *current, int)
   currentToRename = current;
   disconnect(table, SIGNAL (itemChanged(QTreeWidgetItem *, int)), this, SLOT (renameProcess(QTreeWidgetItem*, int)));
   rarProcess *renameProcess;
-  if(oldItemName != current -> text(0) && !tempForRename.contains(current->text(0))) {
+  if (oldItemName != current -> text(0) && !tempForRename.contains(current->text(0))) {
     kDebug() << "rename accepted";
-    QStringList options;
-    options << "rn";
-    if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
-    renameProcess = new rarProcess(this, "rar", options, archive, QStringList() << oldItemPath << table -> rebuildFullPath(current));
-    connect(renameProcess, SIGNAL(processCompleted(bool)), this, SLOT(renameCompleted(bool)));
-    renameProcess -> start();
-    tip->setTip(i18n("File renamed"));
-    tip->show();
+    if (compressor == "rar") {
+      QStringList options;
+      options << "rn";
+      if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
+      renameProcess = new rarProcess(this, "rar", options, archive, QStringList() << oldItemPath << table -> rebuildFullPath(current));
+      connect(renameProcess, SIGNAL(processCompleted(bool)), this, SLOT(renameCompleted(bool)));
+      renameProcess -> start();
+      tip->setTip(i18n("File renamed"));
+      tip->show();
+    }
+    else if (compressor == "zip") {
+      // zip è assurdo nel rinominare i file
+      KTemporaryFile readtxt;
+      KTemporaryFile writetxt;
+        
+      if (readtxt.open() && writetxt.open()) {
+        QProcess *process = new QProcess();
+        process -> setStandardOutputFile(readtxt.fileName());
+        process -> start("zipnote", QStringList() << archive); 
+        process -> waitForFinished();
+        readtxt.flush();
+        QByteArray zipstructure = readtxt.readAll();
+        int start = zipstructure.indexOf(oldItemPath);
+        int line = zipstructure.indexOf("\n", start);
+        zipstructure.insert(line + 1, "@=" + table -> rebuildFullPath(current) + "\n");
+        
+        writetxt.write(zipstructure);
+        writetxt.waitForBytesWritten(-1);
+        QProcess *writeprocess = new QProcess();
+        writeprocess -> setStandardInputFile(writetxt.fileName());
+        writeprocess -> start("zipnote",  QStringList() << "-w" << archive);
+        
+        //kDebug() << writeprocess -> readAllStandardError();
+        //kDebug() << writeprocess -> readAllStandardOutput();
+        //kDebug() << writeprocess -> exitCode();
+        writeprocess -> waitForFinished();
+        kDebug() << writetxt.fileName();
+        writetxt.setAutoRemove(false);
+      //temptxt.flush();
+      //temptxt.close();
+      }
+    }
   }
   else {
     current -> setText(0, oldItemName);

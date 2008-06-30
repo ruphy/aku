@@ -21,6 +21,7 @@
 #include <KGlobalSettings>
 #include <KTemporaryFile>
 #include <KCmdLineArgs>
+#include <KProcess>
 
 #include <KDebug>
 
@@ -93,6 +94,7 @@ private:
   KAction *buttonView;
   KAction *buttonAddComment;
   KAction *buttonLock;
+  KAction *buttonAddFile;
   
   KAction *separator;
   KAction *popSelectall;

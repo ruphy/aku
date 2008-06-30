@@ -1,22 +1,21 @@
 TODO - aKu - New Generation
 
 MAIN WINDOW:
-  1) aggiungere i file aperti agli openrecents
-  2) ordinamento logico per tutti i file della main
-  3) ordinamento su colonne packed, size, data, ratio
-  4) controllare il numero max di open recent
-  5) controllare il numero max di destination dirs
+  1) ordinamento logico per tutti i file della main
+  2) ordinamento su colonne packed, size, data, ratio
+  3) controllare il numero max di open recent
+  4) controllare il numero max di destination dirs
 
 ZIP:
   1) convertire modified in QDate
-  2) implementare correttamente preview
+  2) doppio click in tabella
  
 RAR:
   
 
 TAR:
   1) convertire modified in QDate
-  2) implementare correttamente preview
+  2) doppio click in tabella
 
 GENERALE:
   1) ringraziamenti a Ruphy per la ratiobar
