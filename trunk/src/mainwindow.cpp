@@ -138,10 +138,12 @@ void MainWindow::setupActions()
   lasttip -> setShortcut(Qt::CTRL + Qt::Key_T);
   buttonFind -> setShortcut(Qt::CTRL + Qt::Key_F);
   actionCollection() -> addAction("find", buttonFind);
-  //buttonDelete = new KAction(this);
-  //buttonDelete -> setIcon(KIcon("archive-remove.png"));
-  //buttonDelete -> setText(i18n("Remove"));
-  //actionCollection() -> addAction("delete", buttonDelete);
+  buttonDelete = new KAction(this);
+  buttonDelete -> setIcon(KIcon("archive-remove.png"));
+  buttonDelete -> setText(i18n("Remove"));
+  buttonDelete -> setEnabled(false);
+  actionCollection() -> addAction("delete", buttonDelete);
+  buttonDelete -> setShortcut (QKeySequence("Del"));
   buttonView = new KAction(this);
   buttonView -> setIcon(KIcon("document-preview-archive"));
   buttonView -> setText(i18n("Preview"));
@@ -170,6 +172,7 @@ void MainWindow::setupActions()
   buttonAddFile = new KAction(this);
   buttonAddFile -> setText(i18n("Add File"));
   buttonAddFile -> setIcon(KIcon("archive-insert"));
+  buttonAddFile -> setEnabled(false);
   actionCollection() -> addAction("add_file", buttonAddFile);
   /*buttonEncryptArchive = new KAction(this);
   buttonEncryptArchive -> setText(i18n("Encrypt this archive"));
@@ -211,6 +214,8 @@ void MainWindow::enableActions(bool enable)
   buttonView -> setEnabled(enable);
   buttonExtract -> setEnabled(enable);
   buttonAddComment -> setEnabled(enable);
+  buttonAddFile -> setEnabled(enable);
+  buttonDelete -> setEnabled(enable);
   popRename -> setEnabled(enable);
   buttonLock -> setEnabled(enable);
   if (enable) setCursor(QCursor());
@@ -233,9 +238,8 @@ void MainWindow::setupPopupMenu()
   popRename -> setEnabled(false);
   table -> addAction (popRename);
   popRename -> setShortcut (QKeySequence ("F2"));
-  //toolDelete -> setShortcut ( QKeySequence ( "Del" ) );
-  //table -> addAction (buttonDelete );
-  table -> addAction(buttonView );
+  table -> addAction (buttonDelete);
+  table -> addAction(buttonView);
 //   KAction *separator2 =new KAction(this);
 //   separator2 -> setSeparator(true);
 //   table -> addAction(separator2);
@@ -511,12 +515,13 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput)
     locked = true;
     infoExtra -> setPixmap(lockIcon);
     infoExtra -> setToolTip(toolTip); 
-    //actionLock -> setEnabled(false);
+
     buttonAddComment -> setEnabled(false);
     buttonLock -> setEnabled(false);
     popRename -> setEnabled(false);
-    
-    //actionAddFile -> setEnabled(false);
+    buttonDelete -> setEnabled(false);
+    buttonAddFile -> setEnabled(false);
+
     //actionEncryptArchive -> setEnabled(false);
     //actionAddFilePwd -> setEnabled(false);
     //actionAddFolderPwd -> setEnabled(false);
@@ -558,6 +563,13 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput)
     infoExtra -> setPixmap(KIcon("dialog-ok").pixmap(22,18));
     QString toolTip(i18n("This archive has one or more <b>password protected files</b>"));
     infoExtra -> setToolTip(toolTip);
+    if (locked) {
+      QString toolTip(i18n("<b><font color=red>Locked archive</u></b></font><p><i>Any attempt to change the archive will be ignored</i>"));
+      QPixmap lockIcon = KIcon("object-locked").pixmap(22,18);
+      infoExtrabis -> setPixmap(lockIcon);
+      infoExtrabis -> setToolTip(toolTip);
+      infoExtrabis -> setVisible(true);
+    }
   }
 
   if (infoExtra -> pixmap() == NULL) {
@@ -726,21 +738,42 @@ void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento 
   if (!toOpen -> text(1).isEmpty() && !(!toOpen -> icon(10).isNull() && filespassprotected)) {
     QString tempPath = QDir().tempPath();
     if(!tempPath.endsWith(QDir().separator())) tempPath.append(QDir().separator()); //controlliamo che la stringa termini con un separator
-    QString fileToExtract= table -> rebuildFullPath(toOpen);
+    QString fileToExtract = table -> rebuildFullPath(toOpen);
     QFile tempFile(tempPath + fileToExtract);
-    rarProcess *rarprocess;
     if(!tempFile.exists()) {
-      QStringList options;
-      options << "e";
-      if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
-      rarprocess = new rarProcess(this, "rar", options, archive, QStringList() << fileToExtract, tempPath); //estraiamo il file nella cartella temporanea
-      rarprocess -> start();
+      if (compressor == "rar") {
+        //rarProcess *rarprocess;
+        QStringList options;
+        options << "e";
+        if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
+        rarprocess = new rarProcess(this, "rar", options, archive, QStringList() << fileToExtract, tempPath); //estraiamo il file nella cartella temporanea
+        rarprocess -> start();
+      }
+      else if (compressor == "zip") {
+        //zipProcess *zipprocess;
+        QStringList options;
+        options << "-q";
+        zipprocess = new zipProcess(this, "unzip", options, archive, QStringList() << fileToExtract, tempPath);
+        zipprocess -> start();
+      }
+      else if (compressor == "tar") {
+        //tarProcess *tarprocess;
+        QStringList options;
+        options << "-xf";
+        options << archive << fileToExtract;
+        QProcess *tmpprocess = new QProcess();
+        tmpprocess -> setWorkingDirectory(QString(tempPath));
+        tmpprocess -> start("tar", options);
+        tmpprocess -> waitForFinished();
+      }
     }
-    QString forUrl;
-    forUrl = tempPath + fileToExtract;
+  
+    QString forUrl = tempPath + fileToExtract;
     KUrl url(tempPath + fileToExtract);
-    QDesktopServices::openUrl(url);
+    QFile file(url.pathOrUrl());
+    if (file.exists()) QDesktopServices::openUrl(url);
   }
+
   else if (!toOpen -> text ( 1 ).isEmpty()) {
     tip->setTip(i18n("Cannot operate with a password-protected file"));
     tip->show();

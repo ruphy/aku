@@ -37,6 +37,7 @@ void zipProcess::initProcess()
   { 
     thread -> start(archiver, QStringList() << options << archivename);
   }
+
   else if (options[0] == "-z") {
     thread -> start(archiver, QStringList() << options[0] << archivename );
     QString text = options[1];
@@ -47,9 +48,11 @@ void zipProcess::initProcess()
     thread -> waitForFinished();
   }
 
-  else if(options[0] == "-w") {
-    thread -> start(archiver, QStringList() << options << archivename << files);
+  else if (options[0] == "-q") {
+    thread -> start(archiver, QStringList() << options << archivename << files << "-d" << destination);
+    thread -> waitForFinished();
   }
+
   puts("initProcess (ZIP) terminato");
 }
 
@@ -88,6 +91,8 @@ void zipProcess::showError(QByteArray streamerror)
     original = QString("zip I/O error:").toAscii();
     translated = QString("<b>" + i18n("zip I/O error:") + "</b>").toAscii();
     error.replace(original, translated);
+    original = QString("caution:").toAscii();
+    translated = QString("<b>" + i18n("caution:") + "</b>").toAscii();
     original = QString("zip error:").toAscii();
     translated = QString("<b>" + i18n("zip error:") + "</b>").toAscii();
     error.replace(original, translated);
