@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0beta1
+Name=aKu
+Name[it]=aKu
+GenericName=RAR GUI Utility
+Exec=aku %U
+Comment=aKu - The RAR/ZIP/TAR GUI application for KDE
+Icon=aku
+MimeType=application/x-rar;application/zip;application/x-bzip-compressed-tar;application/x-compressed-tar;
+Categories=Qt;KDE;Utility;X-KDE-Utilities-File;
+InitialPreference=3

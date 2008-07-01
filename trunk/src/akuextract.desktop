@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Service
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin
+#X-KDE-Priority=TopLevel
+MimeType=application/x-rar;
+Actions=extracthere;extractto;
+
+[Desktop Action extracthere]
+Name=aKu - Extract Here
+Icon=archive-extract
+### da modificare
+Exec=aku %u --extracthere
+
+[Desktop Action extractto]
+Name=aKu - Extract To
+Icon=archive-extract
+Exec=aku %u --extractto

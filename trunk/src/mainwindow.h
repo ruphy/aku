@@ -66,6 +66,7 @@ public slots:
   virtual void selectionInverted();
   virtual void renameItem();
   virtual void renameProcess(QTreeWidgetItem*, int);
+  virtual void addFile(bool pwd = false);
 
 private:
   QWidget *baseWindowWidget;

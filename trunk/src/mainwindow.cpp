@@ -194,6 +194,7 @@ void MainWindow::setupActions()
 
 void MainWindow::setupConnections()
 {
+  connect (buttonAddFile, SIGNAL(triggered()), this, SLOT(addFile()));
   connect (buttonInfo, SIGNAL (toggled (bool)), this, SLOT(viewInformation(bool)));
   connect (buttonView, SIGNAL (triggered()), this, SLOT (embeddedViewer()));
   connect (buttonAddComment, SIGNAL(triggered()), this, SLOT(addComment()));
@@ -243,7 +244,7 @@ void MainWindow::setupPopupMenu()
 //   KAction *separator2 =new KAction(this);
 //   separator2 -> setSeparator(true);
 //   table -> addAction(separator2);
-  //table -> addAction(actionAddFile);
+  table -> addAction(buttonAddFile);
   //table -> addAction(actionAddFolder);
 }
 
@@ -989,4 +990,93 @@ void MainWindow::lockArchive()
 void MainWindow::quit()
 {
    close();
+}
+
+void MainWindow::addFile(bool pwd)
+{
+//   KUrl::List fileUrlList;
+//   if(rarList -> selectedItems().size() == 1)
+//   {
+//     if( rarList -> selectedItems().first() -> text(1) == "")
+//     {
+//       if(rarList -> selectedItems().first() -> parent() != NULL)
+//         fileUrlList = KFileDialog::getOpenUrls(KUrl(QDir().homePath()), QString(), this, i18n("Add file under ")+ rarList -> selectedItems().first() -> text(0));
+//       else
+//         fileUrlList = KFileDialog::getOpenUrls(KUrl(QDir().homePath()), QString(), this, i18n("Add file"));
+//     }
+//   else
+//     if( rarList -> selectedItems().first()->parent() != NULL)
+//       fileUrlList = KFileDialog::getOpenUrls(KUrl(QDir().homePath()), QString(), this, i18n("Add file under ")+ rarList -> selectedItems().first()->parent() -> text(0));
+//     else fileUrlList = KFileDialog::getOpenUrls(KUrl(QDir().homePath()), QString(), this, i18n("Add file"));
+//   }
+//   else
+//     fileUrlList = KFileDialog::getOpenUrls(KUrl(QDir().homePath()), QString(), this, i18n("Add file"));
+//  
+//   QStringList fileList;
+//   for(int i = 0; i < fileUrlList.size(); i++) fileList << fileUrlList[i].pathOrUrl();
+//   if(!fileList.isEmpty())
+//   {
+//     //let's check if the user asked for password
+//     QString pwdToSet;
+//     if(pwd)
+//     {
+//       KNewPasswordDialog pwDialog(this);
+//       pwDialog.setPrompt(i18n("Enter a password"));
+//       if (pwDialog.exec()) pwdToSet = pwDialog.password();
+//     }
+// 
+//     rarProcessHandler *addingProc;
+//     if(rarList -> selectedItems().size() == 1 )
+//     {
+//       QString parentFolder;
+//       if(rarList -> selectedItems()[0] -> text(1).isEmpty())
+//       {
+//         parentFolder = rebuildFullPath(rarList -> selectedItems()[0]);
+//         if(pwdToSet.isEmpty())
+//           addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-ap"+parentFolder<<"-p"+globalArchivePassword,namex, QStringList()<<fileList);
+//         else 
+//           addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-p"+pwdToSet<<"-ap"+parentFolder,namex, QStringList()<<fileList);
+//         connect(addingProc, SIGNAL(processCompleted(bool)), this, SLOT(reloadArchive(bool)));
+//       }
+//       else
+//       {
+//         if ( rarList -> selectedItems()[0] -> parent() != NULL)
+//         {
+//           parentFolder = rebuildFullPath(rarList -> selectedItems()[0] -> parent());
+//           if(pwdToSet.isEmpty())
+//             addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-ap"+parentFolder<<"-p"+globalArchivePassword,namex, QStringList()<<fileList);
+//           else 
+//             addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-p"+pwdToSet<<"-ap"+parentFolder,namex, QStringList()<<fileList);
+//           connect(addingProc, SIGNAL(processCompleted(bool)), this, SLOT(reloadArchive(bool)));
+//         }
+//         else
+//         {
+//           if(pwdToSet.isEmpty())
+//             addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-p"+globalArchivePassword,namex, QStringList()<<fileList);
+//           else 
+//             addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-p"+pwdToSet,namex, QStringList()<<fileList);
+//           connect(addingProc, SIGNAL(processCompleted(bool)), this, SLOT(reloadArchive(bool)));
+//         }
+//       }
+//   
+//     }
+//     else
+//     {
+//       if(pwdToSet.isEmpty())
+//         addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-p"+globalArchivePassword,namex, QStringList()<<fileList);
+//       else 
+//         addingProc = new rarProcessHandler(this, "rar", QStringList() << "a"<<"-ep1"<<"-p"+pwdToSet,namex, QStringList()<<fileList);
+//       connect(addingProc, SIGNAL(processCompleted(bool)), this, SLOT(reloadArchive(bool)));
+//     }
+//  
+//     // disabilito momentaneamente le action di interfaccia
+//     enableActions(false);
+//     toolNew -> setEnabled(false);
+//     toolOpen -> setEnabled(false);
+//     toolDelete -> setEnabled(false);
+//     // cursore in stato di attesa
+//     setCursor(Qt::WaitCursor);
+//     addingProc -> start();
+//     bAddFile = true;
+//   }
 }
