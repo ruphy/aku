@@ -71,6 +71,9 @@ bool rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
           if ( foldFound == false )   //altrimenti alloco in lista in topLevel.. Questo accade anche se non è stato eseguito nessun ciclo
           {
             fitem = new QTreeWidgetItem ( listv );
+
+            //kDebug() << singleItem[j];
+ 
             fitem -> setText ( 0, singleItem[j] );
             tmpItem = fitem;
           }
@@ -92,6 +95,7 @@ bool rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
           if ( itemFound == false )   //altrimenti alloco e setto il currentItem
           {
             fitem = new QTreeWidgetItem ( tmpItem );
+            //kDebug() << singleItem[j];
             fitem -> setText ( 0, singleItem[j] );
             tmpItem = fitem;
           }
@@ -145,7 +149,7 @@ bool rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
     }     
 
   }  
-
+  kDebug() << "FASE -->> SET STATUS BAR INFO";
   // here we set status bar info
   stbarst.remove ( 0, target + 79 );
   QStringList archinfo;
@@ -156,7 +160,8 @@ bool rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
   ratio.remove ( ratio.length()-1, 1 );
   float ratioNum = ratio.toFloat();
   if (ratioNum > 100.0 || ratioNum == 0.0) ratioNum = 0;
-  else ratioNum = abs(ratioNum -100);
+  else ratioNum = abs(ratioNum - 100);
+  kDebug() << ratioNum;
   ratioBar -> setRatio ( ratioNum );
   kDebug() << "FASE -->> PARSING RAR.CPP COMPLETA";
   return fileswithpass;

@@ -258,7 +258,7 @@ void MainWindow::openDialog()
 void MainWindow::openUrl(const KUrl& url)
 {
   KMimeType::Ptr mimetype = KMimeType::findByUrl(url);
-
+  searchWidget -> searchLineEdit() -> clear();
   if (mimetype -> name() == "application/x-rar") {
     infoExtrabis -> setVisible(false);
     compressor = "rar";

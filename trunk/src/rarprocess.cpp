@@ -175,7 +175,7 @@ QString rarProcess::standardOutput()
 //gestiamo un progressdialog
 void rarProcess::showProgress() 
 {
- 
+  kDebug() << "FUNZIONE ::SHOWPROGRESS";
   QByteArray gotOutput = thread -> readAllStandardOutput();
   stdoutput.append(gotOutput);
   rawoutput.append(gotOutput);
@@ -191,7 +191,7 @@ void rarProcess::showProgress()
     }
   }
 
-  if (QString(gotOutput).contains("OK") && !QString(gotOutput).contains("All OK") && options[0]!="a") {
+  if (QString(gotOutput).contains("OK") && !QString(gotOutput).contains("All OK") && (options[0]=="x" && options[0]=="e")) {
     rarprogressdialog->setCurrentFileProgressToMaximum();
     rarprogressdialog->setCurrentFileProgress(0);
     rarprogressdialog->incrementOverall();
@@ -209,13 +209,13 @@ void rarProcess::showProgress()
   if ( QString(gotOutput).contains("All OK")) {
     rarprogressdialog -> accept(); 
   }
-
+  kDebug() << "FINE FUNZIONE ::SHOWPROGRESS";
 }
 
 
 void rarProcess::giveOutput(int, QProcess::ExitStatus)
 {
- puts("process terminated");
+ kDebug() << "::GIVEOUTPUT - process terminated";
  emit outputReady(standardOutput(), headercrypted);
  if (streamerror.isEmpty()) {
     puts("no problem");
@@ -280,6 +280,7 @@ QString rarProcess::getArchivePassword()
 
 void rarProcess::getError()
 { 
+  kDebug() << "FUNZIONE ::GETERROR";
   QByteArray temp = thread -> readAllStandardError();
 
   // the keyword "already" tells us that rar is asking for an overwrite
