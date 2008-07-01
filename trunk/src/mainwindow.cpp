@@ -700,36 +700,40 @@ void MainWindow::embeddedViewer()
 
 void MainWindow::cmdlineOptions()
 {
+  
   KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
-//   if(args->isSet("extracthere")){
-//     // code to extract the archive
-//     setVisible(false);
-//     QDir herepath(args->arg(0));
-//     KUrl url = herepath.absolutePath();
-//     rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",
-//                                                      args->arg(0), QStringList(), url.directory() );
-//     connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
-//     pHand->start();
-//   }
-//   else if(args->isSet("extractto")){
-//     // code to extract the archive
-//     setVisible(false);
-//     KUrl url = KFileDialog::getExistingDirectoryUrl(KUrl(QDir().homePath()),  this, i18n("Extract to"));
-//     puts(url.pathOrUrl().toAscii());
-//     if(!url.isEmpty()){
-//      rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",
-//                                                       args->arg(0), QStringList(), url.path() );
-//      connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
-//      pHand->start();
-//     } else{
-//      kapp->quit(); //FIXME does not work!
-//      }
-//  }
-//  else{
-    for (int i=0; i < args -> count(); i++) openUrl(args -> url(i));
+  if (args -> isSet("extracthere")) {
+    kDebug() << "Extract Here";
+  // code to extract the archive
+    setVisible(false);
+    QDir herepath(args -> arg(0));
+    KUrl url = herepath.absolutePath();
+    rarProcess *pHand = new rarProcess(this, "rar", QStringList() << "x", args->arg(0), QStringList(), url.directory() );
+    connect(pHand, SIGNAL(processCompleted(bool)), kapp, SLOT(quit()));
+    pHand -> start();
+  }
 
-    args -> clear();
-//   }
+  else if (args -> isSet("extractto")) {
+    kDebug() << "Extract Here";
+  // code to extract the archive
+    //setVisible(false);
+    KUrl url = KFileDialog::getExistingDirectoryUrl(KUrl(QDir().homePath()),  this, i18n("Extract to"));
+    if (!url.isEmpty()) {
+      rarProcess *pHand = new rarProcess(this, "rar", QStringList()<< "x", args -> arg(0), QStringList(), url.path());
+      connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(quit(bool)));
+      pHand -> start();
+    }
+    else {
+
+    }
+  }
+
+  else {
+    for (int i=0; i < args -> count(); i++) openUrl(args -> url(i));
+  }
+
+  args -> clear();
+
 }
 
 

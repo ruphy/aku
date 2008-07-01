@@ -12,14 +12,14 @@ int main ( int argc, char *argv[] )
 {
 
   KAboutData aboutData("aku", 0, ki18n("aKu"),
-                       "SVN", ki18n("The RAR application for KDE4"), KAboutData::License_GPL_V3,
+                       "1.0beta1", ki18n("The RAR/ZIP/TAR application for KDE4"), KAboutData::License_GPL_V3,
                        ki18n("Copyright (c) 2008"));
    
   aboutData.addAuthor(ki18n("Alessandro Diaferia aka \"The Speedy Coder\""), 
                       ki18n("Main Developer"),
                             "alediaferia@gmail.com");
   aboutData.addAuthor(ki18n("Francesco Grieco aka \"The Japanese GUI stylist\""),
-                      ki18n("Developer"),
+                      ki18n("Main Developer"),
                             "fgrieco@gmail.com");
 
   // chiamata per disattivare il report dei bugs a kde4
@@ -38,7 +38,7 @@ int main ( int argc, char *argv[] )
 
   QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
   MainWindow *mainwindow = new MainWindow();
-  mainwindow->show();
+  mainwindow -> show();
 
   return app.exec();
 
