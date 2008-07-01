@@ -914,6 +914,7 @@ void MainWindow::renameProcess (QTreeWidgetItem *current, int)
   if (oldItemName != current -> text(0) && !tempForRename.contains(current->text(0))) {
     kDebug() << "rename accepted";
     QStringList options;
+    setCursor(Qt::WaitCursor);
     if (compressor == "rar") {
       options << "rn";
       if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
@@ -951,6 +952,7 @@ void MainWindow::renameProcess (QTreeWidgetItem *current, int)
       readtxt.close();
       writetxt.close();
     }
+    setCursor(QCursor());
   }
   else {
     current -> setText(0, oldItemName);

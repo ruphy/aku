@@ -16,8 +16,10 @@ akuRatioWidget::~akuRatioWidget()
 
 void akuRatioWidget::setRatio(float newRatio)
 {
-  lunghezza = newRatio;
-  //repaint();
+  if (lunghezza != newRatio) {
+    lunghezza = newRatio;
+    repaint();
+  }
 }
 
 void akuRatioWidget::paintEvent(QPaintEvent *)

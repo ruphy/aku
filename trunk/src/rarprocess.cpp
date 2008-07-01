@@ -267,7 +267,9 @@ void rarProcess::showError(QByteArray streamerror)
     original = QString("CRC failed").toAscii();
     translated = QString("<b>" + i18n("CRC failed") + "</b>").toAscii();
     error.replace(original, translated);
-
+    original = QString("Unexpected end of archive").toAscii();
+    translated = QString("<font color=red>" + i18n("Unexpected end of archive") + "</font>").toAscii();
+    error.replace(original, translated);
     errorDialog->setError(error);
     errorDialog->show();
   }

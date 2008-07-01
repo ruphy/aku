@@ -10,7 +10,8 @@ ZIP:
   1) convertire modified in QDate
  
 RAR:
-  
+  1) archivi rar corrotti, inserire icona apposita
+  2) funzione repair archive
 
 TAR:
   1) convertire modified in QDate
@@ -18,7 +19,7 @@ TAR:
 GENERALE:
   1) ringraziamenti a Ruphy per la ratiobar
   2) conversioni tra i formati; rar -> zip; rar -> tar e così via
-  3) random crash all'apertura dei rar (INDAGARE)
+  3) random crash all'apertura dei rar (INDAGARE) -> forse risolto
 
 OVERWRITE DIALOG:
   1) Solito but QLIST quando si fanno più rename
