@@ -716,16 +716,22 @@ void MainWindow::cmdlineOptions()
   else if (args -> isSet("extractto")) {
     kDebug() << "Extract Here";
   // code to extract the archive
-    //setVisible(false);
+  
+    //setVisible(false);   
     KUrl url = KFileDialog::getExistingDirectoryUrl(KUrl(QDir().homePath()),  this, i18n("Extract to"));
+    compressor = "rar";
     if (!url.isEmpty()) {
-      rarProcess *pHand = new rarProcess(this, "rar", QStringList()<< "x", args -> arg(0), QStringList(), url.path());
-      connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(quit(bool)));
+      rarProcess *pHand = new rarProcess(this, compressor, QStringList() << "x", args -> arg(0), QStringList(), url.path());
+      connect(pHand, SIGNAL(processCompleted(bool)), kapp, SLOT(quit()));
       pHand -> start();
-    }
-    else {
-
-    }
+    } 
+    // se non creo un segnale fasullo e non lo collego al quit(), aku non si chiude
+   else {
+     close();
+     QProcess *nothing = new QProcess();
+     connect(nothing, SIGNAL(started()), kapp, SLOT(quit()));
+     nothing -> start("rar");
+   }
   }
 
   else {
