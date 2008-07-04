@@ -31,7 +31,7 @@ MainWindow::MainWindow (QWidget* parent, Qt::WFlags flags): KXmlGuiWindow (paren
 
   filespassprotected = false;
 
-  cmdlineOptions();
+  //cmdlineOptions();
 }
 
 MainWindow::~MainWindow()
@@ -234,7 +234,7 @@ void MainWindow::setupPopupMenu()
   separator = new KAction(this);
   separator -> setSeparator (true);
   table -> addAction (separator);
-  popRename = new KAction (i18n("&Rename"), table);
+  popRename = new KAction (i18n("Rename"), table);
   popRename -> setIcon(KIcon("edit-rename"));
   popRename -> setEnabled(false);
   table -> addAction (popRename);
@@ -699,9 +699,9 @@ void MainWindow::embeddedViewer()
   }
 }
 
-void MainWindow::cmdlineOptions()
-{
-  
+//void MainWindow::cmdlineOptions()
+//{
+/*  
   KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
   if (args -> isSet("extracthere")) {
     kDebug() << "Extract Here";
@@ -716,33 +716,43 @@ void MainWindow::cmdlineOptions()
 
   else if (args -> isSet("extractto")) {
     kDebug() << "Extract Here";
-  // code to extract the archive
+    // code to extract the archive
   
+ 
     //setVisible(false);   
-    KUrl url = KFileDialog::getExistingDirectoryUrl(KUrl(QDir().homePath()),  this, i18n("Extract to"));
+    //KUrl url = KFileDialog::getExistingDirectoryUrl(KUrl(QDir().homePath()),  this, i18n("Extract to"));
+//     const KUrl url(QDir().homePath());
+    KDialog *filedialog = new KDialog(this);
+//    filedialog -> setModal(true);
+//     filedialog -> setOperationMode(KFileDialog::Other);
+    //filedialog -> setMode(KFile::Directory);
+//     
+    //KFileDialog *filedialog = new KFileDialog(this);
+    //filedialog -> setFilter("*.cpp");
+    //connect (filedialog, SIGNAL(cancelClicked()), this, SLOT(test()));
+    connect (filedialog, SIGNAL(okClicked()), kapp, SLOT(quit()));
+    connect (filedialog, SIGNAL(cancelClicked()), kapp, SLOT(quit()));
+//     filedialog -> setCaption(i18n("Extract to"));
+//     filedialog -> setButtonsOrientation(Qt::Vertical);
+//     
+    filedialog -> show();
     compressor = "rar";
-    if (!url.isEmpty()) {
-      rarProcess *pHand = new rarProcess(this, compressor, QStringList() << "x", args -> arg(0), QStringList(), url.path());
-      connect(pHand, SIGNAL(processCompleted(bool)), kapp, SLOT(quit()));
-      pHand -> start();
-    } 
-    // se non creo un segnale fasullo e non lo collego al quit(), aku non si chiude
-   else {
-     close();
-     QProcess *nothing = new QProcess();
-     connect(nothing, SIGNAL(started()), kapp, SLOT(quit()));
-     nothing -> start("rar");
-   }
+//     if (url.isEmpty()) kapp -> quit();
+//     rarProcess *pHand = new rarProcess(this, compressor, QStringList() << "x", args -> arg(0), QStringList(), url.path());
+//     connect(pHand, SIGNAL(processCompleted(bool)), kapp, SLOT(quit()));
+//     pHand -> start(); 
   }
 
   else {
     for (int i=0; i < args -> count(); i++) openUrl(args -> url(i));
   }
 
-  args -> clear();
+  args -> clear();*/
+//}
 
-}
-
+//void MainWindow::test() {
+//  KMessageBox::warningContinueCancel(this, i18n("Test"), i18n("Test"));
+//}
 
 void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento con la relativa applicazione associata
 {
@@ -757,7 +767,7 @@ void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento 
         QStringList options;
         options << "e";
         if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
-        rarprocess = new rarProcess(this, "rar", options, archive, QStringList() << fileToExtract, tempPath); //estraiamo il file nella cartella temporanea
+        rarprocess = new rarProcess(0, "rar", options, archive, QStringList() << fileToExtract, tempPath); //estraiamo il file nella cartella temporanea
         rarprocess -> start();
       }
       else if (compressor == "zip") {

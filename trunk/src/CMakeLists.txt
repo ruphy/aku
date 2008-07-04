@@ -24,6 +24,7 @@ SET(
      extractdialog.cpp
      akucomment.cpp
      akuerrordialog.cpp
+     quickextract.cpp
    )
 
 KDE4_ADD_UI_FILES(aku_SRCS overwriteui.ui extractdialog.ui)

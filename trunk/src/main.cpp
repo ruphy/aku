@@ -1,12 +1,16 @@
+#include <QTextCodec>
+
 #include <KApplication>
 #include <KCmdLineArgs>
 #include <KIconLoader>
 #include <KAboutData>
 #include <KLocale>
 #include <KIcon>
-#include <QTextCodec>
+#include <KUrl>
 
 #include "mainwindow.h"
+#include "rarprocess.h"
+#include "quickextract.h"
 
 int main ( int argc, char *argv[] )
 {
@@ -38,7 +42,28 @@ int main ( int argc, char *argv[] )
 
   QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
   MainWindow *mainwindow = new MainWindow();
-  mainwindow -> show();
+
+  KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
+  if (args -> isSet("extracthere")) {
+    kDebug() << "Extract Here";
+    // code to extract the archive
+    QDir herepath(args -> arg(0));
+    KUrl url = herepath.absolutePath();
+    rarProcess *process = new rarProcess(mainwindow, "rar", QStringList() << "x", args->arg(0), QStringList(), url.directory() );
+    QObject::connect(process, SIGNAL(processCompleted(bool)), kapp, SLOT(quit()));
+    process -> start();
+  }
+  else if (args -> isSet("extractto")) {
+    kDebug() << "Extract Here";
+    // code to extract the archive
+    quickExtract *dirextract = new quickExtract(mainwindow);
+    dirextract -> show();
+  }
+  else {
+    for (int i=0; i < args -> count(); i++) mainwindow -> openUrl(args -> url(i));
+    mainwindow -> show();
+  }
+  args -> clear();
 
   return app.exec();
 

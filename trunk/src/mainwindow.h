@@ -139,7 +139,7 @@ private slots:
 
 protected:
   void setupSearchBar();
-  void cmdlineOptions();
+  //void cmdlineOptions();
 
 protected slots:
   virtual void setupStatusBar();
@@ -153,6 +153,7 @@ protected slots:
   virtual void addComment();
   virtual void renameCompleted(bool);
   virtual void lockArchive();
+  //virtual void test();
  
 };
 
