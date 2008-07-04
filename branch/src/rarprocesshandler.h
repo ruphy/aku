@@ -41,6 +41,7 @@ class rarProcessHandler : public QObject
   void processCompleted(bool);
   void processCanceled();
   void outputReady(QString, bool);
+
  public slots:
   virtual void getError();
   virtual void showProgress();

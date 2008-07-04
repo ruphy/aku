@@ -1,7 +1,7 @@
 1.0 plan:
 
-- StatusBar Message of ending extraction
-- Check overwrite
+/ StatusBar Message of ending extraction
+/ Check overwrite
 ? Port akuViewer to KParts (?? troubles in handling a non-existing file ?? maybe akuViewer is better)
 - Sum of packed size in meta
 - Where possible use QHBoxLayout and QVBoxLayout in place of QGridLayout

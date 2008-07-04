@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include <KCmdLineArgs>
 #include <KVBox>
+#include <KDebug>
 
 QString archiver = "rar";
 QString bf; //buffer
@@ -83,7 +84,8 @@ void MainWindow::handleFlags()
    KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
   if(args->isSet("extracthere")){
     // code to extract the archive
-    setVisible(false);
+    //setVisible(false);
+
     QDir herepath(args->arg(0));
     KUrl url = herepath.absolutePath();
     rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",
@@ -93,17 +95,20 @@ void MainWindow::handleFlags()
   }
   else if(args->isSet("extractto")){
     // code to extract the archive
-    setVisible(false);
+
+    //setVisible(false);
     KUrl url = KFileDialog::getExistingDirectoryUrl(KUrl(QDir().homePath()),  this, i18n("Extract to"));
-    puts(url.pathOrUrl().toAscii());
-    if(!url.isEmpty()){
+    kDebug()<<"url"<<url;
+
+    if(url.isEmpty()){
+     kapp->quit();
+    } 
+
      rarProcessHandler *pHand = new rarProcessHandler(this, archiver, QStringList()<<"x",
                                                       args->arg(0), QStringList(), url.path() );
      connect(pHand, SIGNAL(processCompleted(bool)), this, SLOT(closeAll(bool)));
      pHand->start();
-    } else{
-     kapp->quit(); //FIXME does not work!
-     }
+
   }
   else{
     for(int i=0; i < args -> count(); i++)  raropen(args -> arg(i));     

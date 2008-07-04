@@ -92,14 +92,14 @@ void extractDialog::createNewFolder()
 void extractDialog::updateTreeViewSelection(QString path)
 {
   KUrl url(path);
+  kDebug()<<url;
   if(url.isLocalFile()) treeView -> setCurrentUrl(url); 
 }
 
 void extractDialog::hiddenFiles(bool status)
 {
   KUrl current = treeView -> currentUrl();
-  if (status) treeView -> setShowHiddenFiles(true);
-  else treeView -> setShowHiddenFiles(false);
+  treeView->setShowHiddenFiles(status);
   treeView -> setCurrentUrl(current);
 }
 

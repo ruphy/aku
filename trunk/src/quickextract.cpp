@@ -7,6 +7,13 @@ quickExtract::quickExtract(QWidget *parent) : KDialog(parent)
   KHBox *hlayout = new KHBox(vlayout);
   
   treeView = new KFileTreeView(hlayout); 
+  treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
+
+  showhiddenAction = new KAction(treeView);
+  showhiddenAction -> setText(i18n("Show hidden files"));
+  showhiddenAction -> setCheckable(true);
+  treeView -> addAction (showhiddenAction);
+
   treeView -> setColumnHidden (1, true);
   treeView -> setColumnHidden (2, true);
   treeView -> setColumnHidden (3, true);
@@ -18,11 +25,6 @@ quickExtract::quickExtract(QWidget *parent) : KDialog(parent)
   treeView -> setDirOnlyMode(true);
   treeView -> setEditTriggers(QAbstractItemView::NoEditTriggers);
   treeView -> setCurrentUrl(KUrl(QDir::homePath()));
-  
-  showhiddenAction = new KAction(treeView);
-  showhiddenAction -> setText(i18n("Show hidden files"));
-  showhiddenAction -> setCheckable(true);
-  treeView -> addAction (showhiddenAction);
 
   KUrlCompletion *comp = new KUrlCompletion(KUrlCompletion::DirCompletion);
   khistory = new KHistoryComboBox(vlayout);
@@ -43,9 +45,8 @@ quickExtract::~quickExtract()
 void quickExtract::hiddenFiles(bool status)
 {
   KUrl current = treeView -> currentUrl();
-  kDebug() << current;
-  if (status) treeView -> setShowHiddenFiles(true);
-  else treeView -> setShowHiddenFiles(false);
+  kDebug() <<"Current"<< current;
+  //treeView->setShowHiddenFiles(status);
   treeView -> setCurrentUrl(current);
 }
 
