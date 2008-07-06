@@ -5,6 +5,9 @@
 #include <QLabel>
 #include <QDir>
 #include <QHeaderView>
+#include <QCheckBox>
+#include <QGroupBox>
+#include <QSizePolicy>
 
 #include <KDialog>
 #include <KVBox>
@@ -13,6 +16,10 @@
 #include <KFileTreeView>
 #include <KUrlCompletion>
 #include <KHistoryComboBox>
+#include <KDialogButtonBox>
+#include <KGuiItem>
+#include <KPushButton>
+
 
 #include <KDebug>
 

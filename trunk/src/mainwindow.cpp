@@ -250,7 +250,7 @@ void MainWindow::setupPopupMenu()
 
 void MainWindow::openDialog()
 {
-  KUrl url = KFileDialog::getOpenUrl(KUrl("kfiledialog:///AkuOpenDir"), i18n("*.rar *.zip *.bz2 *.gz|All supported types\n*.rar|Rar archives\n*.zip|Zip archives\n*.bz2|Tar archives (bzip)\n*.gz|Tar archives (gzip)\n*.*|All files"), this);
+  KUrl url = KFileDialog::getOpenUrl(KUrl("kfiledialog:///AkuOpenDir"), i18n("*.rar *.zip *.bz2 *.gz *.tar|All supported types\n*.rar|Rar archives\n*.zip|Zip archives\n*.bz2|Tar archives (bzip)\n*.gz|Tar archives (gzip)\n*.tar|Tar archives*.*|All files"), this);
   if (!url.isEmpty())
     openUrl(url);
 }
@@ -294,7 +294,7 @@ void MainWindow::openUrl(const KUrl& url)
     metaWidget -> setMime("");
   }
 
-  else if ((mimetype -> name() == "application/x-bzip-compressed-tar") || (mimetype -> name() == "application/x-compressed-tar")) { 
+  else if ((mimetype -> name() == "application/x-bzip-compressed-tar") || (mimetype -> name() == "application/x-compressed-tar") || (mimetype -> name() == "application/x-tar")) { 
     infoExtrabis -> setVisible(false);
     compressor = "tar";
     enableActions(false);
@@ -372,10 +372,10 @@ void MainWindow::buildTarTable(QString taroutput)
    
      KFileItem file(KFileItem::Unknown, KFileItem::Unknown, KUrl(archive));
      float ratio (100 - ((100.0 * file.size()) / archivedetails[1].toULongLong()));
+     if (ratio < 0) ratio = 0.0;
+     ratioBar -> setRatio(int(ratio + 0.5f)); 
    
-     archiveInfo -> setText(archivedetails[0] + " " + "<b>" + i18n("file(s)") + "  " + i18n("size:") + "</b> " + KLocale(archivedetails[1]).formatByteSize(archivedetails[1].toULong()) + " <b> " + i18n("packed:") + "</b> " + KLocale(QString().setNum(file.size())).formatByteSize((QString().setNum(file.size())).toULong()) + "  ");
-
-     ratioBar -> setRatio(int(ratio + 0.5f));    
+     archiveInfo -> setText(archivedetails[0] + " " + "<b>" + i18n("file(s)") + "  " + i18n("size:") + "</b> " + KLocale(archivedetails[1]).formatByteSize(archivedetails[1].toULong()) + " <b> " + i18n("packed:") + "</b> " + KLocale(QString().setNum(file.size())).formatByteSize((QString().setNum(file.size())).toULong()) + "  ");   
  
      table -> header() -> setResizeMode(0, QHeaderView::ResizeToContents);
      table -> header() -> setResizeMode(4, QHeaderView::ResizeToContents);
@@ -384,6 +384,7 @@ void MainWindow::buildTarTable(QString taroutput)
      table -> sortItems ( 0, Qt::AscendingOrder );
      table -> setFolderIcons();
      setCaption(archive);
+  
    }
    enableActions(true);
    statusBar()->clearMessage();
