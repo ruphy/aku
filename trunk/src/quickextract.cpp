@@ -28,20 +28,10 @@ quickExtract::quickExtract(QWidget *parent) : KDialog(parent)
   
   QLabel *places = new QLabel(v1layout);
   places -> setText("<b>" + i18n("Places") + "</b>");
-  QListView *list = new QListView(v1layout);
-  
-  //tualista->setAutoFillBackground(true);
-  //tualista->setBackgroundRole(QPalette::Base);
-
-  list -> setFrameShape(QFrame::NoFrame);
-  list -> setIconSize(QSize(26,26));
+  KFilePlacesView *list = new KFilePlacesView(v1layout);
   KFilePlacesModel *model = new KFilePlacesModel(this);
   list -> setModel(model);
-
-  QPalette pal = palette();
-  pal.setBrush(backgroundRole(), QPalette().window());
-  list -> setPalette(pal);
-
+  list -> setAutoResizeItemsEnabled(true);
 
   treeView -> addAction (showhiddenAction);
   treeView -> setColumnHidden (1, true);
@@ -78,6 +68,7 @@ quickExtract::quickExtract(QWidget *parent) : KDialog(parent)
 
   KUrlCompletion *comp = new KUrlCompletion(KUrlCompletion::DirCompletion);
   khistory = new KHistoryComboBox(v2layout);
+  khistory -> setIcon(KIcon("folder-downloads"));
   khistory -> setCompletionObject(comp);
   khistory -> setAutoDeleteCompletionObject(true);
   khistory -> setCompletionMode(KGlobalSettings::CompletionPopupAuto);
@@ -86,8 +77,9 @@ quickExtract::quickExtract(QWidget *parent) : KDialog(parent)
   connect (treeView, SIGNAL (currentChanged (KUrl)), this, SLOT (updateCombo(KUrl)));
   connect (khistory, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateTreeViewSelection(QString)));
   connect (khistory, SIGNAL(returnPressed(QString)), this, SLOT(updateTreeViewSelection(QString)));
-
-  connect(list, SIGNAL(clicked(const QModelIndex&)), SLOT(urlSelected(const QModelIndex&)));
+  
+  connect (list , SIGNAL(urlChanged(const KUrl&)), SLOT(urlSelected(const KUrl&)));
+  //  connect(list, SIGNAL(clicked(const QModelIndex&)), SLOT(urlSelected(const QModelIndex&)));
 }
 
 quickExtract::~quickExtract()
@@ -112,16 +104,25 @@ void quickExtract::updateTreeViewSelection(QString path)
   treeView -> setCurrentUrl(KUrl(path)); 
 }
 
-void quickExtract::urlSelected(const QModelIndex &index)
+void quickExtract::urlSelected(const KUrl& url)
 {
-  if (!index.isValid()) return;
-  QVariant data = index.data(KFilePlacesModel::UrlRole);
-  KUrl url = data.toUrl();
-  // Prevent dir lister error
-  if (!url.isValid()) {
-    kError() << "Tried to open an invalid url";
-    return;
-  }
+  kDebug() << url;
   QString string = url.pathOrUrl();
+  kDebug() << string;
   updateTreeViewSelection(string);
 }
+
+// void quickExtract::urlSelected(const QModelIndex &index)
+// {
+//   if (!index.isValid()) return;
+//   QVariant data = index.data(KFilePlacesModel::UrlRole);
+//   KUrl url = data.toUrl();
+//   // Prevent dir lister error
+//   if (!url.isValid()) {
+//     kError() << "Tried to open an invalid url";
+//     return;
+//   }
+//   QString string = url.pathOrUrl();
+//   kDebug() << url.pathOrUrl();
+//   updateTreeViewSelection(string);
+// }

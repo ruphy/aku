@@ -44,7 +44,8 @@ class quickExtract : public KDialog
    virtual void updateTreeViewSelection(QString);
   
   private slots:
-   void urlSelected(const QModelIndex& index);
+   void urlSelected(const KUrl&);
+   //void urlSelected(const QModelIndex& index);
 
   private:
    KAction *showhiddenAction;
