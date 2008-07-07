@@ -3,11 +3,11 @@
 quickExtract::quickExtract(QWidget *parent) : KDialog(parent)
 {  
   setCaption(i18n("Extract the archive to"));
-  setInitialSize(QSize(550, 350));
+  setInitialSize(QSize(540, 350));
   KHBox *mainlayout = new KHBox(this);
   setMainWidget(mainlayout);
   
-  mainlayout -> setSpacing(20);
+  mainlayout -> setSpacing(25);
   
   KVBox *v1layout = new KVBox(mainlayout);
   //KVBox *vspace = new KVBox(mainlayout);
@@ -16,7 +16,7 @@ quickExtract::quickExtract(QWidget *parent) : KDialog(parent)
   //spacelayout -> addSpacing(20);
   KVBox *v2layout = new KVBox(mainlayout);
   
-  v1layout -> setSpacing(5);
+  v1layout -> setSpacing(10);
   v2layout -> setSpacing(10);
 
   treeView = new KFileTreeView(v2layout); 
@@ -25,6 +25,23 @@ quickExtract::quickExtract(QWidget *parent) : KDialog(parent)
   showhiddenAction = new KAction(treeView);
   showhiddenAction -> setText(i18n("Show hidden files"));
   showhiddenAction -> setCheckable(true);
+  
+  QLabel *places = new QLabel(v1layout);
+  places -> setText("<b>" + i18n("Places") + "</b>");
+  QListView *list = new QListView(v1layout);
+  
+  //tualista->setAutoFillBackground(true);
+  //tualista->setBackgroundRole(QPalette::Base);
+
+  list -> setFrameShape(QFrame::NoFrame);
+  list -> setIconSize(QSize(26,26));
+  KFilePlacesModel *model = new KFilePlacesModel(this);
+  list -> setModel(model);
+
+  QPalette pal = palette();
+  pal.setBrush(backgroundRole(), QPalette().window());
+  list -> setPalette(pal);
+
 
   treeView -> addAction (showhiddenAction);
   treeView -> setColumnHidden (1, true);
@@ -39,27 +56,26 @@ quickExtract::quickExtract(QWidget *parent) : KDialog(parent)
   treeView -> setEditTriggers(QAbstractItemView::NoEditTriggers);
   treeView -> setCurrentUrl(KUrl(QDir::homePath()));
 
-  QLabel *space = new QLabel(v1layout);
-  KDialogButtonBox *buttonBox = new KDialogButtonBox(v1layout, Qt::Vertical);
-  KGuiItem guiHome(i18n("Home"), "user-home");
-  buttonBox -> addButton(guiHome, QDialogButtonBox::ActionRole);
-  KGuiItem guiDesktop(i18n("Desktop"), "user-desktop");
-  buttonBox -> addButton(guiDesktop, QDialogButtonBox::ActionRole);
-  KGuiItem guiRoot(i18n("Root"), "folder-red");
-  KPushButton *buttonRoot = new KPushButton(guiRoot);
-  buttonBox -> addButton(guiRoot, QDialogButtonBox::ActionRole);
+//   QLabel *space = new QLabel(v1layout);
+//   KDialogButtonBox *buttonBox = new KDialogButtonBox(v1layout, Qt::Vertical);
+//   KGuiItem guiHome(i18n("Home"), "user-home");
+//   buttonBox -> addButton(guiHome, QDialogButtonBox::ActionRole);
+//   KGuiItem guiDesktop(i18n("Desktop"), "user-desktop");
+//   buttonBox -> addButton(guiDesktop, QDialogButtonBox::ActionRole);
+//   KGuiItem guiRoot(i18n("Root"), "folder-red");
+//   KPushButton *buttonRoot = new KPushButton(guiRoot);
+//   buttonBox -> addButton(guiRoot, QDialogButtonBox::ActionRole);
   
-  KGuiItem guiNewdir(i18n("New Directory"), "folder-new");
-  KPushButton *buttonNewdir = new KPushButton(guiNewdir); 
-  buttonBox -> addButton(guiNewdir, QDialogButtonBox::ActionRole);
-  buttonBox -> setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+//   KGuiItem guiNewdir(i18n("New Directory"), "folder-new");
+//   KPushButton *buttonNewdir = new KPushButton(guiNewdir); 
+//   buttonBox -> addButton(guiNewdir, QDialogButtonBox::ActionRole);
+//   buttonBox -> setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   //buttonBox -> addButton(guiRoot, QDialogButtonBox::ActionRole);
   //QGroupBox *groupBox = new QGroupBox(v1layout);
   //QVBoxLayout *vbox = new QVBoxLayout(v1layout);
   QCheckBox *opendestination = new QCheckBox(i18n("Open destination path"), v1layout);
   QCheckBox *deletearchive = new QCheckBox(i18n("Delete archive after extracting"), v1layout);
-  QLabel *spacebottom1 = new QLabel(v1layout);
-  QLabel *spacebottom2 = new QLabel(v1layout);
+
   KUrlCompletion *comp = new KUrlCompletion(KUrlCompletion::DirCompletion);
   khistory = new KHistoryComboBox(v2layout);
   khistory -> setCompletionObject(comp);
@@ -70,6 +86,8 @@ quickExtract::quickExtract(QWidget *parent) : KDialog(parent)
   connect (treeView, SIGNAL (currentChanged (KUrl)), this, SLOT (updateCombo(KUrl)));
   connect (khistory, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateTreeViewSelection(QString)));
   connect (khistory, SIGNAL(returnPressed(QString)), this, SLOT(updateTreeViewSelection(QString)));
+
+  connect(list, SIGNAL(clicked(const QModelIndex&)), SLOT(urlSelected(const QModelIndex&)));
 }
 
 quickExtract::~quickExtract()
@@ -94,3 +112,16 @@ void quickExtract::updateTreeViewSelection(QString path)
   treeView -> setCurrentUrl(KUrl(path)); 
 }
 
+void quickExtract::urlSelected(const QModelIndex &index)
+{
+  if (!index.isValid()) return;
+  QVariant data = index.data(KFilePlacesModel::UrlRole);
+  KUrl url = data.toUrl();
+  // Prevent dir lister error
+  if (!url.isValid()) {
+    kError() << "Tried to open an invalid url";
+    return;
+  }
+  QString string = url.pathOrUrl();
+  updateTreeViewSelection(string);
+}

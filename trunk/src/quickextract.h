@@ -6,8 +6,9 @@
 #include <QDir>
 #include <QHeaderView>
 #include <QCheckBox>
-#include <QGroupBox>
 #include <QSizePolicy>
+#include <QListView>
+#include <QPalette>
 
 #include <KDialog>
 #include <KVBox>
@@ -19,6 +20,9 @@
 #include <KDialogButtonBox>
 #include <KGuiItem>
 #include <KPushButton>
+
+#include <kfileplacesview.h>
+#include <kfileplacesmodel.h>
 
 
 #include <KDebug>
@@ -38,6 +42,9 @@ class quickExtract : public KDialog
    virtual void hiddenFiles(bool);
    virtual void updateCombo(KUrl);
    virtual void updateTreeViewSelection(QString);
+  
+  private slots:
+   void urlSelected(const QModelIndex& index);
 
   private:
    KAction *showhiddenAction;
