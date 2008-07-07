@@ -32,6 +32,7 @@ quickExtract::quickExtract(QWidget *parent) : KDialog(parent)
   KFilePlacesModel *model = new KFilePlacesModel(this);
   list -> setModel(model);
   list -> setAutoResizeItemsEnabled(true);
+  list -> setRowHidden(0, true); // TODO: does not work so, try using the signal setupDone from model to set rowHidden
 
   treeView -> addAction (showhiddenAction);
   treeView -> setColumnHidden (1, true);
@@ -68,7 +69,6 @@ quickExtract::quickExtract(QWidget *parent) : KDialog(parent)
 
   KUrlCompletion *comp = new KUrlCompletion(KUrlCompletion::DirCompletion);
   khistory = new KHistoryComboBox(v2layout);
-  khistory -> setIcon(KIcon("folder-downloads"));
   khistory -> setCompletionObject(comp);
   khistory -> setAutoDeleteCompletionObject(true);
   khistory -> setCompletionMode(KGlobalSettings::CompletionPopupAuto);
@@ -106,9 +106,11 @@ void quickExtract::updateTreeViewSelection(QString path)
 
 void quickExtract::urlSelected(const KUrl& url)
 {
+
   kDebug() << url;
   QString string = url.pathOrUrl();
   kDebug() << string;
+  
   updateTreeViewSelection(string);
 }
 
