@@ -7,8 +7,7 @@
 #include <QHeaderView>
 #include <QCheckBox>
 #include <QSizePolicy>
-#include <QListView>
-#include <QPalette>
+#include <QSplitter>
 
 #include <KDialog>
 #include <KVBox>
@@ -24,6 +23,7 @@
 #include <kfileplacesview.h>
 #include <kfileplacesmodel.h>
 
+#include "rarprocess.h"
 
 #include <KDebug>
 
@@ -32,19 +32,26 @@ class quickExtract : public KDialog
  Q_OBJECT
 
   public:
-   quickExtract (QWidget *parent = 0);
+   quickExtract (QString, QWidget *parent = 0);
    ~quickExtract();
 
    KFileTreeView *treeView;
    KHistoryComboBox *khistory;
+   
+   QString destination;
   
   public slots:
    virtual void hiddenFiles(bool);
    virtual void updateCombo(KUrl);
    virtual void updateTreeViewSelection(QString);
+   virtual void extract();
   
+  protected slots:
+   virtual void slotButtonClicked(int button);
+
   private slots:
    void urlSelected(const KUrl&);
+
    //void urlSelected(const QModelIndex& index);
 
   private:

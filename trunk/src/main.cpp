@@ -54,9 +54,8 @@ int main ( int argc, char *argv[] )
     process -> start();
   }
   else if (args -> isSet("extractto")) {
-    kDebug() << "Extract Here";
     // code to extract the archive
-    quickExtract *dirextract = new quickExtract(mainwindow);
+    quickExtract *dirextract = new quickExtract(args -> arg(0), mainwindow);
     dirextract -> show();
   }
   else {

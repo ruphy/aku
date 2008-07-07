@@ -1,19 +1,14 @@
 #include "quickextract.h"
 
-quickExtract::quickExtract(QWidget *parent) : KDialog(parent)
+quickExtract::quickExtract(QString args, QWidget *parent) : KDialog(parent)
 {  
+  destination = args;
   setCaption(i18n("Extract the archive to"));
   setInitialSize(QSize(540, 350));
-  KHBox *mainlayout = new KHBox(this);
+  QSplitter *mainlayout = new QSplitter(this);
   setMainWidget(mainlayout);
   
-  mainlayout -> setSpacing(25);
-  
   KVBox *v1layout = new KVBox(mainlayout);
-  //KVBox *vspace = new KVBox(mainlayout);
-  //mainlayout -> addSpacing(100);
-  //QVBoxLayout *spacelayout = new QVBoxLayout(mainlayout);
-  //spacelayout -> addSpacing(20);
   KVBox *v2layout = new KVBox(mainlayout);
   
   v1layout -> setSpacing(10);
@@ -80,10 +75,27 @@ quickExtract::quickExtract(QWidget *parent) : KDialog(parent)
   
   connect (list , SIGNAL(urlChanged(const KUrl&)), SLOT(urlSelected(const KUrl&)));
   //  connect(list, SIGNAL(clicked(const QModelIndex&)), SLOT(urlSelected(const QModelIndex&)));
+
 }
 
 quickExtract::~quickExtract()
 {
+}
+
+void quickExtract::extract()
+{
+  rarProcess *process = new rarProcess(this, "rar", QStringList() << "x", destination, QStringList(), khistory -> currentText());
+  connect(process, SIGNAL(processCompleted(bool)), this, SLOT(accept()));
+  process -> start();
+}
+
+void quickExtract::slotButtonClicked(int button) 
+{
+  if (button == KDialog::Ok) {
+    extract();
+    accept();
+  }
+  else if (button == KDialog::Cancel) reject();
 }
 
 void quickExtract::hiddenFiles(bool status)
@@ -106,27 +118,6 @@ void quickExtract::updateTreeViewSelection(QString path)
 
 void quickExtract::urlSelected(const KUrl& url)
 {
-  KUrl fixedUrl( url );
-  fixedUrl.adjustPath( KUrl::AddTrailingSlash );
-
-  kDebug() << fixedUrl;
-  //QString string = url.pathOrUrl();
-  //kDebug() << string;
-  
- // updateTreeViewSelection(string);
+  QString string = url.pathOrUrl();
+  updateTreeViewSelection(string);
 }
-
-// void quickExtract::urlSelected(const QModelIndex &index)
-// {
-//   if (!index.isValid()) return;
-//   QVariant data = index.data(KFilePlacesModel::UrlRole);
-//   KUrl url = data.toUrl();
-//   // Prevent dir lister error
-//   if (!url.isValid()) {
-//     kError() << "Tried to open an invalid url";
-//     return;
-//   }
-//   QString string = url.pathOrUrl();
-//   kDebug() << url.pathOrUrl();
-//   updateTreeViewSelection(string);
-// }
