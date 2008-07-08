@@ -26,4 +26,5 @@ OVERWRITE DIALOG:
   1) Solito but QLIST quando si fanno più rename
 
 QUICK ACTIONS:
-  1) far sparire la main durante l'estrazione
+  1) Extract to: aggiungere funzione bottone New Directory
+  2) Extract to: abilitare opendestination e delete archive

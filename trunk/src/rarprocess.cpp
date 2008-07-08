@@ -77,6 +77,7 @@ void rarProcess::initProcess()
 
     if (fullArchive) thread -> start(archiver, QStringList() << options << archivename << destination);
     else thread -> start(archiver, QStringList() << options << archivename << files << destination);
+
   }
 
   else if (options[0] == "a") {
@@ -213,9 +214,10 @@ void rarProcess::showProgress()
 }
 
 
-void rarProcess::giveOutput(int, QProcess::ExitStatus)
+void rarProcess::giveOutput(int exit, QProcess::ExitStatus)
 {
  kDebug() << "::GIVEOUTPUT - process terminated";
+ kDebug() << exit;
  emit outputReady(standardOutput(), headercrypted);
  if (streamerror.isEmpty()) {
     puts("no problem");

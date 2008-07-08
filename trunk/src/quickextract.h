@@ -38,7 +38,7 @@ class quickExtract : public KDialog
    KFileTreeView *treeView;
    KHistoryComboBox *khistory;
    
-   QString destination;
+   QString archivename;
   
   public slots:
    virtual void hiddenFiles(bool);
@@ -52,10 +52,11 @@ class quickExtract : public KDialog
   private slots:
    void urlSelected(const KUrl&);
 
-   //void urlSelected(const QModelIndex& index);
-
   private:
    KAction *showhiddenAction;
+
+  signals:
+   void processFinished(bool);
 };
 
 #endif
