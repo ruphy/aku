@@ -74,7 +74,8 @@ void rarProcess::initProcess()
     connect(rarprogressdialog, SIGNAL(paused()), this, SLOT(handlePaused()));
     connect(rarprogressdialog, SIGNAL(continued()), this, SLOT(handleContinued()));
     rarprogressdialog -> setArchiveName(archivename);
-
+    
+    //connect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
     if (fullArchive) thread -> start(archiver, QStringList() << options << archivename << destination);
     else thread -> start(archiver, QStringList() << options << archivename << files << destination);
 

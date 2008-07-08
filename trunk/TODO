@@ -13,6 +13,7 @@ RAR:
   1) archivi rar corrotti, inserire icona apposita
   2) funzione repair archive
   3) avanzamento di estrazione non funziona
+  4) in archivi con errori all'interno, aku si blocca, mentre da riga di comando continua
 
 TAR:
   1) convertire modified in QDate

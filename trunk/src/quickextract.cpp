@@ -2,6 +2,7 @@
 
 quickExtract::quickExtract(QString args, QWidget *parent) : KDialog(parent)
 {  
+  parentWidget = parent;
   archivename = args;
   setCaption(i18n("Extract the archive to"));
   setInitialSize(QSize(540, 350));
@@ -84,17 +85,15 @@ quickExtract::~quickExtract()
 
 void quickExtract::extract() 
 {
-  rarProcess *process = new rarProcess(this, "rar", QStringList() << "x", archivename, QStringList(), khistory -> currentText());
-  connect(process, SIGNAL(processCompleted(bool)), this, SIGNAL(processFinished(bool)));
+  rarProcess *process = new rarProcess(parentWidget, "rar", QStringList() << "x", archivename, QStringList(), khistory -> currentText());
+  //connect(process, SIGNAL(processCompleted(bool)), this, SIGNAL(processFinished(bool)));
   process -> start();
 }
 
 void quickExtract::slotButtonClicked(int button) 
 {
   if (button == KDialog::Ok) {
-    //return (khistory -> currentText());
     extract();
-    //accept();
   }
   else if (button == KDialog::Cancel) reject();
 }

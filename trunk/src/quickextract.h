@@ -39,6 +39,8 @@ class quickExtract : public KDialog
    KHistoryComboBox *khistory;
    
    QString archivename;
+
+   QWidget *parentWidget;
   
   public slots:
    virtual void hiddenFiles(bool);
@@ -54,9 +56,6 @@ class quickExtract : public KDialog
 
   private:
    KAction *showhiddenAction;
-
-  signals:
-   void processFinished(bool);
 };
 
 #endif
