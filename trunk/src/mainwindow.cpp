@@ -198,6 +198,7 @@ void MainWindow::setupConnections()
   connect (buttonInfo, SIGNAL (toggled (bool)), this, SLOT(viewInformation(bool)));
   connect (buttonView, SIGNAL (triggered()), this, SLOT (embeddedViewer()));
   connect (buttonAddComment, SIGNAL(triggered()), this, SLOT(addComment()));
+  connect (buttonDelete, SIGNAL(triggered()), this, SLOT(deleteFile()));
   connect (table, SIGNAL(itemSelectionChanged()), this, SLOT(metaBar()));
   connect (table, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(openItemUrl(QTreeWidgetItem *, int)));
   connect (buttonExtract, SIGNAL(triggered()), this, SLOT(extractArchive()));
@@ -219,8 +220,17 @@ void MainWindow::enableActions(bool enable)
   buttonDelete -> setEnabled(enable);
   popRename -> setEnabled(enable);
   buttonLock -> setEnabled(enable);
-  if (enable) setCursor(QCursor());
-  else setCursor(Qt::WaitCursor);
+  if (enable) {
+    setCursor(QCursor());
+    table -> setSelectionMode(QAbstractItemView::ExtendedSelection);
+  }
+  else {
+    setCursor(Qt::WaitCursor);
+    table -> setSelectionMode(QAbstractItemView::NoSelection);
+  }
+
+  if ((mimetype -> name() == "application/x-compressed-tar") || (mimetype -> name() == "application/x-bzip-compressed-tar")) buttonDelete -> setEnabled(false);
+  if ((mimetype -> name() == "application/x-compressed-tar") || (mimetype -> name() == "application/x-bzip-compressed-tar") || (mimetype -> name() == "application/x-tar")) popRename -> setEnabled(false);
 }
 
 void MainWindow::setupPopupMenu()
@@ -257,8 +267,10 @@ void MainWindow::openDialog()
 
 void MainWindow::openUrl(const KUrl& url)
 {
-  KMimeType::Ptr mimetype = KMimeType::findByUrl(url);
+  if (!KFileItem(KFileItem::Unknown, KFileItem::Unknown, url).isReadable()) return;
+  mimetype = KMimeType::findByUrl(url);
   searchWidget -> searchLineEdit() -> clear();
+
   if (mimetype -> name() == "application/x-rar") {
     infoExtrabis -> setVisible(false);
     compressor = "rar";
@@ -361,6 +373,7 @@ void MainWindow::buildTarTable(QString taroutput)
 {  
    disconnect(tarprocess, SIGNAL(outputReady(QString, bool)), this, SLOT(buildTarTable(QString)));
    if (!taroutput.isEmpty()) {
+     kDebug() << mimetype -> name();
      table -> setFormat("tar");
      table -> clear();
      tar ntar;
@@ -390,6 +403,8 @@ void MainWindow::buildTarTable(QString taroutput)
    statusBar()->clearMessage();
    buttonLock -> setEnabled(false);
    popRename -> setEnabled(false);
+   // gzip e bzip non supportano il delete
+   if ((mimetype -> name() == "application/x-compressed-tar") || (mimetype -> name() == "application/x-bzip-compressed-tar")) buttonDelete -> setEnabled(false);
 }
 
 void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
@@ -841,6 +856,8 @@ void MainWindow::operationCompleted(bool value)
     tip->setTip(i18n("One or more errors occurred"));
     tip->show();
   }
+  setCursor(QCursor());
+  enableActions(true);
 }
 
 void MainWindow::addComment()
@@ -1092,4 +1109,86 @@ void MainWindow::addFile(bool pwd)
 //     addingProc -> start();
 //     bAddFile = true;
 //   }
+}
+
+void MainWindow::deleteFile()
+{
+  //assicuriamoci di deselezionare tutti i figli dei padri selezionati inquanto saranno sicuramente rimossi
+  QList<QTreeWidgetItem*> selectedItems = table -> selectedItems();
+  for (int i = 0; i < selectedItems.size(); i++)
+    if (selectedItems[i] -> childCount() != 0) 
+  //se ha dei figli li deselezioniamo
+     for (int j = 0; j < selectedItems[i] -> childCount(); j++) 
+       table -> setItemSelected ( selectedItems[i] -> child (j), false);
+  
+  selectedItems = table -> selectedItems(); //ricarichiamo la lista degli elementi selezionati
+  //recuperiamo i percorsi dalla lista
+  QStringList itemsToDelete;
+  QStringList topLevel; //solo i nomi dei file
+
+  //memorizziamo i nomi dei file di toplevel
+  for (int j = 0; j < table -> topLevelItemCount(); j++)
+    topLevel << table -> topLevelItem (j) -> text(0);
+
+  deleteAll = false;
+
+  //ricostruiamo i percorsi dei file da eliminare
+  for (int i = 0; i < selectedItems.size(); i++) {
+    QString path = table -> rebuildPath (selectedItems[i]);
+    if (!path.isEmpty())
+      itemsToDelete << path + QDir::separator() + selectedItems[i] -> text(0);
+    else
+      itemsToDelete << selectedItems[i] -> text(0);
+  }
+  if (KMessageBox::questionYesNo (this, i18n("Are you sure you want to delete the selected file(s)?"), i18n("Deleting items")) == KMessageBox::Yes ) {
+    if (topLevel == itemsToDelete) {  //se gli elementi da eliminare coincidono con tutti i toplevel allora stiamo eliminando l'archivio intero
+      KMessageBox::information (this, i18n("You chose to remove every item from this archive. The entire archive file will be removed."), i18n("Deleting items"));
+      deleteAll = true;
+    }
+    enableActions(false);
+    setCursor(Qt::WaitCursor);
+    QStringList options;
+    if (compressor == "rar") {
+      rarProcess *deleteItem;
+      options << "d";
+      if(!archivePassword.isEmpty()) options << "-p" + archivePassword;
+      deleteItem = new rarProcess(this, "rar", options, archive, itemsToDelete);
+      connect(deleteItem, SIGNAL(processCompleted(bool)), this, SLOT(completeDelete(bool)));  
+      deleteItem -> start();
+    }
+    else if (compressor == "zip") {
+      zipProcess *deleteItem;
+      // -d = delete; -r = recursive directory
+      options << "-d" << "-r";
+      deleteItem = new zipProcess(this, "zip", options, archive, itemsToDelete);
+      connect(deleteItem, SIGNAL(processCompleted(bool)), this, SLOT(completeDelete(bool)));  
+      deleteItem -> start();
+    }
+    else if (compressor == "tar") {
+      tarProcess *deleteItem;
+      options << "--delete" << "-f";
+      deleteItem = new tarProcess(this, "tar", options, archive, itemsToDelete);
+      connect(deleteItem, SIGNAL(processCompleted(bool)), this, SLOT(completeDelete(bool)));  
+      deleteItem -> start();
+    }
+  }
+}
+
+void MainWindow::completeDelete(bool ok)
+{
+  if (ok) {
+    if (deleteAll == false ) operationCompleted(true);
+    else {
+      table -> clear();
+      setCaption(QString());
+      enableActions(false);
+      tip->setTip(i18n("Archive deleted"));
+      tip->show();
+      if ((compressor == "zip") || (compressor == "tar")) QFile::remove(archive);
+      
+      archive.clear();
+      setCursor(QCursor());
+    }
+  }
+  else operationCompleted(false);
 }

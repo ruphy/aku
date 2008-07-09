@@ -126,9 +126,8 @@ void rarProcess::initProcess()
     else {
      thread -> start(archiver, QStringList() << options << archivename << files);
     }
-
-    if (!hasPasswordParameter) thread -> waitForFinished(); 
-    else thread -> waitForFinished(-1);
+    //if (!hasPasswordParameter) thread -> waitForFinished(); 
+    //else thread -> waitForFinished(-1);
   }
  
   else if(options[0] == "ch") {
@@ -258,13 +257,16 @@ void rarProcess::showError(QByteArray streamerror)
     original = QString("Permission denied").toAscii();
     translated = QString("<br><font color=red>" + i18n("Permission denied") + "<br></font>").toAscii();
     error.replace(original, translated);
+    original = QString("Bad archive").toAscii();
+    translated = QString("<font color=red>" + i18n("Bad archive") + "</font>").toAscii();
+    error.replace(original, translated);
     original = QString("is read-only").toAscii();
     translated = QString("<br><font color=red>" + i18n("is read-only") + "<br></font>").toAscii();
     error.replace(original, translated);
     original = QString("No such file or directory").toAscii();
     translated = QString("</i><br><font color=red>" + i18n("No such file or directory") + "<br></font>").toAscii();
     error.replace(original, translated);
-    original = QString("Encrypted file:").toAscii();
+    original = QString("Encrypted file").toAscii();
     translated = QString("</i><br><font color=red>" + i18n("Encrypted file") + "<br></font>").toAscii();
     error.replace(original, translated);
     original = QString("CRC failed").toAscii();

@@ -5,6 +5,7 @@ MAIN WINDOW:
   2) ordinamento su colonne packed, size, data, ratio
   3) controllare il numero max di open recent
   4) controllare il numero max di destination dirs
+  5) icona lampeggiante con timer durante operazioni
 
 ZIP:
   1) convertire modified in QDate

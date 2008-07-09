@@ -10,7 +10,6 @@ zipProcess::zipProcess(QWidget *parent, QString ziparchiver, QStringList zipopti
   destination = zipdestination;
   noproblem = false;
   headercrypted = false;
- 
   errorDialog = new akuErrorDialog();
 }
 
@@ -48,6 +47,10 @@ void zipProcess::initProcess()
     thread -> waitForFinished();
   }
 
+  else if (options[0] == "-d") {
+    thread -> start(archiver, QStringList() << options << archivename << files);
+  }
+ 
   else if (options[0] == "-q") {
     thread -> start(archiver, QStringList() << options << archivename << files << "-d" << destination);
     thread -> waitForFinished();
@@ -70,13 +73,26 @@ void zipProcess::giveOutput(int, QProcess::ExitStatus)
  puts("process terminated (ZIP)");
  emit outputReady(stdoutput, headercrypted);
  if (streamerror.isEmpty()) {
-    puts("no problem");
-    noproblem = true;
+   puts("no problem");
+   noproblem = true;
  }
  else {
-   puts("problem! (ZIP)");
-   noproblem = false;
-   showError(streamerror);
+ // invalid option(s) used with -d; ignored --> warning relativo alla cancellazione di directory
+   if (streamerror.contains("invalid option(s) used with -d; ignored")) { 
+     streamerror.remove(0, (streamerror.indexOf("\n") + 1));
+     noproblem = true;
+   } 
+ // stringa relativa all'eliminazione di tutti i file dell'archivio
+   if (streamerror.contains("zip warning: zip file empty")) {
+     streamerror.remove(0, (streamerror.indexOf("\n") + 1));
+     noproblem = true;
+   } 
+
+   if (!streamerror.isEmpty()) {
+     puts("problem! (ZIP)");
+     noproblem = false;
+     showError(streamerror);
+   }
  }
  emit processCompleted(noproblem); //check the bool 
 }
@@ -86,21 +102,25 @@ void zipProcess::showError(QByteArray streamerror)
   if (!streamerror.isEmpty()) {
     QByteArray error = streamerror;
     QByteArray original = QString("Permission denied").toAscii();
-    QByteArray translated = QString("<b><font color=red>" + i18n("Permission denied") + "</b></font>").toAscii();
+    QByteArray translated = QString("<b>" + i18n("Permission denied") + "</b><br>").toAscii();
     error.replace(original, translated);
     original = QString("zip I/O error:").toAscii();
-    translated = QString("<b>" + i18n("zip I/O error:") + "</b>").toAscii();
+    translated = QString("<b><font color=red>" + i18n("zip I/O error:") + "</b></font>").toAscii();
     error.replace(original, translated);
     original = QString("caution:").toAscii();
     translated = QString("<b>" + i18n("caution:") + "</b>").toAscii();
     original = QString("zip error:").toAscii();
-    translated = QString("<b>" + i18n("zip error:") + "</b>").toAscii();
+    translated = QString("<b><font color=red>" + i18n("zip error:") + "</font").toAscii();
+    error.replace(original, translated);
+    original = QString("Nothing to do!").toAscii();
+    translated = QString("<b>" + i18n("Nothing to do!") + "</b>").toAscii();
     error.replace(original, translated);
     original = QString("Could not create output file").toAscii();
-    translated = QString("<b><font color=red>" + i18n("Could not create output file") + "</b></font>").toAscii();
+    translated = QString("<b>" + i18n("Could not create output file") + "</b><br>").toAscii();
     error.replace(original, translated);
-
-  
+    original = QString("zip warning:").toAscii();
+    translated = QString("<b><font color=red>" + i18n("zip warning:") + "</b></font>").toAscii();
+    error.replace(original, translated);
     errorDialog -> setError(error);
     errorDialog -> show();
   }

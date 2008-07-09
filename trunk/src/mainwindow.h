@@ -67,6 +67,7 @@ public slots:
   virtual void renameItem();
   virtual void renameProcess(QTreeWidgetItem*, int);
   virtual void addFile(bool pwd = false);
+  virtual void deleteFile();
 
 private:
   QWidget *baseWindowWidget;
@@ -115,6 +116,9 @@ private:
   // 3. tar
  
   bool filespassprotected;
+  bool deleteAll;
+
+  KMimeType::Ptr mimetype;
 
   KRecentFilesAction *recentFilesAction;
 
@@ -153,6 +157,7 @@ protected slots:
   virtual void addComment();
   virtual void renameCompleted(bool);
   virtual void lockArchive();
+  virtual void completeDelete(bool);
   //virtual void test();
  
 };

@@ -48,6 +48,7 @@ class tarProcess : public QObject
   public slots:
     virtual void start();
     virtual void showProgress();
+    virtual void getError();
  
    protected slots:
      virtual void initProcess();

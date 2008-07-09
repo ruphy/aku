@@ -10,6 +10,7 @@ tarProcess::tarProcess(QWidget *parent, QString tararchiver, QStringList taropti
   destination = tardestination;
   noproblem = false;
   headercrypted = false;
+  errorDialog = new akuErrorDialog();
 }
 
 tarProcess::~tarProcess()
@@ -27,7 +28,7 @@ void tarProcess::initProcess()
   puts("Avvio del threadProcess (TAR)...");
   thread = new threadProcess(this);
   // setUp firstTime connections
-  //connect(thread, SIGNAL(readyReadStandardError()), this, SLOT(getError()));
+  connect(thread, SIGNAL(readyReadStandardError()), this, SLOT(getError()));
   connect(thread, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
   connect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
 
@@ -38,12 +39,16 @@ void tarProcess::initProcess()
     thread->start(archiver, QStringList() << options << archivename);
     //puts(("Process: " + archiver + " " + options.join(" ")+ " " + archivename).toAscii());
   }
+
+  else if (options[0] == "--delete") {
+    thread -> start(archiver, QStringList() << options << archivename << files);
+  }
+
   puts("initProcess (TAR) terminato");
 }
 
 void tarProcess::showProgress() 
 {
- 
   QByteArray gotOutput = thread -> readAllStandardOutput();
   stdoutput.append(gotOutput);
   rawoutput.append(gotOutput);
@@ -71,3 +76,10 @@ void tarProcess::showError(QByteArray streamerror)
   errorDialog->setError(error);
   errorDialog->show();
 }
+
+void tarProcess::getError()
+{ 
+  QByteArray temp = thread -> readAllStandardError();
+  streamerror.append(temp);
+}
+
