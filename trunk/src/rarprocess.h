@@ -72,7 +72,7 @@ class rarProcess : public QObject
   protected slots:
     virtual void initProcess();
     virtual void giveOutput(int, QProcess::ExitStatus);
-    //virtual void handleProcess();
+    virtual void handleProcess();
     virtual void handlePaused();
     virtual void handleContinued();
     

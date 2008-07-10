@@ -32,13 +32,14 @@ class quickExtract : public KDialog
  Q_OBJECT
 
   public:
-   quickExtract (QString, QWidget *parent = 0);
+   quickExtract (QString, QString, QWidget *parent = 0);
    ~quickExtract();
 
    KFileTreeView *treeView;
    KHistoryComboBox *khistory;
    
    QString archivename;
+   QString function;   
 
    QWidget *parentWidget;
   
@@ -56,6 +57,10 @@ class quickExtract : public KDialog
 
   private:
    KAction *showhiddenAction;
+
+  signals:
+   void destination(KUrl);
+
 };
 
 #endif

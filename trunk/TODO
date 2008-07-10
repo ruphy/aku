@@ -1,5 +1,11 @@
 TODO - aKu - New Generation
 
+QUICKEXTRACT: 
+  1) aggiungere icona di cartella download in khistory
+  2) raggruppare i due checkbox in "quickextract"
+  3) aggiungere bottone e funzione new directory in "quickextract"
+  4) abilitare opendestination e delete archive in "quickextract"
+
 MAIN WINDOW:
   1) ordinamento logico per tutti i file della main
   2) ordinamento su colonne packed, size, data, ratio
@@ -22,11 +28,13 @@ TAR:
 GENERALE:
   1) ringraziamenti a Ruphy per la ratiobar
   2) conversioni tra i formati; rar -> zip; rar -> tar e così via
-  3) random crash all'apertura dei rar (INDAGARE) -> forse risolto
 
 OVERWRITE DIALOG:
   1) Solito but QLIST quando si fanno più rename
 
-QUICK ACTIONS:
-  1) Extract to: aggiungere funzione bottone New Directory
-  2) Extract to: abilitare opendestination e delete archive
+RATIOBAR:
+  1) BUG GRAVE -> crash random a causa del setRatio in rar.cpp (funzione di repaint)
+
+TIP:
+  1) la barra non funziona sempre a dovere... a volte rimane bloccata a metà, a volte rimane piccolissima
+     (si nota soprattutto agli add dir)

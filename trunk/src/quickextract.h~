@@ -32,13 +32,14 @@ class quickExtract : public KDialog
  Q_OBJECT
 
   public:
-   quickExtract (QString, QWidget *parent = 0);
+   quickExtract (QString, QString, QWidget *parent = 0);
    ~quickExtract();
 
    KFileTreeView *treeView;
    KHistoryComboBox *khistory;
    
    QString archivename;
+   QString function;   
 
    QWidget *parentWidget;
   
@@ -47,6 +48,7 @@ class quickExtract : public KDialog
    virtual void updateCombo(KUrl);
    virtual void updateTreeViewSelection(QString);
    virtual void extract();
+   virtual void destination(KUrl);
   
   protected slots:
    virtual void slotButtonClicked(int button);
@@ -57,8 +59,6 @@ class quickExtract : public KDialog
   private:
    KAction *showhiddenAction;
 
-  signals:
-   void processFinished(bool);
 };
 
 #endif

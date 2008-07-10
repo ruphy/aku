@@ -9,7 +9,7 @@ akuProgressDialog::akuProgressDialog(QWidget* parent, int maximum) : QDialog(par
   tTip -> resize(200,200);
   setWindowModality(Qt::WindowModal);
   parentW = parent;
-  setWindowTitle(i18n("Processing..."));
+  setWindowTitle(i18n("Processing dialog"));
   isPaused = false;
   //setWindowModality(Qt::WindowModal);
   setMaximumSize ( 500,350 );
@@ -34,14 +34,15 @@ akuProgressDialog::akuProgressDialog(QWidget* parent, int maximum) : QDialog(par
   //archiveName -> setTextInteractionFlags(Qt::NoTextInteraction);
   //currentFileName -> setTextInteractionFlags(Qt::NoTextInteraction);
   
-
   // QGridLayout *fileInfoLayout = new QGridLayout();
   QHBoxLayout *fileInfoLayout = new QHBoxLayout();
+  fileInfoLayout -> setSpacing(10);
   fileInfoLayout -> addWidget(currentFileIcon);
   fileInfoLayout -> addWidget(currentFileName);
 
   // QGridLayout *fileDestLayout = new QGridLayout();
   QHBoxLayout *fileDestLayout = new QHBoxLayout();
+  fileDestLayout -> setSpacing(10);
   fileDestLayout -> addWidget(folderdownloadIcon);
   fileDestLayout -> addWidget(archiveName);
 

@@ -1,11 +1,12 @@
 #include "quickextract.h"
 
-quickExtract::quickExtract(QString args, QWidget *parent) : KDialog(parent)
+quickExtract::quickExtract(QString args, QString value, QWidget *parent) : KDialog(parent)
 {  
+  setModal(true);
   parentWidget = parent;
   archivename = args;
-  setCaption(i18n("Extract the archive to"));
-  setInitialSize(QSize(540, 350));
+  function = value;
+
   QSplitter *mainlayout = new QSplitter(this);
   setMainWidget(mainlayout);
   
@@ -30,9 +31,20 @@ quickExtract::quickExtract(QString args, QWidget *parent) : KDialog(parent)
   list -> setAutoResizeItemsEnabled(true);
   list -> setRowHidden(0, true); // TODO: does not work so, try using the signal setupDone from model to set rowHidden
 
+  if (function == "quickExtract") {
+    QCheckBox *opendestination = new QCheckBox(i18n("Open destination path"), v1layout);
+    QCheckBox *deletearchive = new QCheckBox(i18n("Delete archive after extracting"), v1layout);
+    setCaption(i18n("Extract the archive to"));
+    setInitialSize(QSize(540, 350));
+    treeView -> setColumnHidden (1, true);
+    treeView -> setColumnHidden (2, true);
+  }
+
+  if (function == "addDir") {
+    setInitialSize(QSize(670, 400));
+  }
+
   treeView -> addAction (showhiddenAction);
-  treeView -> setColumnHidden (1, true);
-  treeView -> setColumnHidden (2, true);
   treeView -> setColumnHidden (3, true);
   treeView -> setColumnHidden (4, true);
   treeView -> setColumnHidden (5, true);
@@ -42,27 +54,8 @@ quickExtract::quickExtract(QString args, QWidget *parent) : KDialog(parent)
   treeView -> setDirOnlyMode(true);
   treeView -> setEditTriggers(QAbstractItemView::NoEditTriggers);
   treeView -> setCurrentUrl(KUrl(QDir::homePath()));
-
-//   QLabel *space = new QLabel(v1layout);
-//   KDialogButtonBox *buttonBox = new KDialogButtonBox(v1layout, Qt::Vertical);
-//   KGuiItem guiHome(i18n("Home"), "user-home");
-//   buttonBox -> addButton(guiHome, QDialogButtonBox::ActionRole);
-//   KGuiItem guiDesktop(i18n("Desktop"), "user-desktop");
-//   buttonBox -> addButton(guiDesktop, QDialogButtonBox::ActionRole);
-//   KGuiItem guiRoot(i18n("Root"), "folder-red");
-//   KPushButton *buttonRoot = new KPushButton(guiRoot);
-//   buttonBox -> addButton(guiRoot, QDialogButtonBox::ActionRole);
+ 
   
-//   KGuiItem guiNewdir(i18n("New Directory"), "folder-new");
-//   KPushButton *buttonNewdir = new KPushButton(guiNewdir); 
-//   buttonBox -> addButton(guiNewdir, QDialogButtonBox::ActionRole);
-//   buttonBox -> setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-  //buttonBox -> addButton(guiRoot, QDialogButtonBox::ActionRole);
-  //QGroupBox *groupBox = new QGroupBox(v1layout);
-  //QVBoxLayout *vbox = new QVBoxLayout(v1layout);
-  QCheckBox *opendestination = new QCheckBox(i18n("Open destination path"), v1layout);
-  QCheckBox *deletearchive = new QCheckBox(i18n("Delete archive after extracting"), v1layout);
-
   KUrlCompletion *comp = new KUrlCompletion(KUrlCompletion::DirCompletion);
   khistory = new KHistoryComboBox(v2layout);
   khistory -> setCompletionObject(comp);
@@ -93,7 +86,11 @@ void quickExtract::extract()
 void quickExtract::slotButtonClicked(int button) 
 {
   if (button == KDialog::Ok) {
-    extract();
+    if (function == "quickExtract") extract();
+    else if (function == "addDir") {
+      emit destination(KUrl(khistory -> currentText())); 
+      accept();
+    }
   }
   else if (button == KDialog::Cancel) reject();
 }

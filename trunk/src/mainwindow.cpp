@@ -165,10 +165,11 @@ void MainWindow::setupActions()
   buttonAddComment -> setIcon(KIcon("view-pim-notes"));
   buttonAddComment -> setEnabled(false);
   actionCollection() -> addAction("add_comment", buttonAddComment);
-  //buttonAddFolder = new KAction(this);
-  //buttonAddFolder -> setText(i18n("Add Folder"));
-  //buttonAddFolder -> setIcon(KIcon("archive-insert-directory"));
-  //actionCollection() -> addAction("add_folder", buttonAddFolder);
+  buttonAddDir = new KAction(this);
+  buttonAddDir -> setText(i18n("Add Directory"));
+  buttonAddDir -> setIcon(KIcon("archive-insert-directory"));
+  buttonAddDir -> setEnabled(false);
+  actionCollection() -> addAction("add_folder", buttonAddDir);
   buttonAddFile = new KAction(this);
   buttonAddFile -> setText(i18n("Add File"));
   buttonAddFile -> setIcon(KIcon("archive-insert"));
@@ -199,6 +200,7 @@ void MainWindow::setupConnections()
   connect (buttonView, SIGNAL (triggered()), this, SLOT (embeddedViewer()));
   connect (buttonAddComment, SIGNAL(triggered()), this, SLOT(addComment()));
   connect (buttonDelete, SIGNAL(triggered()), this, SLOT(deleteFile()));
+  connect (buttonAddDir, SIGNAL(triggered()), this, SLOT(addDir()));
   connect (table, SIGNAL(itemSelectionChanged()), this, SLOT(metaBar()));
   connect (table, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(openItemUrl(QTreeWidgetItem *, int)));
   connect (buttonExtract, SIGNAL(triggered()), this, SLOT(extractArchive()));
@@ -217,6 +219,7 @@ void MainWindow::enableActions(bool enable)
   buttonExtract -> setEnabled(enable);
   buttonAddComment -> setEnabled(enable);
   buttonAddFile -> setEnabled(enable);
+  buttonAddDir -> setEnabled(enable);
   buttonDelete -> setEnabled(enable);
   popRename -> setEnabled(enable);
   buttonLock -> setEnabled(enable);
@@ -260,7 +263,7 @@ void MainWindow::setupPopupMenu()
 
 void MainWindow::openDialog()
 {
-  KUrl url = KFileDialog::getOpenUrl(KUrl("kfiledialog:///AkuOpenDir"), i18n("*.rar *.zip *.bz2 *.gz *.tar|All supported types\n*.rar|Rar archives\n*.zip|Zip archives\n*.bz2|Tar archives (bzip)\n*.gz|Tar archives (gzip)\n*.tar|Tar archives*.*|All files"), this);
+  KUrl url = KFileDialog::getOpenUrl(KUrl("kfiledialog:///AkuOpenDir"), i18n("*.rar *.zip *.bz2 *.gz *.tar|All supported types\n*.rar|Rar archives\n*.zip|Zip archives\n*.bz2|Tar archives (bzip)\n*.gz|Tar archives (gzip)\n*.tar|Tar archives\n*.*|All files"), this);
   if (!url.isEmpty())
     openUrl(url);
 }
@@ -538,6 +541,7 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput)
     popRename -> setEnabled(false);
     buttonDelete -> setEnabled(false);
     buttonAddFile -> setEnabled(false);
+    buttonAddDir -> setEnabled(false);
 
     //actionEncryptArchive -> setEnabled(false);
     //actionAddFilePwd -> setEnabled(false);
@@ -1109,6 +1113,58 @@ void MainWindow::addFile(bool pwd)
 //     addingProc -> start();
 //     bAddFile = true;
 //   }
+}
+
+void MainWindow::addDirOperation(KUrl url)
+{
+  if (!url.isEmpty()) {
+    QString dir = url.pathOrUrl();
+    QString parentFolder = "";
+    QStringList options;
+
+    if (table -> selectedItems().size() == 1) {
+      if(table -> selectedItems()[0] -> text(1) == "")
+        parentFolder = table -> rebuildFullPath(table -> selectedItems()[0]);
+      else {
+        if (table -> selectedItems()[0] -> parent() != NULL)
+          parentFolder = table -> rebuildFullPath(table -> selectedItems()[0] -> parent());
+      }
+    }
+ 
+    kDebug() << parentFolder;  
+  
+    enableActions(false);
+   
+    if (compressor == "rar") {
+      QStringList options;
+      options << "a" << "-ep1";
+      if (!parentFolder.isEmpty()) options << "-ap" + parentFolder;
+      if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
+      rarProcess *process;
+      // ep1           Exclude base directory from names 
+      // ap<path>      Set path inside archive
+      process = new rarProcess(this, "rar", options, archive, QStringList() << dir);
+      connect(process, SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
+      process -> start();
+    }
+  }
+}
+
+void MainWindow::addDir()
+{ 
+  quickExtract *chooseDir = new quickExtract(archive, "addDir",this);
+  connect(chooseDir, SIGNAL(destination(KUrl)), this, SLOT(addDirOperation(KUrl)));
+
+  if ((table -> selectedItems().size() == 1) && (table -> selectedItems().first() -> parent() !=NULL)) {
+    if (table -> selectedItems().first() -> text(1) == "") 
+      chooseDir -> setCaption(i18n("Add folder under") + " " + table -> selectedItems().first() -> text(0));
+    else
+      chooseDir -> setCaption(i18n("Add folder under") + " " + table -> selectedItems().first() -> parent() -> text(0));
+  }
+  else
+    chooseDir -> setCaption(i18n("Add folder"));
+
+  chooseDir -> show();
 }
 
 void MainWindow::deleteFile()

@@ -24,10 +24,12 @@ void akuRatioWidget::setRatio(float newRatio)
 
 void akuRatioWidget::paintEvent(QPaintEvent *)
 {
+  kDebug() << "AKURATIO -> INIZIO";
   QPainter painter(this);
   QColor color;
   QColor edgeColor;
 
+  kDebug() << "AKURATIO -> RIGA 31";
   // Align to grid
   painter.translate(0.5, 0.5);
   painter.setRenderHint(QPainter::Antialiasing);
@@ -40,17 +42,24 @@ void akuRatioWidget::paintEvent(QPaintEvent *)
   int x1 = width()-25;
   int y1 = height()-9;
 
+  kDebug() << "AKURATIO -> RIGA 44";
+
   QLinearGradient grad(QPoint(0, y0), QPoint(0, y1));
   grad.setColorAt(0, color.lighter());
   grad.setColorAt(1, color);
   painter.setBrush(grad);
 
+  kDebug() << "AKURATIO -> RIGA 51";
+  
   QPen pen;
   pen.setColor(edgeColor);
   pen.setWidth(1);
   painter.setPen(pen);
   // draw outside frame
   painter.drawPath(drawRoundedRect(QRect(x0, y0, x1, y1), 3));
+
+  kDebug() << "AKURATIO -> RIGA 60"; 
+
   // with shadow
   painter.setOpacity(0.25);
   painter.drawLine(x0, y0+1, x1+11, y0+1);
@@ -60,6 +69,8 @@ void akuRatioWidget::paintEvent(QPaintEvent *)
  // color.setHsv(lunghezza*1.2, 255,220);
   color = QPalette().color(QPalette::Highlight);
 
+  kDebug() << "AKURATIO -> RIGA 71";
+ 
   painter.save();
   painter.translate(1, 1);
   painter.setOpacity(0.6);
@@ -76,6 +87,8 @@ void akuRatioWidget::paintEvent(QPaintEvent *)
   painter.drawPath(drawRoundedRect(QRect(x0, y0, (((lunghezza+2)/100)*x1)-2, y1-2), 2));
   painter.restore();
 
+  kDebug() << "AKURATIO -> RIGA 89";
+
   // draw percentage
   painter.setFont(KGlobalSettings::smallestReadableFont());
   painter.save();
@@ -83,9 +96,12 @@ void akuRatioWidget::paintEvent(QPaintEvent *)
   painter.translate(1, 1);
   painter.drawText(rect(), Qt::AlignCenter, QString().setNum(lunghezza)+"%");
 
+  kDebug() << "AKURATIO -> RIGA 98";
+
   painter.restore();
   painter.setPen(QPalette().color(QPalette::BrightText));
   painter.drawText(rect(), Qt::AlignCenter, QString().setNum(lunghezza)+"%");
+  kDebug() << "AKURATIO -> FINE";
 }
 
 //stolen from plasma codebase

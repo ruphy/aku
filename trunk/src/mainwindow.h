@@ -38,6 +38,7 @@
 #include "akuviewer.h"
 #include "akucomment.h"
 #include "extractdialog.h"
+#include "quickextract.h"
 
 class MainWindow : public KXmlGuiWindow
 {
@@ -67,7 +68,9 @@ public slots:
   virtual void renameItem();
   virtual void renameProcess(QTreeWidgetItem*, int);
   virtual void addFile(bool pwd = false);
+  virtual void addDir();
   virtual void deleteFile();
+  virtual void addDirOperation(KUrl);
 
 private:
   QWidget *baseWindowWidget;
@@ -97,6 +100,7 @@ private:
   KAction *buttonAddComment;
   KAction *buttonLock;
   KAction *buttonAddFile;
+  KAction *buttonAddDir;
   
   KAction *separator;
   KAction *popSelectall;

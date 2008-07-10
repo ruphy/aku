@@ -83,11 +83,10 @@ void rarProcess::initProcess()
 
   else if (options[0] == "a") {
     disconnect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
-    //puts(QString("Launching process: " + archiver + " " + params.join(" ")+ " "+archivename+ " " + files.join(" ") + " "+ destination).toAscii());
     rarprogressdialog = new akuProgressDialog(parentWidget, files.size());
     int total = 0;
     for (int i = 0; i < files.size(); i++)
-      if(files[i].indexOf("-ap") == -1) total++; 
+      if (files[i].indexOf("-ap") == -1) total++; 
     rarprogressdialog -> setMaximum(total);
 
     connect(rarprogressdialog, SIGNAL(canceled()), this, SLOT(handleCancel()));
@@ -99,7 +98,6 @@ void rarProcess::initProcess()
     processTimer = new QTimer();
     connect(processTimer, SIGNAL(timeout()), this, SLOT(handleProcess()));
     processTimer -> start(1);
-    //puts("started timer");
   }
 
   // opzioni passate a rar: v oppure vt
@@ -176,7 +174,6 @@ QString rarProcess::standardOutput()
 //gestiamo un progressdialog
 void rarProcess::showProgress() 
 {
-  kDebug() << "FUNZIONE ::SHOWPROGRESS";
   QByteArray gotOutput = thread -> readAllStandardOutput();
   stdoutput.append(gotOutput);
   rawoutput.append(gotOutput);
@@ -210,7 +207,6 @@ void rarProcess::showProgress()
   if ( QString(gotOutput).contains("All OK")) {
     rarprogressdialog -> accept(); 
   }
-  kDebug() << "FINE FUNZIONE ::SHOWPROGRESS";
 }
 
 
@@ -287,7 +283,6 @@ QString rarProcess::getArchivePassword()
 
 void rarProcess::getError()
 { 
-  kDebug() << "FUNZIONE ::GETERROR";
   QByteArray temp = thread -> readAllStandardError();
 
   // the keyword "already" tells us that rar is asking for an overwrite
@@ -359,4 +354,54 @@ void rarProcess::getError()
   else {  //altrimenti lasciamo che l'errore sia gestito da showError
     if(QString().fromAscii(temp).indexOf("already") == -1 || QString().fromAscii(temp).indexOf("password") == -1) streamerror.append(temp);
   } 
+}
+
+void rarProcess::handleProcess()
+{
+  //connect(thread, SIGNAL(readyReadStandardError()), this, SLOT(getError()));
+  //connect(thread, SIGNAL(readyReadStandardOutput()), this, SLOT(showProgress()));
+
+  if (totalFileCount < files.size() && thread -> state() == QProcess::NotRunning)  {
+  //if the extraction is complete we can start the next 
+   // puts("extracting: "+ filesToHandle[totalFileCount].toAscii());
+    QStringList toDebug;
+    toDebug << options << archivename  << files[totalFileCount] << destination;
+    
+    kDebug() << archiver.toAscii() + " " + toDebug.join(" ").toAscii();
+  
+    thread -> waitForFinished(-1);
+
+    if (files[totalFileCount].indexOf( "-ap" ) == -1 ) {
+      thread -> start(archiver, QStringList() << options << archivename << files[totalFileCount]); 
+      rarprogressdialog -> setCurrentFileName(files[totalFileCount]);
+      QFileInfo fileInfo(files[totalFileCount]);
+      QString size = KLocale("").formatByteSize(fileInfo.size());
+      rarprogressdialog -> setCurrentFileSize(size);
+    }
+    else {
+      thread -> start(archiver, QStringList() << options << files[totalFileCount] << archivename << files[totalFileCount + 1]); 
+      rarprogressdialog -> setCurrentFileName(files[totalFileCount+1]);
+      rarprogressdialog -> incrementOverall();
+      QFileInfo fileInfo(files[totalFileCount+1]);
+      QString size = KLocale(QString()).formatByteSize(fileInfo.size());
+      rarprogressdialog -> setCurrentFileSize(size);
+      totalFileCount++;
+    }
+
+    if(!passwordAsked) totalFileCount ++;
+    else passwordAsked = false; //patch for one-file-extraction with password protection
+  }
+
+  else {
+    if(totalFileCount == files.size() && thread -> state() == QProcess::NotRunning) {
+      processTimer -> stop();
+      rarprogressdialog -> setCurrentFileProgressToMaximum();
+      rarprogressdialog -> accept();
+      if (streamerror.isEmpty() == false) noproblem = false;
+      else noproblem = true;
+      emit processCompleted(noproblem);
+      //this section is asyncronous so we got to call showError here also..
+      showError(streamerror);
+    }
+  }
 }
