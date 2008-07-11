@@ -148,7 +148,7 @@ void MainWindow::setupActions()
   buttonView -> setIcon(KIcon("document-preview-archive"));
   buttonView -> setText(i18n("Preview"));
   buttonView -> setEnabled(false);
-  buttonView -> setShortcut(Qt::CTRL + Qt::Key_P);
+  buttonView -> setShortcut(QKeySequence ("F11"));
   actionCollection() -> addAction("preview", buttonView);
   
   //KMenu *tool = new KMenu(i18n("Tools"), menuBar());
@@ -169,7 +169,7 @@ void MainWindow::setupActions()
   buttonAddDir -> setText(i18n("Add Directory"));
   buttonAddDir -> setIcon(KIcon("archive-insert-directory"));
   buttonAddDir -> setEnabled(false);
-  actionCollection() -> addAction("add_folder", buttonAddDir);
+  actionCollection() -> addAction("add_dir", buttonAddDir);
   buttonAddFile = new KAction(this);
   buttonAddFile -> setText(i18n("Add File"));
   buttonAddFile -> setIcon(KIcon("archive-insert"));
@@ -254,11 +254,11 @@ void MainWindow::setupPopupMenu()
   popRename -> setShortcut (QKeySequence ("F2"));
   table -> addAction (buttonDelete);
   table -> addAction(buttonView);
-//   KAction *separator2 =new KAction(this);
-//   separator2 -> setSeparator(true);
-//   table -> addAction(separator2);
+  separator2 =new KAction(this); 
+  separator2 -> setSeparator(true);
+  table -> addAction(separator2);
   table -> addAction(buttonAddFile);
-  //table -> addAction(actionAddFolder);
+  table -> addAction(buttonAddDir);
 }
 
 void MainWindow::openDialog()
@@ -361,15 +361,17 @@ void MainWindow::buildZipTable(QString zipoutput, bool crypted)
      table -> header() -> setResizeMode(4, QHeaderView::ResizeToContents);
      table -> header() -> setResizeMode(7, QHeaderView::ResizeToContents);
      table -> header() -> setResizeMode(8, QHeaderView::ResizeToContents);
-     table -> expandTopLevelItems();
      table -> sortItems ( 0, Qt::AscendingOrder );
      table -> setFolderIcons();
+     table -> expandTopLevelItems();
      setCaption(archive);
      handleAdvancedZip(archive);
    }
    enableActions(true);
    statusBar()->clearMessage();
    buttonLock -> setEnabled(false);
+   buttonAddDir -> setEnabled(false);
+   buttonAddFile -> setEnabled(false);
 }
 
 void MainWindow::buildTarTable(QString taroutput)
@@ -406,6 +408,8 @@ void MainWindow::buildTarTable(QString taroutput)
    statusBar()->clearMessage();
    buttonLock -> setEnabled(false);
    popRename -> setEnabled(false);
+   buttonAddDir -> setEnabled(false);
+   buttonAddFile -> setEnabled(false);
    // gzip e bzip non supportano il delete
    if ((mimetype -> name() == "application/x-compressed-tar") || (mimetype -> name() == "application/x-bzip-compressed-tar")) buttonDelete -> setEnabled(false);
 }
@@ -431,30 +435,17 @@ void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
     if (!archivePassword.isEmpty()) headercrypted = false;
     else archivePassword = rarprocess -> getArchivePassword();
 
-    //if ((archivePassword.isEmpty() && (headercrypted)) 
-    //  archivePassword = rarprocess -> getArchivePassword();
-//     //actionAddFolderPwd->setEnabled(false);
-//     //actionAddFilePwd->setEnabled(false);
-//     //}
-//    else archivePassword.clear();
-    //kDebug() << archivePassword;
     if ((someprotection) && (archivePassword.isEmpty()))
       filespassprotected = true;
     else filespassprotected = false;
-//     
+
     table -> header() -> setResizeMode(0, QHeaderView::ResizeToContents); // filename
     table -> header() -> setResizeMode(3, QHeaderView::ResizeToContents); // ratio
     table -> header() -> setResizeMode(4, QHeaderView::ResizeToContents); // modified
     table -> header() -> setResizeMode(7, QHeaderView::ResizeToContents); // method
     table -> header() -> setResizeMode(8, QHeaderView::ResizeToContents); // version
     table -> sortItems (0, Qt::AscendingOrder );
-//     if(globalRestrictions) handleRestrictions(namex, rarout);
-//     if ( fromNewArchive == true )   //ripristiniamo la gui se proveniamo da un new archive
-//     {
-//       closeNewArchiveGUI(false);
-//       fromNewArchive = false;
-//     }
-//     showStatusInfo(true);
+
     table -> expandTopLevelItems();
     table -> setFolderIcons();
     enableActions(true);
@@ -785,7 +776,7 @@ void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento 
       if (compressor == "rar") {
         //rarProcess *rarprocess;
         QStringList options;
-        options << "e";
+        options << "x" << "-o+";
         if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
         rarprocess = new rarProcess(0, "rar", options, archive, QStringList() << fileToExtract, tempPath); //estraiamo il file nella cartella temporanea
         rarprocess -> start();
@@ -793,14 +784,14 @@ void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento 
       else if (compressor == "zip") {
         //zipProcess *zipprocess;
         QStringList options;
-        options << "-q";
+        options << "-q" << "-o";
         zipprocess = new zipProcess(this, "unzip", options, archive, QStringList() << fileToExtract, tempPath);
         zipprocess -> start();
       }
       else if (compressor == "tar") {
         //tarProcess *tarprocess;
         QStringList options;
-        options << "-xf";
+        options << "--overwrite" << "-xf";
         options << archive << fileToExtract;
         QProcess *tmpprocess = new QProcess();
         tmpprocess -> setWorkingDirectory(QString(tempPath));
@@ -809,10 +800,10 @@ void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento 
       }
     }
   
-    QString forUrl = tempPath + fileToExtract;
     KUrl url(tempPath + fileToExtract);
-    QFile file(url.pathOrUrl());
-    if (file.exists()) QDesktopServices::openUrl(url);
+    KMimeType::Ptr mimetemp;
+    mimetemp = KMimeType::findByUrl(url);    
+    KRun::runUrl(url, mimetemp -> name(), this, true);
   }
 
   else if (!toOpen -> text ( 1 ).isEmpty()) {
@@ -1026,7 +1017,24 @@ void MainWindow::quit()
    close();
 }
 
-void MainWindow::addFile(bool pwd)
+void MainWindow::addFile()
+{
+  akuAddFileDialog *chooseFile = new akuAddFileDialog(this);
+  //connect(chooseDir, SIGNAL(destination(KUrl)), this, SLOT(addDirOperation(KUrl)));
+
+  if ((table -> selectedItems().size() == 1) && (table -> selectedItems().first() -> parent() !=NULL)) {
+    if (table -> selectedItems().first() -> text(1) == "") 
+      chooseFile -> setCaption(i18n("Add file(s) under") + " " + table -> selectedItems().first() -> text(0));
+    else
+      chooseFile -> setCaption(i18n("Add file(s) under") + " " + table -> selectedItems().first() -> parent() -> text(0));
+  }
+  else
+    chooseFile -> setCaption(i18n("Add file(s)"));
+
+  chooseFile -> show();
+}
+
+void MainWindow::addFileOperation(KUrl::List list)
 {
 //   KUrl::List fileUrlList;
 //   if(rarList -> selectedItems().size() == 1)

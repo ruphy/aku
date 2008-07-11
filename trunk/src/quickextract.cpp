@@ -9,40 +9,19 @@ quickExtract::quickExtract(QString args, QString value, QWidget *parent) : KDial
 
   QSplitter *mainlayout = new QSplitter(this);
   setMainWidget(mainlayout);
-  
+
   KVBox *v1layout = new KVBox(mainlayout);
   KVBox *v2layout = new KVBox(mainlayout);
-  
+ 
   v1layout -> setSpacing(10);
   v2layout -> setSpacing(10);
-
+    
   treeView = new KFileTreeView(v2layout); 
   treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
    
   showhiddenAction = new KAction(treeView);
   showhiddenAction -> setText(i18n("Show hidden files"));
   showhiddenAction -> setCheckable(true);
-  
-  QLabel *places = new QLabel(v1layout);
-  places -> setText("<b>" + i18n("Places") + "</b>");
-  KFilePlacesView *list = new KFilePlacesView(v1layout);
-  KFilePlacesModel *model = new KFilePlacesModel(this);
-  list -> setModel(model);
-  list -> setAutoResizeItemsEnabled(true);
-  list -> setRowHidden(0, true); // TODO: does not work so, try using the signal setupDone from model to set rowHidden
-
-  if (function == "quickExtract") {
-    QCheckBox *opendestination = new QCheckBox(i18n("Open destination path"), v1layout);
-    QCheckBox *deletearchive = new QCheckBox(i18n("Delete archive after extracting"), v1layout);
-    setCaption(i18n("Extract the archive to"));
-    setInitialSize(QSize(540, 350));
-    treeView -> setColumnHidden (1, true);
-    treeView -> setColumnHidden (2, true);
-  }
-
-  if (function == "addDir") {
-    setInitialSize(QSize(670, 400));
-  }
 
   treeView -> addAction (showhiddenAction);
   treeView -> setColumnHidden (3, true);
@@ -54,22 +33,43 @@ quickExtract::quickExtract(QString args, QString value, QWidget *parent) : KDial
   treeView -> setDirOnlyMode(true);
   treeView -> setEditTriggers(QAbstractItemView::NoEditTriggers);
   treeView -> setCurrentUrl(KUrl(QDir::homePath()));
- 
-  
+
   KUrlCompletion *comp = new KUrlCompletion(KUrlCompletion::DirCompletion);
   khistory = new KHistoryComboBox(v2layout);
   khistory -> setCompletionObject(comp);
   khistory -> setAutoDeleteCompletionObject(true);
   khistory -> setCompletionMode(KGlobalSettings::CompletionPopupAuto);
 
+  QLabel *places = new QLabel(v1layout);
+  places -> setText("<b>" + i18n("Places") + "</b>");
+  KFilePlacesView *list = new KFilePlacesView(v1layout);
+  KFilePlacesModel *model = new KFilePlacesModel(this);
+  list -> setModel(model);
+  list -> setAutoResizeItemsEnabled(true);
+
+  if (function == "quickExtract") {
+    QCheckBox *opendestination = new QCheckBox(i18n("Open destination path"), v1layout);
+    QCheckBox *deletearchive = new QCheckBox(i18n("Delete archive after extracting"), v1layout);
+    setCaption(i18n("Extract the archive to"));
+    setInitialSize(QSize(540, 350));
+    treeView -> setColumnHidden (1, true);
+    treeView -> setColumnHidden (2, true);
+  }
+
+  if (function == "addDir") {
+    setInitialSize(QSize(650, 400));
+  }
+    
   connect (showhiddenAction, SIGNAL (toggled(bool)), this, SLOT (hiddenFiles(bool)));
   connect (treeView, SIGNAL (currentChanged (KUrl)), this, SLOT (updateCombo(KUrl)));
   connect (khistory, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateTreeViewSelection(QString)));
   connect (khistory, SIGNAL(returnPressed(QString)), this, SLOT(updateTreeViewSelection(QString)));
-  
   connect (list , SIGNAL(urlChanged(const KUrl&)), SLOT(urlSelected(const KUrl&)));
+  
+  //list -> setRowHidden(0, true); // TODO: does not work so, try using the signal setupDone from model to set rowHidden
+ 
   //  connect(list, SIGNAL(clicked(const QModelIndex&)), SLOT(urlSelected(const QModelIndex&)));
-
+  
 }
 
 quickExtract::~quickExtract()

@@ -5,7 +5,6 @@
 #include <QLabel>
 #include <QGridLayout>
 #include <QProcess>
-#include <QDesktopServices>
 #include <QDockWidget>
 
 #include <KApplication>
@@ -22,6 +21,7 @@
 #include <KTemporaryFile>
 #include <KCmdLineArgs>
 #include <KProcess>
+#include <KRun>
 
 #include <KDebug>
 
@@ -37,8 +37,10 @@
 #include "akumetawidget.h"
 #include "akuviewer.h"
 #include "akucomment.h"
+#include "akuaddfiledialog.h"
 #include "extractdialog.h"
 #include "quickextract.h"
+
 
 class MainWindow : public KXmlGuiWindow
 {
@@ -67,7 +69,8 @@ public slots:
   virtual void selectionInverted();
   virtual void renameItem();
   virtual void renameProcess(QTreeWidgetItem*, int);
-  virtual void addFile(bool pwd = false);
+  virtual void addFile();
+  virtual void addFileOperation(KUrl::List list);
   virtual void addDir();
   virtual void deleteFile();
   virtual void addDirOperation(KUrl);
@@ -103,6 +106,7 @@ private:
   KAction *buttonAddDir;
   
   KAction *separator;
+  KAction *separator2;
   KAction *popSelectall;
   KAction *popInvertselection;
   KAction *popRename;

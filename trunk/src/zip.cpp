@@ -24,8 +24,9 @@ bool zip::parse(QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
   //inizio il ciclo per la visualizzazione dell'elenco
   for ( int i = 0; i < flist.size(); i++ ) {
     // estraggo prima il percorso del file a partire dal carattere 62
-    //QString filepath = flist[i].mid(62, flist[i].size());
-    QString filepath = flist[i].section(sep, 9 , -1);
+    QString filepath = flist[i].mid(62, flist[i].size());
+    // questa funzione per quanto migliore, non prende i file che iniziano per spazio vuoto
+    //QString filepath = flist[i].section(sep, 9 , -1);
     QStringList singleItem = filepath.split (QDir().separator());  //splitto i nomi delle cartelle
     //puts(singleItem.join(" ").toAscii());
     numeroPezziPercorso = singleItem.size() - 1;

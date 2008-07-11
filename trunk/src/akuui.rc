@@ -3,7 +3,7 @@
   <ToolBar name="mainToolBar">
    <text>Main Toolbar</text>
    <Action name="extract" />
-   <Action name="add_folder" />
+   <Action name="add_dir" />
    <Action name="add_file" />
    <Action name="delete" />
    <Separator />
@@ -18,11 +18,12 @@
     <Action name="file_open_recent" />
     </Menu>
    <Menu name="commands" ><text>Commands</text>
-      <Action name="add_comment" />
+      <Action name="add_dir" />
+      <Action name="add_file" />
+      <Separator/>
       <Action name="lock" />
+      <Action name="add_comment" />
       <Action name="encrypt_archive" />
-      <Action name="add_file_pwd" />
-      <Action name="add_folder_pwd" />
    </Menu>
    <Menu name="tools" >
       <Action name="info" />

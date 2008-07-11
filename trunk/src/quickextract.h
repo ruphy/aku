@@ -22,6 +22,7 @@
 
 #include <kfileplacesview.h>
 #include <kfileplacesmodel.h>
+#include <kfilewidget.h>
 
 #include "rarprocess.h"
 
