@@ -845,12 +845,12 @@ void MainWindow::operationCompleted(bool value)
   if (value) {
     tip->setTip(i18n("Operation completed"));
     tip->show();
-    openUrl(archive);
   }
   else {
     tip->setTip(i18n("One or more errors occurred"));
     tip->show();
   }
+  openUrl(archive);
   setCursor(QCursor());
   enableActions(true);
 }
@@ -1020,7 +1020,7 @@ void MainWindow::quit()
 void MainWindow::addFile()
 {
   akuAddFileDialog *chooseFile = new akuAddFileDialog(this);
-  //connect(chooseDir, SIGNAL(destination(KUrl)), this, SLOT(addDirOperation(KUrl)));
+  connect(chooseFile, SIGNAL(destination(KUrl::List, QString)), this, SLOT(addFileOperation(KUrl::List, QString)));
 
   if ((table -> selectedItems().size() == 1) && (table -> selectedItems().first() -> parent() !=NULL)) {
     if (table -> selectedItems().first() -> text(1) == "") 
@@ -1034,8 +1034,12 @@ void MainWindow::addFile()
   chooseFile -> show();
 }
 
-void MainWindow::addFileOperation(KUrl::List list)
+void MainWindow::addFileOperation(KUrl::List list, QString filesPassword)
 {
+  QStringList filesList = list.toStringList();
+  //kDebug() << list;
+  //kDebug() << filesList;
+    
 //   KUrl::List fileUrlList;
 //   if(rarList -> selectedItems().size() == 1)
 //   {

@@ -20,8 +20,10 @@ void akuRatioWidget::setRatio(float newRatio)
   //  lunghezza = newRatio;
   //  repaint();
   //}
+  kDebug() << "AKURATIO -> FUNZIONE: SETRATIO";
   lunghezza = newRatio;
-  repaint();
+  //repaint();
+  update();
 }
 
 void akuRatioWidget::paintEvent(QPaintEvent *)

@@ -29,8 +29,18 @@ class akuAddFileDialog : public KDialog
 
   private: 
     QLabel *label;
+
     QString password;
+
     QCheckBox *addwithpassword;
+
+    KFileWidget *fw;
+
+  protected slots:
+    virtual void slotButtonClicked(int button);
+
+  signals:
+    void destination(KUrl::List, QString);
 
 };
 #endif

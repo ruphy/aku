@@ -6,6 +6,7 @@ QUICKEXTRACT:
   3) aggiungere bottone e funzione new directory in "quickextract"
   4) abilitare opendestination e delete archive in "quickextract"
   5) add dir with password
+  6) preserve path
 
 MAIN WINDOW:
   1) ordinamento logico per tutti i file della main
@@ -13,6 +14,7 @@ MAIN WINDOW:
   3) controllare il numero max di open recent
   4) controllare il numero max di destination dirs
   5) icona lampeggiante con timer durante operazioni
+  6) aggiungere menu rapidi collapse all e expand all
 
 ZIP:
   1) convertire modified in QDate
@@ -30,9 +32,14 @@ TAR:
 GENERALE:
   1) ringraziamenti a Ruphy per la ratiobar
   2) conversioni tra i formati; rar -> zip; rar -> tar e così via
+  3) portare le quick action a toplevel
 
 OVERWRITE DIALOG:
   1) Solito but QLIST quando si fanno più rename
+
+PROCESSING DIALOG:
+  1) nell'add file, add dir, la dimensione delle cose da aggiungere è errata
+  2) disabilitare la ratio bar sottostante nell'add files, add dir
 
 RATIOBAR:
   1) BUG GRAVE -> crash random a causa del setRatio in rar.cpp (funzione di repaint)
@@ -40,3 +47,6 @@ RATIOBAR:
 TIP:
   1) la barra non funziona sempre a dovere... a volte rimane bloccata a metà, a volte rimane piccolissima
      (si nota soprattutto agli add dir)
+
+EXTRACTION DIALOG:
+  1) rivedere graficamente

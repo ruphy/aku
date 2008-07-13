@@ -152,7 +152,8 @@ void rarProcess::handleCancel()
   thread -> killProcess();
   rarprogressdialog -> cancel();
   if (options[0] == "a") processTimer -> stop();
-  emit processCanceled();
+  //emit processCanceled();
+  emit processCompleted(false);
 }
 
 void rarProcess::handlePaused()

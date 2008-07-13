@@ -4,7 +4,7 @@ akuAddFileDialog::akuAddFileDialog(QWidget *parent) : KDialog(parent)
 {
    QSplitter *mainlayout = new QSplitter(this);
    setMainWidget(mainlayout);
-   KFileWidget *fw = new KFileWidget(KUrl(QDir::homePath()), mainlayout);
+   fw = new KFileWidget(KUrl(QDir::homePath()), mainlayout);
    fw -> setMode(KFile::Files);
 
    KVBox *layout = new KVBox();
@@ -31,7 +31,7 @@ void akuAddFileDialog::checkPassword(int state)
     KNewPasswordDialog *dlg = new KNewPasswordDialog(this);
     dlg -> setModal(true);
     dlg -> setAllowEmptyPasswords(false);
-    dlg->setPrompt("<b>" + i18n("Enter a password") + "</b>");
+    dlg -> setPrompt("<b>" + i18n("Enter a password") + "</b>");
     connect(dlg, SIGNAL(newPassword(const QString&)), this, SLOT(setPassword(const QString&)));
     connect(dlg, SIGNAL(rejected()), this, SLOT(slotCancel()));
     dlg->show();
@@ -53,3 +53,19 @@ void akuAddFileDialog::slotCancel()
   password.clear();
   label -> setVisible(false);
 }
+
+void akuAddFileDialog::slotButtonClicked(int button) 
+{
+  if (button == KDialog::Ok) {
+    QStringList test;
+    test << fw -> selectedFiles();
+    kDebug() << test;
+    QStringList lista = fw -> selectedFiles();
+    kDebug() << fw -> selectedFiles();
+    emit destination(KUrl::List(fw -> selectedUrls()), QString()); 
+    accept();
+  }
+
+  else if (button == KDialog::Cancel) reject();
+}
+

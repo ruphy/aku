@@ -70,7 +70,7 @@ public slots:
   virtual void renameItem();
   virtual void renameProcess(QTreeWidgetItem*, int);
   virtual void addFile();
-  virtual void addFileOperation(KUrl::List list);
+  virtual void addFileOperation(KUrl::List list, QString);
   virtual void addDir();
   virtual void deleteFile();
   virtual void addDirOperation(KUrl);
