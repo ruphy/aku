@@ -24,6 +24,10 @@ RAR:
   2) funzione repair archive
   3) avanzamento di estrazione non funziona
   4) in archivi con errori all'interno, aku si blocca, mentre da riga di comando continua
+  5) nell'add dir disabilitare l'aggiunta dir con passoword per i file headerprotected;
+  6) supporto ai rar con file con password differenti
+  7) passare tutte le operazioni attraverso la temp directory (-wtempdir)
+  8) aggiungere funzione encrypt archive
 
 TAR:
   1) convertire modified in QDate
@@ -33,6 +37,8 @@ GENERALE:
   1) ringraziamenti a Ruphy per la ratiobar
   2) conversioni tra i formati; rar -> zip; rar -> tar e così via
   3) portare le quick action a toplevel
+  4) dopo che si sono aggiunte file e directory agli archivi, al ricarimento dell'archivio, evidenziare con un 
+     colore i nuovi file
 
 OVERWRITE DIALOG:
   1) Solito but QLIST quando si fanno più rename

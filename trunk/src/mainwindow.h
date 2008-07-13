@@ -6,6 +6,7 @@
 #include <QGridLayout>
 #include <QProcess>
 #include <QDockWidget>
+#include <QActionGroup>
 
 #include <KApplication>
 #include <KXmlGuiWindow>
@@ -64,16 +65,18 @@ public slots:
   virtual void openItemUrl(QTreeWidgetItem *, int);
   virtual void extractArchive();
   virtual void operationCompleted(bool);
+  virtual void extractionCompleted(bool);
   virtual void insertComment(QString);
   virtual void setupPopupMenu();
   virtual void selectionInverted();
   virtual void renameItem();
   virtual void renameProcess(QTreeWidgetItem*, int);
   virtual void addFile();
-  virtual void addFileOperation(KUrl::List list, QString);
+  virtual void addFileOperation(QStringList, QString);
   virtual void addDir();
   virtual void deleteFile();
   virtual void addDirOperation(KUrl);
+  virtual void extractoToPreferred(QAction *action);
 
 private:
   QWidget *baseWindowWidget;
@@ -104,12 +107,13 @@ private:
   KAction *buttonLock;
   KAction *buttonAddFile;
   KAction *buttonAddDir;
-  
   KAction *separator;
   KAction *separator2;
   KAction *popSelectall;
   KAction *popInvertselection;
   KAction *popRename;
+
+  QActionGroup *extractGroup;
   
   QStringList tempForRename;
 

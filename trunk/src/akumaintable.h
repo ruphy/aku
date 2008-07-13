@@ -20,14 +20,16 @@ public:
   akuMainTable(QWidget *parent);
   ~akuMainTable();
 
+  QString rebuildPath(QTreeWidgetItem*);
+  QString rebuildFullPath(QTreeWidgetItem*);
+  
+  QStringList filesToExtract();
+
 public slots:
   void setFormat(QString);
   virtual void expandTopLevelItems();
   virtual void setFolderIcons();
   virtual void recursiveFolderIcons(QTreeWidgetItem*);
-  QString rebuildPath(QTreeWidgetItem*);
-  QString rebuildFullPath(QTreeWidgetItem*);
-  
  
 protected slots:
   virtual void setupActions();  

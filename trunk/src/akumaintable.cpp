@@ -251,5 +251,30 @@ void akuMainTable::recursiveFolderIcons (QTreeWidgetItem *checkParent)
     } 
 }
 
+QStringList akuMainTable::filesToExtract()
+{
+  QStringList itemsPath;
+  QList<QTreeWidgetItem*> selectedToExtract = selectedItems();
 
+  if(selectedToExtract.size() != 0) {
+    for (int i = 0; i < selectedToExtract.size(); i++ ) {
+      QTreeWidgetItem *tmp;
+      QStringList pathlist; // file da estrarre dall'archivio
+      pathlist << ( selectedToExtract[i] ) -> text ( 0 );
+      tmp = ( selectedToExtract[i] ) -> parent();
+      while ( tmp != NULL ) {
+        pathlist << tmp -> text ( 0 );
+        tmp = tmp -> parent();
+      }
+      QString path;
+      for ( int i = pathlist.size() - 1; i >= 0; i-- ) {
+        path.append ( pathlist[i] );
+        if ( i!=0 ) path.append (QDir().separator( ));
+      }
+      itemsPath << path;
+    }
+  }
+  else itemsPath.clear();
+  return itemsPath;
+}
 

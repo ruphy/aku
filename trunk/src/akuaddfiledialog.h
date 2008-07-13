@@ -4,7 +4,7 @@
 #include <QSplitter>
 #include <QCheckBox>
 
-#include <KDialog>
+#include <KFileDialog>
 #include <KVBox>
 
 #include <KDebug>
@@ -14,17 +14,17 @@
 
 #include "rarprocess.h"
 
-class akuAddFileDialog : public KDialog
+class akuAddFileDialog : public KFileDialog
 {
   Q_OBJECT
 
   public:
-    akuAddFileDialog (QWidget* parent = 0);
+    akuAddFileDialog (QWidget* parent = 0, bool headerpass = false);
     ~akuAddFileDialog();
 
   public slots:
     virtual void checkPassword(int);
-    virtual void slotCancel();
+    virtual void noPassword();
     virtual void setPassword(const QString&);
 
   private: 
@@ -32,15 +32,14 @@ class akuAddFileDialog : public KDialog
 
     QString password;
 
-    QCheckBox *addwithpassword;
+    QCheckBox *addWithPassword;
 
-    KFileWidget *fw;
 
   protected slots:
-    virtual void slotButtonClicked(int button);
+    virtual void slotDialogAccepted();
 
   signals:
-    void destination(KUrl::List, QString);
+    void destination(QStringList, QString);
 
 };
 #endif
