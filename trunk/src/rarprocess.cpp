@@ -58,6 +58,7 @@ void rarProcess::initProcess()
   connect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
 
   if (options[0] == "x" || options[0] == "e") { 
+    disconnect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
     bool fullArchive;
     rar aids;
     thread -> start(archiver, QStringList() << "v" << options.last() << archivename);
@@ -75,7 +76,7 @@ void rarProcess::initProcess()
     connect(rarprogressdialog, SIGNAL(continued()), this, SLOT(handleContinued()));
     rarprogressdialog -> setArchiveName(archivename);
     
-    //connect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
+    connect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
     if (fullArchive) thread -> start(archiver, QStringList() << options << archivename << destination);
     else thread -> start(archiver, QStringList() << options << archivename << files << destination);
 
@@ -213,20 +214,19 @@ void rarProcess::showProgress()
 
 void rarProcess::giveOutput(int exit, QProcess::ExitStatus)
 {
- kDebug() << "::GIVEOUTPUT - process terminated";
- kDebug() << exit;
- emit outputReady(standardOutput(), headercrypted);
- if (streamerror.isEmpty()) {
+  kDebug() << "::GIVEOUTPUT - process terminated";
+  kDebug() << exit;
+  emit outputReady(standardOutput(), headercrypted);
+  if (streamerror.isEmpty()) {
     puts("no problem");
     noproblem = true;
- }
- else {
-   puts("problem!");
-   noproblem = false;
-   showError(streamerror);
- }
- emit processCompleted(noproblem); //check the bool
- 
+  }
+  else {
+    puts("problem!");
+    noproblem = false;
+    showError(streamerror);
+  }
+  emit processCompleted(noproblem); //check the bool
 }
 
 void rarProcess::showError(QByteArray streamerror)
@@ -400,7 +400,7 @@ void rarProcess::handleProcess()
       rarprogressdialog -> accept();
       if (streamerror.isEmpty() == false) noproblem = false;
       else noproblem = true;
-      emit processCompleted(noproblem);
+      //emit processCompleted(noproblem);
       //this section is asyncronous so we got to call showError here also..
       showError(streamerror);
     }

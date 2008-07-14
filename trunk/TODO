@@ -46,6 +46,7 @@ OVERWRITE DIALOG:
 PROCESSING DIALOG:
   1) nell'add file, add dir, la dimensione delle cose da aggiungere è errata
   2) disabilitare la ratio bar sottostante nell'add files, add dir
+  3) avanzamento percentuale errato
 
 RATIOBAR:
   1) BUG GRAVE -> crash random a causa del setRatio in rar.cpp (funzione di repaint)
@@ -56,3 +57,4 @@ TIP:
 
 EXTRACTION DIALOG:
   1) rivedere graficamente
+  2) icona di cartella nel khistorycombobox

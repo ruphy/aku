@@ -130,9 +130,12 @@ void MainWindow::setupActions()
   extractGroup -> addAction(actionDesktop);
   if (!actionList.isEmpty()) {
     for (int i = 0; i < actionList.size(); i++) {
-      QAction *tmpAction = quickextractMenu -> addAction(KIcon("folder-blue"), actionList[i]);
-      tmpAction -> setData(QVariant(actionList[i]));
-      extractGroup -> addAction(tmpAction); //and set new ones
+      // se il percorso esiste altrimenti non ha senso
+      if (QDir().exists(actionList[i])) {
+        QAction *tmpAction = quickextractMenu -> addAction(KIcon("folder-blue"), actionList[i]);
+        tmpAction -> setData(QVariant(actionList[i]));
+        extractGroup -> addAction(tmpAction); //and set new ones
+      }
     }
   }
 
@@ -184,7 +187,7 @@ void MainWindow::setupActions()
   buttonAddDir -> setEnabled(false);
   actionCollection() -> addAction("add_dir", buttonAddDir);
   buttonAddFile = new KAction(this);
-  buttonAddFile -> setText(i18n("Add File"));
+  buttonAddFile -> setText(i18n("Add File(s)"));
   buttonAddFile -> setIcon(KIcon("archive-insert"));
   buttonAddFile -> setEnabled(false);
   actionCollection() -> addAction("add_file", buttonAddFile);
@@ -268,7 +271,10 @@ void MainWindow::extractoToPreferred(QAction *action)
   QString extractWhere; 
   extractWhere = (action -> data()).toString();
   if (compressor == "rar") {
-    rarProcess *process = new rarProcess(this, "rar", QStringList() << "x", archive, table -> filesToExtract(), extractWhere );
+    QStringList options;
+    options << "x";
+    if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
+    rarProcess *process = new rarProcess(this, "rar", options, archive, table -> filesToExtract(), extractWhere );
     connect(process, SIGNAL(processCompleted(bool)), this, SLOT(extractionCompleted(bool)));
     process -> start();
   }
@@ -439,12 +445,9 @@ void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
     rar nrar;
     bool someprotection = nrar.parse (table, raroutput, ratioBar);  //metaWidget -> ratioBar() 
 
-    kDebug() << "PRENDO I DETTAGLI DI ARCHIVIO";
     QStringList archivedetails = nrar.getArchiveDetails();
-    kDebug() << "DETTAGLI DI ARCHIVIO PRESI\n";
     archiveInfo -> setText(archivedetails[0] + " " + "<b>" + i18n("file(s)") + "  " + i18n("size:") + "</b> " + archivedetails[1] + " <b> " + i18n("packed:") + "</b> " + archivedetails[2] + "  ");
-    kDebug() << "DETTAGLI DI ARCHIVIO INSERITI\n";
-
+  
     if (!archivePassword.isEmpty()) headercrypted = false;
     else archivePassword = rarprocess -> getArchivePassword();
 
@@ -827,33 +830,13 @@ void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento 
 
 void MainWindow::extractArchive()
 {
-  //QStringList itemspath;
-  //QList<QTreeWidgetItem*> selectedToExtract = table -> selectedItems();
   extractDialog *exdialog;
-  /*if(selectedToExtract.size() != 0) {
-    for (int i = 0; i < selectedToExtract.size(); i++ ) {
-      QTreeWidgetItem *tmp;
-      QStringList pathlist; // file da estrarre dall'archivio
-      pathlist << ( selectedToExtract[i] ) -> text ( 0 );
-      tmp = ( selectedToExtract[i] ) -> parent();
-      while ( tmp != NULL ) {
-        pathlist << tmp -> text ( 0 );
-        tmp = tmp -> parent();
-      }
-      QString path;
-      for ( int i = pathlist.size() - 1; i >= 0; i-- ) {
-        path.append ( pathlist[i] );
-        if ( i!=0 ) path.append (QDir().separator( ));
-      }
-      itemspath << path;
-    }
-  */
   QStringList filesList = table -> filesToExtract();
+  QStringList options;
   kDebug() << filesList;
-  if (!filesList.isEmpty()) exdialog = new extractDialog (compressor, archive, filesList, QStringList(), this);
-  //}
-  else exdialog = new extractDialog (compressor, archive, QStringList(), QStringList(), this);
- // connect(exdialog, SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
+  if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
+  if (!filesList.isEmpty()) exdialog = new extractDialog (compressor, archive, filesList, options, this);
+  else exdialog = new extractDialog (compressor, archive, QStringList(), options, this);
 }
 
 void MainWindow::operationCompleted(bool value)

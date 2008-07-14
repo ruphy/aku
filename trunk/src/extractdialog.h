@@ -2,7 +2,6 @@
 #define EXTRACTDIALOG_H
 
 #include <QModelIndex>
-#include <QDesktopServices>
 #include <QProgressDialog>
 #include <QHeaderView>
 #include <QInputDialog>
@@ -17,6 +16,7 @@
 #include <KMessageBox>
 #include <KUrlCompletion>
 #include <KLineEdit>
+#include <KRun>
 
 #include "rarprocess.h"
 #include "ui_extractdialog.h"
@@ -56,6 +56,8 @@ private:
   QStringList tmphistory;
 
   KAction *showhiddenAction;
+
+  rarProcess *rarprocess;
 
 signals:
   void closeArchive();
