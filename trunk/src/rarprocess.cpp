@@ -400,7 +400,7 @@ void rarProcess::handleProcess()
       rarprogressdialog -> accept();
       if (streamerror.isEmpty() == false) noproblem = false;
       else noproblem = true;
-      //emit processCompleted(noproblem);
+      emit processCompleted(noproblem);
       //this section is asyncronous so we got to call showError here also..
       showError(streamerror);
     }

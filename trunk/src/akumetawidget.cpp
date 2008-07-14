@@ -1,8 +1,11 @@
 #include "akumetawidget.h"
+#include <QToolBar>
+
 
 akuMetaWidget::akuMetaWidget (QWidget *parent) : QWidget (parent)
 {
   baseScrollWidget = new KVBox(this);
+
  // scrollArea = new QScrollArea(this);
  // scrollArea -> setBackgroundRole(QPalette::Dark);
  // scrollArea->setFrameShape(QFrame::NoFrame);
@@ -10,25 +13,34 @@ akuMetaWidget::akuMetaWidget (QWidget *parent) : QWidget (parent)
   iconMap = new QLabel(baseScrollWidget);
   iconMap -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   iconMap->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+
   metaName = new QLabel(baseScrollWidget);
   metaName -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   metaName -> setWordWrap(true);
   metaName -> setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+
   metaSize = new QLabel(baseScrollWidget);
   metaSize -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   metaSize -> setWordWrap(true);
   metaSize -> setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+
   dtime = new QLabel(baseScrollWidget);
   dtime->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   dtime->setWordWrap(true);
   dtime->setSizePolicy(QSizePolicy::Minimum , QSizePolicy::Minimum);
+
   metaMime = new QLabel(baseScrollWidget);
   metaMime -> setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   metaMime -> setWordWrap(true);
   metaMime -> setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+
+  hbox = new KHBox(baseScrollWidget);
+  hbox -> setVisible(false);
+
   QFrame *line = new QFrame(baseScrollWidget);
   line->setFrameShape(QFrame::HLine);
   line->setFrameShadow(QFrame::Sunken);
+
   w_ratio = new QWidget(baseScrollWidget);
   QHBoxLayout *ratioL = new QHBoxLayout(w_ratio);
   ratio = new akuRatioWidget(0, w_ratio);
@@ -51,11 +63,102 @@ akuMetaWidget::akuMetaWidget (QWidget *parent) : QWidget (parent)
   setMinimumSize(150,0); //TODO: do not hardcode sizes
   setMaximumSize(280,6574777);
 
+  setupPhonon();
+  //Phonon::MediaObject *music = Phonon::createPlayer(Phonon::MusicCategory, Phonon::MediaSource("/mnt/extended/fox/Musica/Everyday.mp3"));
+  //   music->play();
+
 }
 
 akuMetaWidget::~akuMetaWidget()
 { 
   qDeleteAll(children());
+}
+
+void akuMetaWidget::setupPhonon()
+{
+  audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
+  mediaObject = new Phonon::MediaObject(this);
+  connect(mediaObject, SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(stateChanged(Phonon::State, Phonon::State))); 
+
+  Phonon::createPath(mediaObject, audioOutput);
+
+  QToolBar *bar = new QToolBar(hbox);
+
+  playAction = new KAction(this);
+  playAction -> setIcon(KIcon("media-playback-start.png"));
+  playAction->setDisabled(true);
+  pauseAction = new KAction(this);
+  pauseAction -> setIcon(KIcon("media-playback-pause.png"));
+  pauseAction->setDisabled(true);
+  stopAction = new KAction(this);
+  stopAction -> setIcon(KIcon("media-playback-stop.png"));
+  stopAction->setDisabled(true);
+
+  connect(playAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
+
+
+  bar->addAction(playAction);
+  bar->addAction(pauseAction);
+  bar->addAction(stopAction);
+
+}
+
+void akuMetaWidget::stateChanged(Phonon::State newState, Phonon::State /* oldState */)
+{
+  switch (newState) {
+    case Phonon::ErrorState:
+      if (mediaObject->errorType() == Phonon::FatalError) {
+        //QMessageBox::warning(this, tr("Fatal Error"), mediaObject->errorString());
+      } 
+      else {
+        //QMessageBox::warning(this, tr("Error"), mediaObject->errorString());
+      }
+      break;
+    
+    case Phonon::PlayingState:
+      playAction->setEnabled(false);
+      pauseAction->setEnabled(true);
+      stopAction->setEnabled(true);
+      break;
+ 
+    case Phonon::StoppedState:
+      stopAction->setEnabled(false);
+      playAction->setEnabled(true);
+      pauseAction->setEnabled(false);
+      //timeLcd->display("00:00");
+      break;
+    
+    case Phonon::PausedState:
+      pauseAction->setEnabled(false);
+      stopAction->setEnabled(true);
+      playAction->setEnabled(true);
+      break;
+ 
+    case Phonon::BufferingState:
+      break;
+ 
+    default:
+      ;
+  }
+}
+
+
+void akuMetaWidget::setAudio(QByteArray preview)
+{
+  //QBuffer *buffer;
+  //buffer -> setBuffer(preview);
+  //buffer -> open(QIODevice::ReadOnly);
+  //mediaObject -> setCurrentSource(buffer);  
+  QFile file("/home/francesco/audio.mp3");
+  file.open(QIODevice::ReadWrite);
+  file.write(preview);
+  file.flush();
+  mediaObject -> setCurrentSource(QString("/home/francesco/audio.mp3"));
+}
+
+void akuMetaWidget::setAudioControl(bool status)
+{
+  hbox -> setVisible(status);
 }
 
 void akuMetaWidget::setPreview(QByteArray preview)
@@ -126,15 +229,13 @@ void akuMetaWidget::setFileName(QString name, bool folder)
   font.setBold(true);
   metaName -> setFont(font);
   metaName -> setText(name);
-  if(folder == false)
-  {
+  if(folder == false) {
     KMimeType::Ptr mimePtr = KMimeType::findByUrl(KUrl(name));
     QPixmap pixmap = KIcon(mimePtr -> iconName()).pixmap(128,128);
     setMimeIcon(pixmap);
     setMime(mimePtr -> comment());   
-  }
-  else
-  {
+  } 
+  else {
     QPixmap pixmap = KIcon("inode-directory").pixmap(128,128);
     setMimeIcon(pixmap);
     setMime(i18n("Folder"));
@@ -148,41 +249,38 @@ void akuMetaWidget::handleItemSelections(QList<QTreeWidgetItem*> list)
 {
   int listSize = list.size();
   //icons =  192 / listSize;
-  if(listSize>1){
-    w_ratio->setVisible(false);
-    dtime->setVisible(false);
+  if (listSize > 1){
+    w_ratio -> setVisible(false);
+    dtime -> setVisible(false);
+    hbox -> setVisible(false);
   }
   QPalette palette;
   QPixmap view(128,128);
   view.fill(Qt::transparent);
   int height = 128;
   QStringList iconNames;
-  for(int i = 0; i < listSize; i ++)
-  {
+  for(int i = 0; i < listSize; i ++) {
     KMimeType::Ptr mimePtr = KMimeType::findByUrl(KUrl(list[i]->text(0)));
     QString mimeIconName;
     if(list[i] -> text(1).isEmpty() ) mimeIconName = "inode-directory";
     else mimeIconName = mimePtr -> iconName();
     QPixmap icon;
-    if(!iconNames.contains(mimeIconName))
-    {
+    if(!iconNames.contains(mimeIconName)) {
       iconNames << mimeIconName;
       QStringList tempIconList;
       tempIconList << iconNames;
       if(tempIconList.size() > 1 )tempIconList.removeAll("inode-directory");
       view = QPixmap(128+(15*(tempIconList.size()-1)),height);
       view.fill(Qt::transparent);
-      for(int j = 0; j < tempIconList.size(); j++)
-      {
+      for(int j = 0; j < tempIconList.size(); j++) {
         icon  = KIcon(tempIconList[j]).pixmap(height,height);
         QPainter painter(&view);
         painter.drawPixmap(QRect(15*j, 0, height,height), icon);
       }
-
     }
    }
-   if(iconNames.size()== 1) 
-   {
+
+   if(iconNames.size()== 1) {
      KMimeType::Ptr mimePtr = KMimeType::findByUrl(KUrl(list[0] ->text(0)));
      if (mimePtr -> iconName() == "application-octet-stream" && list[0] -> text(1).isEmpty()) setMime(i18n("Folder"));
      else  setMime(mimePtr -> comment());

@@ -620,7 +620,7 @@ void MainWindow::metaBar()
     if (checkSelected.size() == 1) {
       getMetaInfo(checkSelected[0]);
       if ((checkSelected[0] -> text(9).contains("image")) && metaWidget -> isVisible() && (!(!checkSelected[0] -> icon(10).isNull() && filespassprotected))) {
-        
+        metaWidget -> setAudioControl(false);
         //if the file is an image we make a preview
         QString itemPath = table -> rebuildFullPath(checkSelected[0]);
         QProcess imagepreview;
@@ -637,6 +637,26 @@ void MainWindow::metaBar()
         QByteArray preview = imagepreview.readAllStandardOutput();
         metaWidget -> setPreview(preview);
       }
+
+      else if ((checkSelected[0] -> text(9).contains("audio")) && metaWidget -> isVisible() && (!(!checkSelected[0] -> icon(10).isNull() && filespassprotected))) {
+        metaWidget -> setAudioControl(true);
+        QString itemPath = table -> rebuildFullPath(checkSelected[0]);
+        QProcess audiopreview;
+        if (compressor == "rar") {
+          QStringList options;
+          options << "p" << "-inul";
+          if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
+          audiopreview.start(compressor, options << archive << itemPath);
+        }
+        if (compressor == "zip") audiopreview.start("unzip", QStringList() << "-p" << "-qq" << archive << itemPath);
+        if (compressor == "tar") audiopreview.start(compressor, QStringList()<< "-xOf" << archive <<itemPath);
+        audiopreview.waitForFinished();
+        audiopreview.terminate();
+        QByteArray preview = audiopreview.readAllStandardOutput();
+        //QIODevice preview = audiopreview
+        metaWidget -> setAudio(preview);
+      }
+      else metaWidget -> setAudioControl(false);
     }
     else {
       int folders = 0;

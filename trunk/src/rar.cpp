@@ -149,7 +149,6 @@ bool rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
     }     
 
   }  
-  kDebug() << "FASE -->> SET STATUS BAR INFO";
   // here we set status bar info
   stbarst.remove ( 0, target + 79 );
   QStringList archinfo;
@@ -163,7 +162,6 @@ bool rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
   else ratioNum = abs(ratioNum - 100);
   kDebug() << ratioNum;
   ratioBar -> setRatio ( ratioNum );
-  kDebug() << "FASE -->> PARSING RAR.CPP COMPLETA";
   return fileswithpass;
 }
 

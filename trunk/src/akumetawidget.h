@@ -13,11 +13,17 @@
 #include <QPainter>
 #include <QDateTime>
 #include <QVBoxLayout>
+#include <QBuffer>
+#include <QFile>
 
 #include <KIcon>
 #include <KMimeType>
 #include <KLocale>
 #include <KVBox>
+#include <KAction>
+
+#include <phonon/mediaobject.h>
+#include <phonon/audiooutput.h>
 
 
 class akuMetaWidget : public QWidget
@@ -36,6 +42,8 @@ public slots:
   virtual void clear();
   virtual void setMime(QString);
   virtual void setPreview(QByteArray);
+  virtual void setAudio(QByteArray);
+  virtual void setAudioControl(bool);
   virtual void handleItemSelections(QList<QTreeWidgetItem*>);
   virtual void setRatio(float);
   virtual void setDateTime(const QDateTime&);
@@ -57,7 +65,23 @@ private:
 
   KVBox *baseScrollWidget;
 
+  KHBox *hbox;
+
   QWidget *w_ratio;
+
+  Phonon::MediaObject *mediaObject;
+  Phonon::AudioOutput *audioOutput;
+
+  KAction *playAction;
+  KAction *pauseAction;
+  KAction *stopAction;
+
+  private slots:
+    void stateChanged(Phonon::State newState, Phonon::State oldState);
+
+  protected slots:
+    virtual void setupPhonon();
+
 
 };
 #endif
