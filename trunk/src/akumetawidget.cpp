@@ -64,8 +64,6 @@ akuMetaWidget::akuMetaWidget (QWidget *parent) : QWidget (parent)
   setMaximumSize(280,6574777);
 
   setupPhonon();
-  //Phonon::MediaObject *music = Phonon::createPlayer(Phonon::MusicCategory, Phonon::MediaSource("/mnt/extended/fox/Musica/Everyday.mp3"));
-  //   music->play();
 
 }
 
@@ -82,11 +80,12 @@ void akuMetaWidget::setupPhonon()
 
   Phonon::createPath(mediaObject, audioOutput);
 
+  hbox -> setSpacing(10);
   QToolBar *bar = new QToolBar(hbox);
 
-  playAction = new KAction(this);
+  playAction = new KAction(hbox);
   playAction -> setIcon(KIcon("media-playback-start.png"));
-  playAction->setDisabled(true);
+  //playAction->setDisabled(true);
   pauseAction = new KAction(this);
   pauseAction -> setIcon(KIcon("media-playback-pause.png"));
   pauseAction->setDisabled(true);
@@ -95,12 +94,22 @@ void akuMetaWidget::setupPhonon()
   stopAction->setDisabled(true);
 
   connect(playAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
-
+  connect(pauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()) );
+  connect(stopAction, SIGNAL(triggered()), mediaObject, SLOT(stop()));
 
   bar->addAction(playAction);
   bar->addAction(pauseAction);
   bar->addAction(stopAction);
+  
+  seekSlider = new Phonon::SeekSlider(hbox);
+  seekSlider->setMediaObject(mediaObject);
 
+}
+
+void akuMetaWidget::cancelTempFile()
+{
+  if (!oldtmp.isEmpty())
+    QFile(oldtmp).remove();
 }
 
 void akuMetaWidget::stateChanged(Phonon::State newState, Phonon::State /* oldState */)
@@ -145,20 +154,27 @@ void akuMetaWidget::stateChanged(Phonon::State newState, Phonon::State /* oldSta
 
 void akuMetaWidget::setAudio(QByteArray preview)
 {
-  //QBuffer *buffer;
-  //buffer -> setBuffer(preview);
-  //buffer -> open(QIODevice::ReadOnly);
-  //mediaObject -> setCurrentSource(buffer);  
-  QFile file("/home/francesco/audio.mp3");
-  file.open(QIODevice::ReadWrite);
-  file.write(preview);
-  file.flush();
-  mediaObject -> setCurrentSource(QString("/home/francesco/audio.mp3"));
+  //demux_wavpack: (open_wv_file:127) open_wv_file: non-seekable inputs aren't supported yet.
+//   QBuffer buffer;
+//   buffer.setData(preview);
+//   buffer.open(QIODevice::ReadOnly);
+//   mediaObject -> setCurrentSource(&buffer);  
+     cancelTempFile();
+
+     KTemporaryFile temp;
+     temp.setAutoRemove(false);
+     if (temp.open()) {
+       temp.write(preview);
+       temp.flush();
+       mediaObject -> setCurrentSource(temp.fileName());
+       oldtmp = temp.fileName();
+     }
 }
 
 void akuMetaWidget::setAudioControl(bool status)
 {
   hbox -> setVisible(status);
+  if (!status) mediaObject -> stop();
 }
 
 void akuMetaWidget::setPreview(QByteArray preview)
@@ -215,6 +231,7 @@ void akuMetaWidget::clear()
 void akuMetaWidget::setMimeIcon(QPixmap iconPixmap)
 {
   iconMap -> setPixmap (iconPixmap);
+  
 }
 
 void akuMetaWidget::setMime(QString mime)
@@ -242,7 +259,7 @@ void akuMetaWidget::setFileName(QString name, bool folder)
     w_ratio->setVisible(false);
     dtime->setVisible(false);
   }
-
+  mediaObject -> stop();
 }
 
 void akuMetaWidget::handleItemSelections(QList<QTreeWidgetItem*> list)

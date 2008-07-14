@@ -21,10 +21,11 @@
 #include <KLocale>
 #include <KVBox>
 #include <KAction>
+#include <KTemporaryFile>
 
 #include <phonon/mediaobject.h>
 #include <phonon/audiooutput.h>
-
+#include <phonon/seekslider.h>
 
 class akuMetaWidget : public QWidget
 {
@@ -48,6 +49,7 @@ public slots:
   virtual void setRatio(float);
   virtual void setDateTime(const QDateTime&);
   virtual void setDateTxt(QString);
+  virtual void cancelTempFile();
 
 private:
   QLabel *iconMap;
@@ -66,11 +68,14 @@ private:
   KVBox *baseScrollWidget;
 
   KHBox *hbox;
+ 
+  QString oldtmp;
 
   QWidget *w_ratio;
 
   Phonon::MediaObject *mediaObject;
   Phonon::AudioOutput *audioOutput;
+  Phonon::SeekSlider *seekSlider;
 
   KAction *playAction;
   KAction *pauseAction;
@@ -80,8 +85,7 @@ private:
     void stateChanged(Phonon::State newState, Phonon::State oldState);
 
   protected slots:
-    virtual void setupPhonon();
-
+    virtual void setupPhonon(); 
 
 };
 #endif

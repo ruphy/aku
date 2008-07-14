@@ -611,6 +611,7 @@ void MainWindow::viewInformation (bool visible)
 {
   metaWidget -> setVisible(visible);
   if (visible) metaBar();
+  else metaWidget -> setAudioControl(false);
 }
 
 void MainWindow::metaBar()
@@ -650,8 +651,8 @@ void MainWindow::metaBar()
         }
         if (compressor == "zip") audiopreview.start("unzip", QStringList() << "-p" << "-qq" << archive << itemPath);
         if (compressor == "tar") audiopreview.start(compressor, QStringList()<< "-xOf" << archive <<itemPath);
-        audiopreview.waitForFinished();
-        audiopreview.terminate();
+        audiopreview.waitForFinished(250);
+        //audiopreview.terminate();
         QByteArray preview = audiopreview.readAllStandardOutput();
         //QIODevice preview = audiopreview
         metaWidget -> setAudio(preview);
