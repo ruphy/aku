@@ -49,8 +49,7 @@ public slots:
   virtual void setRatio(float);
   virtual void setDateTime(const QDateTime&);
   virtual void setDateTxt(QString);
-  virtual void cancelTempFile();
-
+ 
 private:
   QLabel *iconMap;
   QLabel *metaName;
@@ -69,8 +68,6 @@ private:
 
   KHBox *hbox;
  
-  QString oldtmp;
-
   QWidget *w_ratio;
 
   Phonon::MediaObject *mediaObject;
@@ -86,6 +83,9 @@ private:
 
   protected slots:
     virtual void setupPhonon(); 
+
+  signals:
+    void tempFiles(QString);
 
 };
 #endif

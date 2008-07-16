@@ -77,6 +77,7 @@ public slots:
   virtual void deleteFile();
   virtual void addDirOperation(KUrl);
   virtual void extractoToPreferred(QAction *action);
+  virtual void collectTempFiles(QString);
 
 private:
   QWidget *baseWindowWidget;
@@ -116,6 +117,7 @@ private:
   QActionGroup *extractGroup;
   
   QStringList tempForRename;
+  QStringList tmpFiles;
 
   QString oldItemName;
   QString oldItemPath;

@@ -13,7 +13,7 @@ rarProcess::rarProcess(QWidget *parent, QString rararchiver, QStringList raropti
     headercrypted = false;
     toall = false;
     passwordAsked = false;
-    hasPasswordParameter = false;
+    //hasPasswordParameter = false;
 
     totalFileCount = 0;   //this var will increment until getting the same value of files.size()
   
@@ -30,22 +30,8 @@ rarProcess::~rarProcess()
 
 void rarProcess::start()
 {
-  if(!archiver.isEmpty()) {
-     for (int i = 0; i < options.size(); i++) {
-      if (options[i].isEmpty() || options[i] == "-p") options.removeAt(i);
-     }
-
-     QString str;
-     foreach(str, options) {
-       hasPasswordParameter = str.contains("-p");
-       if(hasPasswordParameter)
-        break;
-     }
-
-     if(!hasPasswordParameter && options[0] != "a" && options[0] != "ch") options << "-p-"; //this is to handle password later
-  
+  if (options[0] == "v") options << "-p-"; 
   initProcess();
-  }
 }
 
 void rarProcess::initProcess()
@@ -59,11 +45,16 @@ void rarProcess::initProcess()
 
   if (options[0] == "x" || options[0] == "e") { 
     disconnect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
-    bool fullArchive;
+
     rar aids;
-    thread -> start(archiver, QStringList() << "v" << options.last() << archivename);
+    QStringList opt;
+    opt << "v";
+    if (!archivePassword.isEmpty()) opt << "-p" + archivePassword;
+    thread -> start(archiver, opt << archivename);
     thread -> waitForFinished();
     globalTOC = standardOutput();
+
+    bool fullArchive;
     if (files.isEmpty()) {   //should we extract the entire archive?
       fullArchive = true;
       files = aids.getFileList(globalTOC);
@@ -79,7 +70,6 @@ void rarProcess::initProcess()
     connect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
     if (fullArchive) thread -> start(archiver, QStringList() << options << archivename << destination);
     else thread -> start(archiver, QStringList() << options << archivename << files << destination);
-
   }
 
   else if (options[0] == "a") {
@@ -104,13 +94,11 @@ void rarProcess::initProcess()
   // opzioni passate a rar: v oppure vt
   else if(options[0] == "v" || options[0] == "vt" ) {  //common fast calls to rar
     thread->start(archiver, QStringList() << options << archivename);
-    kDebug() << "FASE -->> unrar -v\n";
   }
  
   else if(options[0] == "rn") {
     thread -> start(archiver, QStringList() << options << archivename << files);
-    if(!hasPasswordParameter) thread ->waitForFinished(); 
-    else thread -> waitForFinished(-1);
+    thread -> waitForFinished();
   }
 
   else if(options.size() == 0) {
@@ -125,8 +113,6 @@ void rarProcess::initProcess()
     else {
      thread -> start(archiver, QStringList() << options << archivename << files);
     }
-    //if (!hasPasswordParameter) thread -> waitForFinished(); 
-    //else thread -> waitForFinished(-1);
   }
  
   else if(options[0] == "ch") {
@@ -201,7 +187,8 @@ void rarProcess::showProgress()
     percentuale = QString(gotOutput).split (" ", QString::SkipEmptyParts);
     if (percentuale.size() == 2)  {
       percentuale[1].remove ( "%" );
-      if(options[0]!="a") rarprogressdialog->setCurrentFileProgress(rarprogressdialog->currentFileProgressValue() + (100 / files.size()));
+      kDebug() << files.size();
+      if (options[0] != "a") rarprogressdialog->setCurrentFileProgress(rarprogressdialog->currentFileProgressValue() + (100 / files.size()));
       else rarprogressdialog->setCurrentFileProgress(percentuale[1].toInt());
     }
   }
@@ -213,16 +200,13 @@ void rarProcess::showProgress()
 
 
 void rarProcess::giveOutput(int exit, QProcess::ExitStatus)
-{
-  kDebug() << "::GIVEOUTPUT - process terminated";
-  kDebug() << exit;
+{ 
+  kDebug() << "giveOutput";
   emit outputReady(standardOutput(), headercrypted);
   if (streamerror.isEmpty()) {
-    puts("no problem");
     noproblem = true;
   }
   else {
-    puts("problem!");
     noproblem = false;
     showError(streamerror);
   }
@@ -317,7 +301,7 @@ void rarProcess::getError()
    delete owDialog;             
   }
 
-  else if(QString().fromAscii(temp).contains("password incorrect ?")) { 
+  else if (QString().fromAscii(temp).contains("password incorrect ?")) { 
   // here we handle a header-password-protected archive
     headercrypted = true; //the archive is crypted;
     totalFileCount = 0;

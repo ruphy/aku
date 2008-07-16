@@ -56,7 +56,7 @@ class rarProcess : public QObject
     bool headercrypted;
     bool toall;
     bool passwordAsked;
-    bool hasPasswordParameter;
+    //bool hasPasswordParameter;
 
     int totalFileCount;
 

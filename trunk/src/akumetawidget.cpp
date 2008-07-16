@@ -106,12 +106,6 @@ void akuMetaWidget::setupPhonon()
 
 }
 
-void akuMetaWidget::cancelTempFile()
-{
-  if (!oldtmp.isEmpty())
-    QFile(oldtmp).remove();
-}
-
 void akuMetaWidget::stateChanged(Phonon::State newState, Phonon::State /* oldState */)
 {
   switch (newState) {
@@ -159,7 +153,6 @@ void akuMetaWidget::setAudio(QByteArray preview)
 //   buffer.setData(preview);
 //   buffer.open(QIODevice::ReadOnly);
 //   mediaObject -> setCurrentSource(&buffer);  
-     cancelTempFile();
 
      KTemporaryFile temp;
      temp.setAutoRemove(false);
@@ -167,8 +160,8 @@ void akuMetaWidget::setAudio(QByteArray preview)
        temp.write(preview);
        temp.flush();
        mediaObject -> setCurrentSource(temp.fileName());
-       oldtmp = temp.fileName();
      }
+     emit tempFiles(temp.fileName());
 }
 
 void akuMetaWidget::setAudioControl(bool status)

@@ -31,12 +31,13 @@ MainWindow::MainWindow (QWidget* parent, Qt::WFlags flags): KXmlGuiWindow (paren
 
   filespassprotected = false;
 
-  //cmdlineOptions();
 }
 
 MainWindow::~MainWindow()
 {
   recentFilesAction->saveEntries( KGlobal::config()->group( "Recent Files" ));
+  for (int i = 0; i < tmpFiles.size(); i++)
+    QFile::remove(tmpFiles[i]);
 }
 
 void MainWindow::setupDocks()
@@ -131,10 +132,12 @@ void MainWindow::setupActions()
   if (!actionList.isEmpty()) {
     for (int i = 0; i < actionList.size(); i++) {
       // se il percorso esiste altrimenti non ha senso
-      if (QDir().exists(actionList[i])) {
-        QAction *tmpAction = quickextractMenu -> addAction(KIcon("folder-blue"), actionList[i]);
-        tmpAction -> setData(QVariant(actionList[i]));
-        extractGroup -> addAction(tmpAction); //and set new ones
+      if (QDir(actionList[i]).exists() && !actionList[i].isEmpty()) {
+        if ((actionList[i] != QDir().homePath()) && (actionList[i] != KGlobalSettings::desktopPath())) {
+          QAction *tmpAction = quickextractMenu -> addAction(KIcon("folder-blue"), actionList[i]);
+          tmpAction -> setData(QVariant(actionList[i]));
+          extractGroup -> addAction(tmpAction); //and set new ones
+        }
       }
     }
   }
@@ -213,6 +216,7 @@ void MainWindow::setupConnections()
   connect (popSelectall, SIGNAL(triggered()), table, SLOT(selectAll()));
   connect (popInvertselection, SIGNAL(triggered()), this, SLOT(selectionInverted()));
   connect (popRename, SIGNAL (triggered()), this, SLOT (renameItem()));
+  connect (metaWidget, SIGNAL (tempFiles(QString)), this, SLOT (collectTempFiles(QString)));
 }
 
 void MainWindow::enableActions(bool enable)
@@ -523,9 +527,8 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput)
   QProcess *process = new QProcess();
   QStringList options;
   options << "vt";
-  kDebug() << options;
   if(!archivePassword.isEmpty()) options << "-p" + archivePassword;
-  kDebug() << options;
+
   process->start(compressor, options << filename);
   
   process->waitForFinished();
@@ -651,7 +654,7 @@ void MainWindow::metaBar()
         }
         if (compressor == "zip") audiopreview.start("unzip", QStringList() << "-p" << "-qq" << archive << itemPath);
         if (compressor == "tar") audiopreview.start(compressor, QStringList()<< "-xOf" << archive <<itemPath);
-        audiopreview.waitForFinished(250);
+        audiopreview.waitForFinished(1000);
         //audiopreview.terminate();
         QByteArray preview = audiopreview.readAllStandardOutput();
         //QIODevice preview = audiopreview
@@ -747,61 +750,6 @@ void MainWindow::embeddedViewer()
   }
 }
 
-//void MainWindow::cmdlineOptions()
-//{
-/*  
-  KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
-  if (args -> isSet("extracthere")) {
-    kDebug() << "Extract Here";
-  // code to extract the archive
-    setVisible(false);
-    QDir herepath(args -> arg(0));
-    KUrl url = herepath.absolutePath();
-    rarProcess *pHand = new rarProcess(this, "rar", QStringList() << "x", args->arg(0), QStringList(), url.directory() );
-    connect(pHand, SIGNAL(processCompleted(bool)), kapp, SLOT(quit()));
-    pHand -> start();
-  }
-
-  else if (args -> isSet("extractto")) {
-    kDebug() << "Extract Here";
-    // code to extract the archive
-  
- 
-    //setVisible(false);   
-    //KUrl url = KFileDialog::getExistingDirectoryUrl(KUrl(QDir().homePath()),  this, i18n("Extract to"));
-//     const KUrl url(QDir().homePath());
-    KDialog *filedialog = new KDialog(this);
-//    filedialog -> setModal(true);
-//     filedialog -> setOperationMode(KFileDialog::Other);
-    //filedialog -> setMode(KFile::Directory);
-//     
-    //KFileDialog *filedialog = new KFileDialog(this);
-    //filedialog -> setFilter("*.cpp");
-    //connect (filedialog, SIGNAL(cancelClicked()), this, SLOT(test()));
-    connect (filedialog, SIGNAL(okClicked()), kapp, SLOT(quit()));
-    connect (filedialog, SIGNAL(cancelClicked()), kapp, SLOT(quit()));
-//     filedialog -> setCaption(i18n("Extract to"));
-//     filedialog -> setButtonsOrientation(Qt::Vertical);
-//     
-    filedialog -> show();
-    compressor = "rar";
-//     if (url.isEmpty()) kapp -> quit();
-//     rarProcess *pHand = new rarProcess(this, compressor, QStringList() << "x", args -> arg(0), QStringList(), url.path());
-//     connect(pHand, SIGNAL(processCompleted(bool)), kapp, SLOT(quit()));
-//     pHand -> start(); 
-  }
-
-  else {
-    for (int i=0; i < args -> count(); i++) openUrl(args -> url(i));
-  }
-
-  args -> clear();*/
-//}
-
-//void MainWindow::test() {
-//  KMessageBox::warningContinueCancel(this, i18n("Test"), i18n("Test"));
-//}
-
 void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento con la relativa applicazione associata
 {
   if (!toOpen -> text(1).isEmpty() && !(!toOpen -> icon(10).isNull() && filespassprotected)) {
@@ -840,7 +788,8 @@ void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento 
     KUrl url(tempPath + fileToExtract);
     KMimeType::Ptr mimetemp;
     mimetemp = KMimeType::findByUrl(url);    
-    KRun::runUrl(url, mimetemp -> name(), this, true);
+    KRun::runUrl(url, mimetemp -> name(), this, false);
+    tmpFiles << tempFile.fileName();
   }
 
   else if (!toOpen -> text ( 1 ).isEmpty()) {
@@ -870,9 +819,9 @@ void MainWindow::operationCompleted(bool value)
     tip->setTip(i18n("One or more errors occurred"));
     tip->show();
   }
-  openUrl(archive);
   setCursor(QCursor());
   enableActions(true);
+  openUrl(archive);
 }
 
 void MainWindow::extractionCompleted(bool value)
@@ -1235,4 +1184,10 @@ void MainWindow::completeDelete(bool ok)
     }
   }
   else operationCompleted(false);
+}
+
+// raccoglie i file temporanei (al momento solo audio) creati da aku
+void MainWindow::collectTempFiles(QString tempFileName)
+{
+  tmpFiles << tempFileName;
 }

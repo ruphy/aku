@@ -55,6 +55,7 @@ void threadProcess::killProcess()
 qint64 threadProcess::write(QByteArray text)
 {
   d -> process -> write(text);
+  //d -> process -> waitForBytesWritten();  // fox aggiunta
 }
 
 void threadProcess::pauseProcess()
