@@ -18,19 +18,20 @@ MainWindow::MainWindow (QWidget* parent, Qt::WFlags flags): KXmlGuiWindow (paren
   splitter -> addWidget(metaWidget);
   metaWidget -> setVisible(false);
 
+  filespassprotected = false;
   setupSearchBar();
   setupStatusBar();
   setupActions();
   setupPopupMenu();
   setupConnections();
+  cmdLineOptions();
+  setupGUI (QSize(650,460));
   setupDocks();
 
-  setupGUI (QSize(650,460));
   dockComment -> setVisible(false);
   buttonComment -> setVisible(false);
 
-  filespassprotected = false;
-
+  
 }
 
 MainWindow::~MainWindow()
@@ -201,6 +202,21 @@ void MainWindow::setupActions()
   */
 }
 
+void MainWindow::cmdLineOptions()
+{
+//    KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
+//    if (args -> isSet("extractto")) { 
+//      quickExtract *dirextract = new quickExtract(args -> arg(0), "quickExtract", this);
+//      connect(dirextract, SIGNAL(processCompleted(bool)), this, SLOT(quit()));
+//      dirextract -> show();
+//    }
+// 
+//    else {
+//      for (int i=0; i < args -> count(); i++) openUrl(args -> url(i));
+//    }
+//    args -> clear();
+}
+
 void MainWindow::setupConnections()
 {
   connect (buttonAddFile, SIGNAL(triggered()), this, SLOT(addFile()));
@@ -307,6 +323,7 @@ void MainWindow::openUrl(const KUrl& url)
     if (!archivePassword.isEmpty() && archive == url.pathOrUrl())
       options << "-p" + archivePassword;
     else archivePassword.clear();
+    
     rarprocess = new rarProcess(this, "rar", options, url.pathOrUrl());
     connect(rarprocess, SIGNAL(outputReady(QString, bool)), this, SLOT(buildRarTable(QString, bool)));
     rarprocess -> start();
@@ -439,6 +456,7 @@ void MainWindow::buildTarTable(QString taroutput)
 
 void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
 {
+  kDebug() << "buildRARTable";
   disconnect(rarprocess, SIGNAL(outputReady(QString, bool)), this, SLOT(buildRarTable(QString, bool)));
   if (!raroutput.isEmpty())   { 
     infoExtra -> clear();
@@ -763,7 +781,9 @@ void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento 
         QStringList options;
         options << "x" << "-o+";
         if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
-        rarprocess = new rarProcess(0, "rar", options, archive, QStringList() << fileToExtract, tempPath); //estraiamo il file nella cartella temporanea
+        QList<QStringList> list;
+        list[0] << fileToExtract;
+        rarprocess = new rarProcess(0, "rar", options, archive, list, tempPath); //estraiamo il file nella cartella temporanea
         rarprocess -> start();
       }
       else if (compressor == "zip") {
@@ -801,12 +821,13 @@ void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento 
 void MainWindow::extractArchive()
 {
   extractDialog *exdialog;
-  QStringList filesList = table -> filesToExtract();
+  QList<QStringList> filesList = table -> filesToExtract();
   QStringList options;
   kDebug() << filesList;
   if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
   if (!filesList.isEmpty()) exdialog = new extractDialog (compressor, archive, filesList, options, this);
-  else exdialog = new extractDialog (compressor, archive, QStringList(), options, this);
+  else exdialog = new extractDialog (compressor, archive, QList<QStringList>(), options, this);
+  connect(exdialog, SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
 }
 
 void MainWindow::operationCompleted(bool value)
@@ -924,7 +945,9 @@ void MainWindow::renameProcess (QTreeWidgetItem *current, int)
     if (compressor == "rar") {
       options << "rn";
       if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
-      renameProcess = new rarProcess(this, "rar", options, archive, QStringList() << oldItemPath << table -> rebuildFullPath(current));
+      QList<QStringList> list;
+      list[0] << oldItemPath << table -> rebuildFullPath(current);
+      renameProcess = new rarProcess(this, "rar", options, archive, list);
       connect(renameProcess, SIGNAL(processCompleted(bool)), this, SLOT(renameCompleted(bool)));
       renameProcess -> start();     
     }
@@ -1045,7 +1068,9 @@ void MainWindow::addFileOperation(QStringList list, QString filesPassword)
     rarProcess *process;
     // ep1           Exclude base directory from names 
     // ap<path>      Set path inside archive
-    process = new rarProcess(this, "rar", options, archive, QStringList() << list);
+    QList<QStringList> fileslist;
+    fileslist[0] << list;
+    process = new rarProcess(this, "rar", options, archive, fileslist);
     connect(process, SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
     process -> start();
   }
@@ -1080,7 +1105,9 @@ void MainWindow::addDirOperation(KUrl url)
       rarProcess *process;
       // ep1           Exclude base directory from names 
       // ap<path>      Set path inside archive
-      process = new rarProcess(this, "rar", options, archive, QStringList() << dir);
+      QList<QStringList> list;
+      list[0] << dir;
+      process = new rarProcess(this, "rar", options, archive, list);
       connect(process, SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
       process -> start();
     }
@@ -1089,7 +1116,7 @@ void MainWindow::addDirOperation(KUrl url)
 
 void MainWindow::addDir()
 { 
-  quickExtract *chooseDir = new quickExtract(archive, "addDir",this);
+  quickExtract *chooseDir = new quickExtract(archive, "addDir", this);
   connect(chooseDir, SIGNAL(destination(KUrl)), this, SLOT(addDirOperation(KUrl)));
 
   if ((table -> selectedItems().size() == 1) && (table -> selectedItems().first() -> parent() !=NULL)) {
@@ -1145,7 +1172,9 @@ void MainWindow::deleteFile()
       rarProcess *deleteItem;
       options << "d";
       if(!archivePassword.isEmpty()) options << "-p" + archivePassword;
-      deleteItem = new rarProcess(this, "rar", options, archive, itemsToDelete);
+      QList<QStringList> list;
+      list[0] << itemsToDelete;
+      deleteItem = new rarProcess(this, "rar", options, archive, list);
       connect(deleteItem, SIGNAL(processCompleted(bool)), this, SLOT(completeDelete(bool)));  
       deleteItem -> start();
     }

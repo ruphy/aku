@@ -1,12 +1,14 @@
 #include "rarprocess.h"
 
-rarProcess::rarProcess(QWidget *parent, QString rararchiver, QStringList raroptions, QString rararchivename, QStringList rarfiles, QString rardestination) : QObject(parent)
+rarProcess::rarProcess(QWidget *parent, QString rararchiver, QStringList raroptions, QString rararchivename, QList<QStringList> rarfiles, QString rardestination) : QObject(parent)
 {
     parentWidget = parent;
     archiver = rararchiver;
     options = raroptions;
     archivename = rararchivename;
-    files = rarfiles;
+    kDebug() << "sono in rarprocess";
+    if (!rarfiles.isEmpty())
+      files = rarfiles[0];  // file senza password
     destination = rardestination;
   
     noproblem = false;
@@ -28,9 +30,11 @@ rarProcess::~rarProcess()
   qDeleteAll(children());
 }
 
-void rarProcess::start()
+void rarProcess::start(QString passwordPassed)
 {
   if (options[0] == "v") options << "-p-"; 
+  // per gestire estrazione rapida (konqueror menu e quickextract) ... non il normale main -> extract to -> ok
+  if (!passwordPassed.isEmpty()) archivePassword = passwordPassed;
   initProcess();
 }
 
@@ -92,8 +96,9 @@ void rarProcess::initProcess()
   }
 
   // opzioni passate a rar: v oppure vt
-  else if(options[0] == "v" || options[0] == "vt" ) {  //common fast calls to rar
+  else if (options[0] == "v" || options[0] == "vt" ) {  //common fast calls to rar
     thread->start(archiver, QStringList() << options << archivename);
+    //thread -> waitForFinished();
   }
  
   else if(options[0] == "rn") {
@@ -322,6 +327,7 @@ void rarProcess::getError()
     
     if(!pwD.exec()) { 
       emit outputReady(QString(""), false);
+      emit passwordCanceled();
       return;
     }
     

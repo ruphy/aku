@@ -18,7 +18,7 @@ class rarProcess : public QObject
   Q_OBJECT
 
   public: 
-    rarProcess(QWidget* parent = 0, QString = "", QStringList = QStringList(), QString = "", QStringList = QStringList(), QString = "");
+    rarProcess(QWidget* parent = 0, QString = "", QStringList = QStringList(), QString = "", QList<QStringList> = QList<QStringList>(), QString = "");
     ~rarProcess();
 
     void showError(QByteArray);
@@ -30,9 +30,10 @@ class rarProcess : public QObject
     void processCompleted(bool);
     void processCanceled();
     void outputReady(QString, bool);
+    void passwordCanceled();
 
   public slots:
-    virtual void start();
+    virtual void start(QString = "");
     virtual void showProgress();
     virtual void getError();
     virtual void handleCancel();

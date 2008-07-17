@@ -1,12 +1,14 @@
 #include "extractdialog.h"
 
-extractDialog::extractDialog (QString archiver, QString archive, QStringList filestoextract, QStringList parameters, QWidget* parent, Qt::WFlags fl ) : KDialog ( parent, fl ), Ui::Dialog()
+extractDialog::extractDialog (QString archiver, QString archive, QList<QStringList> filestoextract, QStringList parameters, QWidget* parent, Qt::WFlags fl ) : KDialog ( parent, fl ), Ui::Dialog()
 {
   compressor = archiver;
   archivename = archive;
   options = parameters;
   parentWidget = parent;
-  files = filestoextract;
+
+  if (!filestoextract.isEmpty())
+      files = filestoextract[0];
 
   setupUi (this);
 
@@ -197,16 +199,22 @@ void extractDialog::extraction()
   // RAR  
   if (compressor == "rar") {    
     if (!options.isEmpty()) rarcommand << options;
-
-    if (!files.isEmpty()) rarprocess = new rarProcess(parentWidget, compressor, QStringList() << rarcommand << rarswitches, archivename, files, destination);
-    else rarprocess = new rarProcess(parentWidget, compressor, QStringList() << rarcommand << rarswitches, archivename, QStringList(), destination);
+    
+    //QList<QStringList> list;
+    //list[0] << files;
+    if (!files.isEmpty()) {
+      QList<QStringList> list;
+      list[0] << files;
+      rarprocess = new rarProcess(parentWidget, compressor, QStringList() << rarcommand << rarswitches, archivename, list, destination);
+    }
+    else rarprocess = new rarProcess(parentWidget, compressor, QStringList() << rarcommand << rarswitches, archivename, QList<QStringList>(), destination);
 
     if(checkOpenDestination -> isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(openDestinationPath(bool)));
     if(radioDeleteAlways ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchive(bool)));
     if(radioDeleteAsk ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchiveAsk(bool)));
     connect(rarprocess, SIGNAL(processCompleted(bool)), this, SIGNAL(processDialog(bool)));  
-    
     rarprocess -> start();
+    connect(rarprocess, SIGNAL(processCompleted(bool)), this, SIGNAL(processCompleted(bool)));
   }
 
   // gestione dell'history combo

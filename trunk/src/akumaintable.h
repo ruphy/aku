@@ -23,7 +23,7 @@ public:
   QString rebuildPath(QTreeWidgetItem*);
   QString rebuildFullPath(QTreeWidgetItem*);
   
-  QStringList filesToExtract();
+  QList<QStringList> filesToExtract();
 
 public slots:
   void setFormat(QString);

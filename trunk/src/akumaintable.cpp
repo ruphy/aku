@@ -251,9 +251,12 @@ void akuMainTable::recursiveFolderIcons (QTreeWidgetItem *checkParent)
     } 
 }
 
-QStringList akuMainTable::filesToExtract()
+QList<QStringList> akuMainTable::filesToExtract()
 {
   QStringList itemsPath;
+  
+  QStringList itemsWithPasswordPath;
+
   QList<QTreeWidgetItem*> selectedToExtract = selectedItems();
 
   if(selectedToExtract.size() != 0) {
@@ -267,14 +270,24 @@ QStringList akuMainTable::filesToExtract()
         tmp = tmp -> parent();
       }
       QString path;
-      for ( int i = pathlist.size() - 1; i >= 0; i-- ) {
+      for ( int j = pathlist.size() - 1; j >= 0; j-- ) {
         path.append ( pathlist[i] );
-        if ( i!=0 ) path.append (QDir().separator( ));
+        if (j != 0) path.append (QDir().separator( ));
       }
-      itemsPath << path;
+
+      if (!(selectedToExtract[i] -> icon(10)).isNull())
+        itemsWithPasswordPath << path;
+      else
+        itemsPath << path;
     }
   }
   else itemsPath.clear();
-  return itemsPath;
+
+  QList<QStringList> list;
+  list.append(itemsPath);
+  list.append(itemsWithPasswordPath);
+
+  return list;
 }
+
 

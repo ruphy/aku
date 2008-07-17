@@ -6,7 +6,7 @@ quickExtract::quickExtract(QString args, QString value, QWidget *parent) : KDial
   parentWidget = parent;
   archivename = args;
   function = value;
-
+  
   QSplitter *mainlayout = new QSplitter(this);
   setMainWidget(mainlayout);
 
@@ -70,6 +70,12 @@ quickExtract::quickExtract(QString args, QString value, QWidget *parent) : KDial
  
   //  connect(list, SIGNAL(clicked(const QModelIndex&)), SLOT(urlSelected(const QModelIndex&)));
   
+  QStringList options;
+  options << "v";
+  KUrl url(archivename);
+  passwordprocess = new rarProcess(this, "rar", options, url.pathOrUrl());
+  connect(passwordprocess, SIGNAL(passwordCanceled()), this, SLOT(reject()));
+  passwordprocess -> start();
 }
 
 quickExtract::~quickExtract()
@@ -78,9 +84,16 @@ quickExtract::~quickExtract()
 
 void quickExtract::extract() 
 {
-  rarProcess *process = new rarProcess(parentWidget, "rar", QStringList() << "x", archivename, QStringList(), khistory -> currentText());
-  //connect(process, SIGNAL(processCompleted(bool)), this, SIGNAL(processFinished(bool)));
-  process -> start();
+  headerpass = passwordprocess -> getArchivePassword();
+  kDebug() << headerpass;
+  QStringList options;
+  options << "x";
+  if (!headerpass.isEmpty()) options << "-p" + headerpass;
+  kDebug() << options;
+  kDebug() << archivename;
+  rarProcess *process = new rarProcess(parentWidget, "rar", options, archivename, QList<QStringList>(), khistory -> currentText());
+  process -> start(headerpass);
+  
 }
 
 void quickExtract::slotButtonClicked(int button) 

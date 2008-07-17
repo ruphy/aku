@@ -41,6 +41,7 @@ class quickExtract : public KDialog
    
    QString archivename;
    QString function;   
+   QString headerpass;
 
    QWidget *parentWidget;
   
@@ -58,6 +59,8 @@ class quickExtract : public KDialog
 
   private:
    KAction *showhiddenAction;
+
+   rarProcess *passwordprocess;
 
   signals:
    void destination(KUrl);

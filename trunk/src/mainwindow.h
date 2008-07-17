@@ -157,7 +157,7 @@ private slots:
 
 protected:
   void setupSearchBar();
-  //void cmdlineOptions();
+  void cmdLineOptions();
 
 protected slots:
   virtual void setupStatusBar();

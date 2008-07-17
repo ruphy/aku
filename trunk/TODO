@@ -7,6 +7,9 @@ QUICKEXTRACT:
   4) abilitare opendestination e delete archive in "quickextract"
   5) add dir with password
   6) preserve path
+  7) l'estrazione extracto e probabilmente extracthere non funziona per gli archivi header protected e aggiungere 
+     anche supporto ai file con password
+  8) quando si fa l'overwrite, a volte compare l'error dialog con la richiesta di sovrascrittura...ormai scaduta
 
 MAIN WINDOW:
   1) ordinamento logico per tutti i file della main
