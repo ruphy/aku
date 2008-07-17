@@ -52,6 +52,8 @@ int main ( int argc, char *argv[] )
     //KUrl url = herepath.absolutePath();
     //kDebug() << url;
     quickExtract *dirextract = new quickExtract(args -> arg(0), "extractHere", mainwindow);
+    app.setQuitOnLastWindowClosed(false);
+    //dirextract -> show();
 //     rarProcess *passwordprocess = new rarProcess(mainwindow, "rar", QStringList() << "v", args -> arg(0));
 //     QObject::connect(passwordprocess, SIGNAL(passwordCanceled()), mainwindow, SLOT(reject()));
 //     passwordprocess -> start();

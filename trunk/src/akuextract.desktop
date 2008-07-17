@@ -4,6 +4,7 @@ X-KDE-ServiceTypes=KonqPopupMenu/Plugin
 #X-KDE-Priority=TopLevel
 MimeType=application/x-rar;
 Actions=extracthere;extractto;
+X-KDE-Priority=TopLevel
 
 [Desktop Action extracthere]
 Name=aKu - Extract Here

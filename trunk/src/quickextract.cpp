@@ -69,7 +69,6 @@ quickExtract::quickExtract(QString args, QString value, QWidget *parent) : KDial
     
   if (function == "extractHere") {
     checkPassword();
-    //extractHere();
   }
   
   //list -> setRowHidden(0, true); // TODO: does not work so, try using the signal setupDone from model to set rowHidden
@@ -89,13 +88,14 @@ void quickExtract::checkPassword()
    options << "v";
    KUrl url(archivename);
    passwordprocess = new rarProcess(this, "rar", options, url.pathOrUrl());
-   connect(passwordprocess, SIGNAL(passwordCanceled()), this, SLOT(reject()));
-   if (function == "extracthere") {
-   //connect(passwordprocess, SIGNAL(passwordOk(QString)), this, SLOT(password(QString)));
-   //connect(passwordprocess, SIGNAL(noPassword()), this, SLOT(extractHere()));
-   //connect(passwordprocess, SIGNAL(passwordOk()), this, SLOT(extractHere()));
+   if (function == "extractHere") {
+     connect(passwordprocess, SIGNAL(passwordCanceled()), kapp, SLOT(quit()));
+     connect(passwordprocess, SIGNAL(processCompleted(bool)), this, SLOT(extractHere(bool)));
    }
-   passwordprocess -> start();    
+   if (function == "quickExtract") {
+     connect(passwordprocess, SIGNAL(passwordCanceled()), this, SLOT(reject()));
+   }
+   passwordprocess -> start();
 }
 
 void quickExtract::password(QString pass)
@@ -105,18 +105,20 @@ void quickExtract::password(QString pass)
    //extractHere();
 }
 
-void quickExtract::extractHere()
+void quickExtract::extractHere(bool status)
 { 
-  QStringList options;
-  options << "x";
-  if (!headerpass.isEmpty()) options << "-p" + headerpass; 
-  QDir herepath(archivename);
-  KUrl url = herepath.absolutePath();
-  kDebug() << options;
-  kDebug() << url;
-  rarProcess *process = new rarProcess(parentWidget, "rar", options, archivename, QList<QStringList>(), url.directory());
-
-  process -> start(headerpass);
+  if (status) {
+    headerpass = passwordprocess -> getArchivePassword();
+    QStringList options;
+    options << "x";
+    if (!headerpass.isEmpty()) options << "-p" + headerpass; 
+    QDir herepath(archivename);
+    KUrl url = herepath.absolutePath();
+   
+    rarProcess *process = new rarProcess(parentWidget, "rar", options, archivename, QList<QStringList>(), url.directory());
+    connect(process, SIGNAL(processCompleted(bool)), kapp, SLOT(quit()));
+    process -> start(headerpass);
+  }
 }
 
 void quickExtract::extract() 
@@ -133,7 +135,9 @@ void quickExtract::extract()
 void quickExtract::slotButtonClicked(int button) 
 {
   if (button == KDialog::Ok) {
-    if (function == "quickExtract") extract();
+    if (function == "quickExtract") {
+      extract();
+    }
     else if (function == "addDir") {
       emit destination(KUrl(khistory -> currentText())); 
       accept();

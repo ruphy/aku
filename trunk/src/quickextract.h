@@ -9,6 +9,7 @@
 #include <QSizePolicy>
 #include <QSplitter>
 
+#include <KApplication>
 #include <KDialog>
 #include <KVBox>
 #include <KLocale>
@@ -51,7 +52,7 @@ class quickExtract : public KDialog
    virtual void updateTreeViewSelection(QString);
    virtual void extract();
    virtual void checkPassword();
-   virtual void extractHere();
+   virtual void extractHere(bool);
    virtual void password(QString);
   
   protected slots:
@@ -67,6 +68,7 @@ class quickExtract : public KDialog
 
   signals:
    void destination(KUrl);
+   void timeToQuit(bool);
 
 };
 
