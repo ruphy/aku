@@ -50,6 +50,9 @@ class quickExtract : public KDialog
    virtual void updateCombo(KUrl);
    virtual void updateTreeViewSelection(QString);
    virtual void extract();
+   virtual void checkPassword();
+   virtual void extractHere();
+   virtual void password(QString);
   
   protected slots:
    virtual void slotButtonClicked(int button);

@@ -53,7 +53,11 @@ void rarProcess::initProcess()
     rar aids;
     QStringList opt;
     opt << "v";
-    if (!archivePassword.isEmpty()) opt << "-p" + archivePassword;
+    if (!archivePassword.isEmpty()) {
+      opt << "-p" + archivePassword;
+    }
+    //else 
+      //emit noPassword();  // necessario per l'extract Here
     thread -> start(archiver, opt << archivename);
     thread -> waitForFinished();
     globalTOC = standardOutput();
@@ -327,7 +331,7 @@ void rarProcess::getError()
     
     if(!pwD.exec()) { 
       emit outputReady(QString(""), false);
-      emit passwordCanceled();
+      emit passwordCanceled();  // necessario per l'extract To e l'extract Here
       return;
     }
     
@@ -336,10 +340,16 @@ void rarProcess::getError()
     if (!password.isEmpty()) {
       options << "-p" + password;
       archivePassword = password;
+      //emit passwordOk(password);
       stdoutput.clear();
       passwordAsked = true;
     }
     initProcess();
+  }
+
+  else if (temp.isEmpty() && (!archivePassword.isEmpty())) {
+    emit passwordOk(archivePassword);  // necessario per l'extract Here
+    kDebug() << "OK PASSWORD!";
   }
 
   else {  //altrimenti lasciamo che l'errore sia gestito da showError

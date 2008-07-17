@@ -47,6 +47,12 @@ quickExtract::quickExtract(QString args, QString value, QWidget *parent) : KDial
   list -> setModel(model);
   list -> setAutoResizeItemsEnabled(true);
 
+  connect (showhiddenAction, SIGNAL (toggled(bool)), this, SLOT (hiddenFiles(bool)));
+  connect (treeView, SIGNAL (currentChanged (KUrl)), this, SLOT (updateCombo(KUrl)));
+  connect (khistory, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateTreeViewSelection(QString)));
+  connect (khistory, SIGNAL(returnPressed(QString)), this, SLOT(updateTreeViewSelection(QString)));
+  connect (list , SIGNAL(urlChanged(const KUrl&)), SLOT(urlSelected(const KUrl&)));
+
   if (function == "quickExtract") {
     QCheckBox *opendestination = new QCheckBox(i18n("Open destination path"), v1layout);
     QCheckBox *deletearchive = new QCheckBox(i18n("Delete archive after extracting"), v1layout);
@@ -54,46 +60,74 @@ quickExtract::quickExtract(QString args, QString value, QWidget *parent) : KDial
     setInitialSize(QSize(540, 350));
     treeView -> setColumnHidden (1, true);
     treeView -> setColumnHidden (2, true);
+    checkPassword();
   }
 
   if (function == "addDir") {
     setInitialSize(QSize(650, 400));
   }
     
-  connect (showhiddenAction, SIGNAL (toggled(bool)), this, SLOT (hiddenFiles(bool)));
-  connect (treeView, SIGNAL (currentChanged (KUrl)), this, SLOT (updateCombo(KUrl)));
-  connect (khistory, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateTreeViewSelection(QString)));
-  connect (khistory, SIGNAL(returnPressed(QString)), this, SLOT(updateTreeViewSelection(QString)));
-  connect (list , SIGNAL(urlChanged(const KUrl&)), SLOT(urlSelected(const KUrl&)));
+  if (function == "extractHere") {
+    checkPassword();
+    //extractHere();
+  }
   
   //list -> setRowHidden(0, true); // TODO: does not work so, try using the signal setupDone from model to set rowHidden
  
   //  connect(list, SIGNAL(clicked(const QModelIndex&)), SLOT(urlSelected(const QModelIndex&)));
-  
-  QStringList options;
-  options << "v";
-  KUrl url(archivename);
-  passwordprocess = new rarProcess(this, "rar", options, url.pathOrUrl());
-  connect(passwordprocess, SIGNAL(passwordCanceled()), this, SLOT(reject()));
-  passwordprocess -> start();
+ 
+
 }
 
 quickExtract::~quickExtract()
 {
 }
 
+void quickExtract::checkPassword()
+{
+   QStringList options;
+   options << "v";
+   KUrl url(archivename);
+   passwordprocess = new rarProcess(this, "rar", options, url.pathOrUrl());
+   connect(passwordprocess, SIGNAL(passwordCanceled()), this, SLOT(reject()));
+   if (function == "extracthere") {
+   //connect(passwordprocess, SIGNAL(passwordOk(QString)), this, SLOT(password(QString)));
+   //connect(passwordprocess, SIGNAL(noPassword()), this, SLOT(extractHere()));
+   //connect(passwordprocess, SIGNAL(passwordOk()), this, SLOT(extractHere()));
+   }
+   passwordprocess -> start();    
+}
+
+void quickExtract::password(QString pass)
+{ 
+   headerpass = pass;
+   //kDebug() << headerpass;
+   //extractHere();
+}
+
+void quickExtract::extractHere()
+{ 
+  QStringList options;
+  options << "x";
+  if (!headerpass.isEmpty()) options << "-p" + headerpass; 
+  QDir herepath(archivename);
+  KUrl url = herepath.absolutePath();
+  kDebug() << options;
+  kDebug() << url;
+  rarProcess *process = new rarProcess(parentWidget, "rar", options, archivename, QList<QStringList>(), url.directory());
+
+  process -> start(headerpass);
+}
+
 void quickExtract::extract() 
 {
   headerpass = passwordprocess -> getArchivePassword();
-  kDebug() << headerpass;
   QStringList options;
   options << "x";
   if (!headerpass.isEmpty()) options << "-p" + headerpass;
-  kDebug() << options;
-  kDebug() << archivename;
   rarProcess *process = new rarProcess(parentWidget, "rar", options, archivename, QList<QStringList>(), khistory -> currentText());
-  process -> start(headerpass);
-  
+  connect(process, SIGNAL(processCompleted(bool)), this, SLOT(quit()));
+  process -> start(headerpass);  
 }
 
 void quickExtract::slotButtonClicked(int button) 
