@@ -4,12 +4,16 @@
 #include <QProcess>
 #include <QPixmap>
 #include <QFileInfo>
+#include <QAction>
 
 #include <KDialog>
 #include <KIcon>
 #include <KUrl>
 #include <KFileItem>
 #include <KDateTime>
+#include <KMenu>
+
+#include <KDebug>
 
 #include "ui_overwriteui.h"
 #include "rar.h"
@@ -24,9 +28,6 @@ public:
 
   enum clickedButton { Yes, No, YesToAll, NoToAll, Cancel};
 
-  bool isToAllChecked();
-  bool yesToAllChecked();
-  bool noToAllChecked();
   bool isYes();
 
 public slots:
@@ -34,9 +35,10 @@ public slots:
   virtual void yesOverwrite();
   virtual void noOverwrite();
   virtual void cancelOverwrite();
-  virtual void renameOverwrite();
+  virtual void renameOverwrite(QTableWidgetItem * item);
   virtual void setDestinationDetails(QString); //path, lastmodified time, size 
   virtual void setSourceDetails(QString, KDateTime, QString);
+  virtual void disableTableEditing();
 
 protected:
 
@@ -54,6 +56,12 @@ private:
   QString destinationPath;
   QString destinationName;
   QString destinationFilePath;
+
+  QTableWidgetItem *itemPath;
+
+  QAction *yesApplyAll;
+  QAction *noApplyAll;
+
 
 };
 

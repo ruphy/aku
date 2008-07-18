@@ -10,6 +10,7 @@ QUICKEXTRACT:
   7) l'estrazione extracto e probabilmente extracthere non funziona per gli archivi header protected e aggiungere 
      anche supporto ai file con password
   8) quando si fa l'overwrite, a volte compare l'error dialog con la richiesta di sovrascrittura...ormai scaduta
+  9) non ci sono i path di estrazione preferiti
 
 MAIN WINDOW:
   1) ordinamento logico per tutti i file della main
@@ -45,6 +46,8 @@ GENERALE:
 
 OVERWRITE DIALOG:
   1) Solito but QLIST quando si fanno più rename
+  2) Nome del file in estrazione e nome del file da sovrascrivere non coincidono
+  4) non far sparire il processing dialog quando appare l'overwrite
 
 PROCESSING DIALOG:
   1) nell'add file, add dir, la dimensione delle cose da aggiungere è errata

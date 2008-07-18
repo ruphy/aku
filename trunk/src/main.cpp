@@ -46,22 +46,8 @@ int main ( int argc, char *argv[] )
   KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
 
   if (args -> isSet("extracthere")) {
-   
-    // code to extract the archive
-    //QDir herepath(args -> arg(0));
-    //KUrl url = herepath.absolutePath();
-    //kDebug() << url;
     quickExtract *dirextract = new quickExtract(args -> arg(0), "extractHere", mainwindow);
     app.setQuitOnLastWindowClosed(false);
-    //dirextract -> show();
-//     rarProcess *passwordprocess = new rarProcess(mainwindow, "rar", QStringList() << "v", args -> arg(0));
-//     QObject::connect(passwordprocess, SIGNAL(passwordCanceled()), mainwindow, SLOT(reject()));
-//     passwordprocess -> start();
-//     QString password = passwordprocess -> getArchivePassword();
-
-//    rarProcess *process = new rarProcess(mainwindow, "rar", QStringList() << "x", args->arg(0), QList<QStringList>(), url.directory() );
-  //  QObject::connect(process, SIGNAL(processCompleted(bool)), kapp, SLOT(quit()));
-   // process -> start();
   }
 
   else if (args -> isSet("extractto")) {

@@ -56,8 +56,7 @@ void rarProcess::initProcess()
     if (!archivePassword.isEmpty()) {
       opt << "-p" + archivePassword;
     }
-    //else 
-      //emit noPassword();  // necessario per l'extract Here
+   
     thread -> start(archiver, opt << archivename);
     thread -> waitForFinished();
     globalTOC = standardOutput();
@@ -148,7 +147,6 @@ void rarProcess::handleCancel()
   thread -> killProcess();
   rarprogressdialog -> cancel();
   if (options[0] == "a") processTimer -> stop();
-  //emit processCanceled();
   emit processCompleted(false);
 }
 
@@ -340,16 +338,10 @@ void rarProcess::getError()
     if (!password.isEmpty()) {
       options << "-p" + password;
       archivePassword = password;
-      //emit passwordOk(password);
       stdoutput.clear();
       passwordAsked = true;
     }
     initProcess();
-  }
-
-  else if (temp.isEmpty() && (!archivePassword.isEmpty())) {
-    emit passwordOk(archivePassword);  // necessario per l'extract Here
-    kDebug() << "OK PASSWORD!";
   }
 
   else {  //altrimenti lasciamo che l'errore sia gestito da showError

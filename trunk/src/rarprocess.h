@@ -31,8 +31,6 @@ class rarProcess : public QObject
     void processCanceled();
     void outputReady(QString, bool);
     void passwordCanceled();
-    void passwordOk(QString);
-    void noPassword();
 
   public slots:
     virtual void start(QString = "");
