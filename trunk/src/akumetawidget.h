@@ -15,6 +15,7 @@
 #include <QVBoxLayout>
 #include <QBuffer>
 #include <QFile>
+#include <QMessageBox>
 
 #include <KIcon>
 #include <KMimeType>
@@ -43,7 +44,8 @@ public slots:
   virtual void clear();
   virtual void setMime(QString);
   virtual void setPreview(QByteArray);
-  virtual void setAudio(QByteArray);
+  //virtual void setAudio(QByteArray);
+  virtual void setAudio(QString);
   virtual void setAudioControl(bool);
   virtual void handleItemSelections(QList<QTreeWidgetItem*>);
   virtual void setRatio(float);

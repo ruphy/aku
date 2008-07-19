@@ -23,6 +23,7 @@
 #include <KCmdLineArgs>
 #include <KProcess>
 #include <KRun>
+#include <KStandardDirs>
 
 #include <KDebug>
 

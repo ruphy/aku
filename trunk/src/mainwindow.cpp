@@ -665,19 +665,21 @@ void MainWindow::metaBar()
         metaWidget -> setAudioControl(true);
         QString itemPath = table -> rebuildFullPath(checkSelected[0]);
         QProcess audiopreview;
+        QString tmpDir;
+        tmpDir = KStandardDirs().findResourceDir("tmp", KTemporaryFile().fileName());
         if (compressor == "rar") {
           QStringList options;
-          options << "p" << "-inul";
+          //options << "p" << "-inul";
+          options << "e";
           if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
-          audiopreview.start(compressor, options << archive << itemPath);
+          audiopreview.start(compressor, options << archive << itemPath << tmpDir);
         }
         if (compressor == "zip") audiopreview.start("unzip", QStringList() << "-p" << "-qq" << archive << itemPath);
         if (compressor == "tar") audiopreview.start(compressor, QStringList()<< "-xOf" << archive <<itemPath);
         audiopreview.waitForFinished(1000);
-        //audiopreview.terminate();
-        QByteArray preview = audiopreview.readAllStandardOutput();
-        //QIODevice preview = audiopreview
-        metaWidget -> setAudio(preview);
+        audiopreview.terminate();
+        //QByteArray preview = audiopreview.readAllStandardOutput();
+        metaWidget -> setAudio(tmpDir + checkSelected[0] -> text(0));
       }
       else metaWidget -> setAudioControl(false);
     }

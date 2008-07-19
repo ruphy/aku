@@ -112,6 +112,7 @@ void akuMetaWidget::stateChanged(Phonon::State newState, Phonon::State /* oldSta
     case Phonon::ErrorState:
       if (mediaObject->errorType() == Phonon::FatalError) {
         //QMessageBox::warning(this, tr("Fatal Error"), mediaObject->errorString());
+        playAction -> setEnabled(false);
       } 
       else {
         //QMessageBox::warning(this, tr("Error"), mediaObject->errorString());
@@ -146,7 +147,8 @@ void akuMetaWidget::stateChanged(Phonon::State newState, Phonon::State /* oldSta
 }
 
 
-void akuMetaWidget::setAudio(QByteArray preview)
+//void akuMetaWidget::setAudio(QByteArray preview)
+void akuMetaWidget::setAudio(QString preview)
 {
   //demux_wavpack: (open_wv_file:127) open_wv_file: non-seekable inputs aren't supported yet.
 //   QBuffer buffer;
@@ -154,14 +156,17 @@ void akuMetaWidget::setAudio(QByteArray preview)
 //   buffer.open(QIODevice::ReadOnly);
 //   mediaObject -> setCurrentSource(&buffer);  
 
-     KTemporaryFile temp;
-     temp.setAutoRemove(false);
-     if (temp.open()) {
-       temp.write(preview);
-       temp.flush();
-       mediaObject -> setCurrentSource(temp.fileName());
-     }
-     emit tempFiles(temp.fileName());
+//      KTemporaryFile temp;
+//      temp.setAutoRemove(false);
+//      if (temp.open()) {
+//        temp.write(preview);
+//        temp.flush();
+//        mediaObject -> setCurrentSource(temp.fileName());
+//      }
+//      emit tempFiles(temp.fileName());
+    kDebug() << preview;
+    mediaObject -> setCurrentSource(preview);
+    emit tempFiles(preview);
 }
 
 void akuMetaWidget::setAudioControl(bool status)
