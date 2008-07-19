@@ -90,9 +90,9 @@ void quickExtract::checkPassword()
    passwordprocess = new rarProcess(this, "rar", options, url.pathOrUrl());
    if (function == "extractHere") {
      connect(passwordprocess, SIGNAL(passwordCanceled()), kapp, SLOT(quit()));
+     connect(passwordprocess, SIGNAL(processCompleted(bool)), this, SLOT(extractHere(bool)));
    }
    if (function == "quickExtract") {
-     connect(passwordprocess, SIGNAL(processCompleted(bool)), this, SLOT(extractHere(bool)));
      connect(passwordprocess, SIGNAL(passwordCanceled()), this, SLOT(reject()));
    }
    passwordprocess -> start();
@@ -115,7 +115,7 @@ void quickExtract::extractHere(bool status)
     QDir herepath(archivename);
     KUrl url = herepath.absolutePath();
    
-    rarProcess *process = new rarProcess(parentWidget, "rar", options, archivename, QList<QStringList>(), url.directory());
+    rarProcess *process = new rarProcess(parentWidget, "rar", options, archivename, QStringList(), url.directory());
     connect(process, SIGNAL(processCompleted(bool)), kapp, SLOT(quit()));
     process -> start(headerpass);
   }

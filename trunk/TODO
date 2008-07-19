@@ -47,6 +47,7 @@ GENERALE:
 OVERWRITE DIALOG:
   1) Solito but QLIST quando si fanno più rename
   2) Nome del file in estrazione e nome del file da sovrascrivere non coincidono
+  3) bug rename, cliccando sugli altri campi diventano editabile -> grave
   4) non far sparire il processing dialog quando appare l'overwrite
 
 PROCESSING DIALOG:

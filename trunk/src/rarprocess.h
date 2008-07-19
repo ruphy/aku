@@ -18,7 +18,7 @@ class rarProcess : public QObject
   Q_OBJECT
 
   public: 
-    rarProcess(QWidget* parent = 0, QString = "", QStringList = QStringList(), QString = "", QList<QStringList> = QList<QStringList>(), QString = "");
+    rarProcess(QWidget* parent = 0, QString = "", QStringList = QStringList(), QString = "", QStringList = QStringList(), QString = "");
     ~rarProcess();
 
     void showError(QByteArray);
@@ -50,6 +50,7 @@ class rarProcess : public QObject
 
     QStringList options;
     QStringList files;
+    QStringList fileswithpassword;
   
     QTimer *processTimer;
 
@@ -76,6 +77,7 @@ class rarProcess : public QObject
     virtual void handleProcess();
     virtual void handlePaused();
     virtual void handleContinued();
+    virtual void handlePasswordedFiles();
     
 };
 #endif

@@ -98,7 +98,7 @@ void overwriteDialog::disableTableEditing()
 
 void overwriteDialog::yesOverwrite()
 {
-  if(yesApplyAll -> isChecked() == true) {
+  if(yesApplyAll -> isChecked()) {
     overwriteProcess -> write("a\n");
     yesToAll = true;
   }
@@ -109,7 +109,7 @@ void overwriteDialog::yesOverwrite()
 
 void overwriteDialog::noOverwrite()
 {
-  if(noApplyAll -> isChecked() == true) {
+  if(noApplyAll -> isChecked()) {
     overwriteProcess -> write("e\n");
     noToAll = true;
   }

@@ -251,7 +251,9 @@ void akuMainTable::recursiveFolderIcons (QTreeWidgetItem *checkParent)
     } 
 }
 
-QList<QStringList> akuMainTable::filesToExtract()
+// Abbiamo la creazione della lista "files con password" solo se
+// l'archivio non è headerpasswordprotected...
+QStringList akuMainTable::filesToExtract()
 {
   QStringList itemsPath;
   
@@ -259,7 +261,7 @@ QList<QStringList> akuMainTable::filesToExtract()
 
   QList<QTreeWidgetItem*> selectedToExtract = selectedItems();
 
-  if(selectedToExtract.size() != 0) {
+  if (selectedToExtract.size() != 0) {
     for (int i = 0; i < selectedToExtract.size(); i++ ) {
       QTreeWidgetItem *tmp;
       QStringList pathlist; // file da estrarre dall'archivio
@@ -271,23 +273,17 @@ QList<QStringList> akuMainTable::filesToExtract()
       }
       QString path;
       for ( int j = pathlist.size() - 1; j >= 0; j-- ) {
-        path.append ( pathlist[i] );
+        path.append ( pathlist[j] );
         if (j != 0) path.append (QDir().separator( ));
       }
-
-      if (!(selectedToExtract[i] -> icon(10)).isNull())
-        itemsWithPasswordPath << path;
-      else
-        itemsPath << path;
+  
+      itemsPath << path;
     }
   }
+
   else itemsPath.clear();
-
-  QList<QStringList> list;
-  list.append(itemsPath);
-  list.append(itemsWithPasswordPath);
-
-  return list;
+  
+  return itemsPath;
 }
 
 

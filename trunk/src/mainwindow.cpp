@@ -312,6 +312,10 @@ void MainWindow::openUrl(const KUrl& url)
   if (!KFileItem(KFileItem::Unknown, KFileItem::Unknown, url).isReadable()) return;
   mimetype = KMimeType::findByUrl(url);
   searchWidget -> searchLineEdit() -> clear();
+  
+  // controllo aggiunto perchè nei reload di archivio, a volte il dockcomment non viene caricato
+  if (dockComment -> isVisible())
+    dockComment -> setVisible(false);
 
   if (mimetype -> name() == "application/x-rar") {
     infoExtrabis -> setVisible(false);
@@ -572,9 +576,6 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput)
     buttonAddDir -> setEnabled(false);
 
     //actionEncryptArchive -> setEnabled(false);
-    //actionAddFilePwd -> setEnabled(false);
-    //actionAddFolderPwd -> setEnabled(false);
-    //actionAddFolder -> setEnabled(false);
   }
 
   if (raroutput.contains("Comment:")) {
@@ -781,9 +782,7 @@ void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento 
         QStringList options;
         options << "x" << "-o+";
         if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
-        QList<QStringList> list;
-        list[0] << fileToExtract;
-        rarprocess = new rarProcess(0, "rar", options, archive, list, tempPath); //estraiamo il file nella cartella temporanea
+        rarprocess = new rarProcess(this, compressor, options, archive, QStringList() << fileToExtract, tempPath); //estraiamo il file nella cartella temporanea
         rarprocess -> start();
       }
       else if (compressor == "zip") {
@@ -821,12 +820,12 @@ void MainWindow::openItemUrl(QTreeWidgetItem *toOpen, int) //apriamo l'elemento 
 void MainWindow::extractArchive()
 {
   extractDialog *exdialog;
-  QList<QStringList> filesList = table -> filesToExtract();
+  QStringList filesList = table -> filesToExtract();
   QStringList options;
-  kDebug() << filesList;
+  //kDebug() << filesList;
   if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
   if (!filesList.isEmpty()) exdialog = new extractDialog (compressor, archive, filesList, options, this);
-  else exdialog = new extractDialog (compressor, archive, QList<QStringList>(), options, this);
+  else exdialog = new extractDialog (compressor, archive, QStringList(), options, this);
   connect(exdialog, SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
 }
 
@@ -945,9 +944,7 @@ void MainWindow::renameProcess (QTreeWidgetItem *current, int)
     if (compressor == "rar") {
       options << "rn";
       if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
-      QList<QStringList> list;
-      list[0] << oldItemPath << table -> rebuildFullPath(current);
-      renameProcess = new rarProcess(this, "rar", options, archive, list);
+      renameProcess = new rarProcess(this, "rar", options, archive, QStringList() << oldItemPath << table -> rebuildFullPath(current));
       connect(renameProcess, SIGNAL(processCompleted(bool)), this, SLOT(renameCompleted(bool)));
       renameProcess -> start();     
     }
@@ -1068,9 +1065,7 @@ void MainWindow::addFileOperation(QStringList list, QString filesPassword)
     rarProcess *process;
     // ep1           Exclude base directory from names 
     // ap<path>      Set path inside archive
-    QList<QStringList> fileslist;
-    fileslist[0] << list;
-    process = new rarProcess(this, "rar", options, archive, fileslist);
+    process = new rarProcess(this, "rar", options, archive, list);
     connect(process, SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
     process -> start();
   }
@@ -1093,8 +1088,6 @@ void MainWindow::addDirOperation(KUrl url)
       }
     }
  
-    kDebug() << parentFolder;  
-  
     enableActions(false);
    
     if (compressor == "rar") {
@@ -1105,9 +1098,7 @@ void MainWindow::addDirOperation(KUrl url)
       rarProcess *process;
       // ep1           Exclude base directory from names 
       // ap<path>      Set path inside archive
-      QList<QStringList> list;
-      list[0] << dir;
-      process = new rarProcess(this, "rar", options, archive, list);
+      process = new rarProcess(this, compressor, options, archive, QStringList() << dir);
       connect(process, SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
       process -> start();
     }
@@ -1172,9 +1163,7 @@ void MainWindow::deleteFile()
       rarProcess *deleteItem;
       options << "d";
       if(!archivePassword.isEmpty()) options << "-p" + archivePassword;
-      QList<QStringList> list;
-      list[0] << itemsToDelete;
-      deleteItem = new rarProcess(this, "rar", options, archive, list);
+      deleteItem = new rarProcess(this, "rar", options, archive, itemsToDelete);
       connect(deleteItem, SIGNAL(processCompleted(bool)), this, SLOT(completeDelete(bool)));  
       deleteItem -> start();
     }

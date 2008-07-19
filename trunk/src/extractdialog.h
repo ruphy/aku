@@ -26,7 +26,7 @@ class extractDialog : public KDialog, private Ui::Dialog
   Q_OBJECT
 
 public:
-  extractDialog ( QString, QString, QList<QStringList> = QList<QStringList>(), QStringList = QStringList(), QWidget* parent = 0, Qt::WFlags fl = 0 );
+  extractDialog ( QString, QString, QStringList = QStringList(), QStringList = QStringList(), QWidget* parent = 0, Qt::WFlags fl = 0 );
   ~extractDialog();
 
 public slots:
@@ -53,6 +53,7 @@ private:
 
   QStringList options;
   QStringList files;
+  QStringList fileswithpassword;
   QStringList tmphistory;
 
   KAction *showhiddenAction;

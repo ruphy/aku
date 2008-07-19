@@ -1,14 +1,13 @@
 #include "extractdialog.h"
 
-extractDialog::extractDialog (QString archiver, QString archive, QList<QStringList> filestoextract, QStringList parameters, QWidget* parent, Qt::WFlags fl ) : KDialog ( parent, fl ), Ui::Dialog()
+extractDialog::extractDialog (QString archiver, QString archive, QStringList filestoextract, QStringList parameters, QWidget* parent, Qt::WFlags fl ) : KDialog ( parent, fl ), Ui::Dialog()
 {
   compressor = archiver;
   archivename = archive;
   options = parameters;
   parentWidget = parent;
 
-  if (!filestoextract.isEmpty())
-      files = filestoextract[0];
+  files = filestoextract;
 
   setupUi (this);
 
@@ -92,7 +91,7 @@ void extractDialog::createNewFolder()
 void extractDialog::updateTreeViewSelection(QString path)
 {
   KUrl url(path);
-  kDebug()<<url;
+  //kDebug()<<url;
   if(url.isLocalFile()) treeView -> setCurrentUrl(url); 
 }
 
@@ -203,11 +202,9 @@ void extractDialog::extraction()
     //QList<QStringList> list;
     //list[0] << files;
     if (!files.isEmpty()) {
-      QList<QStringList> list;
-      list[0] << files;
-      rarprocess = new rarProcess(parentWidget, compressor, QStringList() << rarcommand << rarswitches, archivename, list, destination);
+      rarprocess = new rarProcess(parentWidget, compressor, QStringList() << rarcommand << rarswitches, archivename, files, destination);
     }
-    else rarprocess = new rarProcess(parentWidget, compressor, QStringList() << rarcommand << rarswitches, archivename, QList<QStringList>(), destination);
+    else rarprocess = new rarProcess(parentWidget, compressor, QStringList() << rarcommand << rarswitches, archivename, QStringList(), destination);
 
     if(checkOpenDestination -> isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(openDestinationPath(bool)));
     if(radioDeleteAlways ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchive(bool)));

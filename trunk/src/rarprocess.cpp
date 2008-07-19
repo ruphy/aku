@@ -1,14 +1,12 @@
 #include "rarprocess.h"
 
-rarProcess::rarProcess(QWidget *parent, QString rararchiver, QStringList raroptions, QString rararchivename, QList<QStringList> rarfiles, QString rardestination) : QObject(parent)
+rarProcess::rarProcess(QWidget *parent, QString rararchiver, QStringList raroptions, QString rararchivename, QStringList rarfiles, QString rardestination) : QObject(parent)
 {
     parentWidget = parent;
     archiver = rararchiver;
     options = raroptions;
     archivename = rararchivename;
-    kDebug() << "sono in rarprocess";
-    if (!rarfiles.isEmpty())
-      files = rarfiles[0];  // file senza password
+    files = rarfiles;
     destination = rardestination;
   
     noproblem = false;
@@ -32,7 +30,9 @@ rarProcess::~rarProcess()
 
 void rarProcess::start(QString passwordPassed)
 {
-  if (options[0] == "v") options << "-p-"; 
+  if ((options[0] == "v") && (options.size() == 1)) 
+  // controllo options.size per vedere se viene passata un'eventuale password di header
+    options << "-p-"; 
   // per gestire estrazione rapida (konqueror menu e quickextract) ... non il normale main -> extract to -> ok
   if (!passwordPassed.isEmpty()) archivePassword = passwordPassed;
   initProcess();
@@ -49,14 +49,12 @@ void rarProcess::initProcess()
 
   if (options[0] == "x" || options[0] == "e") { 
     disconnect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
-
     rar aids;
     QStringList opt;
     opt << "v";
-    if (!archivePassword.isEmpty()) {
-      opt << "-p" + archivePassword;
-    }
-   
+    if (options.size() != 1)
+    //if (!options[1].isNull())
+      opt << options[1];   // options[1] è il valore -ppassword
     thread -> start(archiver, opt << archivename);
     thread -> waitForFinished();
     globalTOC = standardOutput();
@@ -74,6 +72,8 @@ void rarProcess::initProcess()
     connect(rarprogressdialog, SIGNAL(continued()), this, SLOT(handleContinued()));
     rarprogressdialog -> setArchiveName(archivename);
     
+    if (options.size() == 1) options << "-p-";
+
     connect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
     if (fullArchive) thread -> start(archiver, QStringList() << options << archivename << destination);
     else thread -> start(archiver, QStringList() << options << archivename << files << destination);
@@ -184,7 +184,7 @@ void rarProcess::showProgress()
     }
   }
 
-  if (QString(gotOutput).contains("OK") && !QString(gotOutput).contains("All OK") && (options[0]=="x" && options[0]=="e")) {
+  if (QString(gotOutput).contains("OK") && !QString(gotOutput).contains("All OK") && (options[0]=="x" || options[0]=="e")) {
     rarprogressdialog->setCurrentFileProgressToMaximum();
     rarprogressdialog->setCurrentFileProgress(0);
     rarprogressdialog->incrementOverall();
@@ -194,13 +194,15 @@ void rarProcess::showProgress()
     percentuale = QString(gotOutput).split (" ", QString::SkipEmptyParts);
     if (percentuale.size() == 2)  {
       percentuale[1].remove ( "%" );
-      kDebug() << files.size();
+      // kDebug() << files.size();
       if (options[0] != "a") rarprogressdialog->setCurrentFileProgress(rarprogressdialog->currentFileProgressValue() + (100 / files.size()));
       else rarprogressdialog->setCurrentFileProgress(percentuale[1].toInt());
     }
   }
 
-  if ( QString(gotOutput).contains("All OK")) {
+  // "All OK" in caso di estrazione completata. "Total errors:" in caso di estrazione completata ma in
+  // presenza di file protetti da password
+  if ((QString(gotOutput).contains("All OK")) || (QString(gotOutput).contains("Total errors:"))) {
     rarprogressdialog -> accept(); 
   }
 }
@@ -208,16 +210,26 @@ void rarProcess::showProgress()
 
 void rarProcess::giveOutput(int exit, QProcess::ExitStatus)
 { 
-  kDebug() << "giveOutput";
-  emit outputReady(standardOutput(), headercrypted);
-  if (streamerror.isEmpty()) {
-    noproblem = true;
+//  if (fileswithpassword.isEmpty()) {
+    emit outputReady(standardOutput(), headercrypted);
+    if (streamerror.isEmpty()) {
+      noproblem = true;
+    }
+    else {
+      noproblem = false;
+      showError(streamerror);
+    }
+    emit processCompleted(noproblem); //check the bool
+//  }
+//  else handlePasswordedFiles();
+    kDebug() << fileswithpassword;
+}
+
+void rarProcess::handlePasswordedFiles()
+{                    
+  for (int i = 0; i < fileswithpassword.size(); i++) {
+    kDebug() << fileswithpassword[i];
   }
-  else {
-    noproblem = false;
-    showError(streamerror);
-  }
-  emit processCompleted(noproblem); //check the bool
 }
 
 void rarProcess::showError(QByteArray streamerror)
@@ -283,7 +295,7 @@ void rarProcess::getError()
   // so we need to erase everything from already to get the file name
   // then we can call an overwrite dialog to handle user's choice
 
-  if(QString().fromAscii(temp).contains("already")) {
+  if(QString().fromAscii(temp).contains("already exists. Overwrite it")) {
     //rarprogressdialog -> setValue ( rarprogressdialog -> maximum()); 
     QString targetFile = QString().fromAscii(temp); 
     int forParsing = targetFile.indexOf("already"); 
@@ -308,7 +320,7 @@ void rarProcess::getError()
    delete owDialog;             
   }
 
-  else if (QString().fromAscii(temp).contains("password incorrect ?")) { 
+  else if ((QString().fromAscii(temp).contains("password incorrect ?")) && (options[0] == "v")) { 
   // here we handle a header-password-protected archive
     headercrypted = true; //the archive is crypted;
     totalFileCount = 0;
@@ -344,8 +356,33 @@ void rarProcess::getError()
     initProcess();
   }
 
+  else if ((QString().fromAscii(temp).contains("password incorrect ?")) && ((options[0] == "x") || (options[0] == "e"))) { 
+    // Il problema è che il testo nello standard output è asincrono
+    // quindi devo gestire 1 o più righe di testo ed eventualmente estrapolare il nome del 
+    // file con password.
+ 
+    QString targetFile = QString().fromAscii(temp);
+
+    while (targetFile.indexOf("password incorrect") != -1) { 
+      int endString = (targetFile.indexOf("password incorrect") - 2); // -2 per parentesi e spazio vuoto
+      int startString = (targetFile.indexOf("CRC failed in") + 14);
+      QString filePass;
+      filePass = targetFile.mid(startString, (endString - startString));
+      
+      // modo barbaro ma funzionale
+      targetFile.remove(targetFile.indexOf("Encrypted file"), targetFile.indexOf("incorrect ?)"));
+      fileswithpassword << filePass;
+    }
+
+    rarprogressdialog->setCurrentFileProgressToMaximum();
+//     rarprogressdialog->setCurrentFileProgress(0);
+//     rarprogressdialog->incrementOverall();
+  }
+
   else {  //altrimenti lasciamo che l'errore sia gestito da showError
-    if(QString().fromAscii(temp).indexOf("already") == -1 || QString().fromAscii(temp).indexOf("password") == -1) streamerror.append(temp);
+    if (!temp.contains("already exists. Overwrite it") && !temp.contains("password incorrect ?") && !temp.contains("[Y]es, [N]o, [A]ll")) {
+      streamerror.append(temp);
+    }
   } 
 }
 
@@ -394,7 +431,9 @@ void rarProcess::handleProcess()
       else noproblem = true;
       emit processCompleted(noproblem);
       //this section is asyncronous so we got to call showError here also..
-      showError(streamerror);
+      if (!streamerror.isEmpty()) {
+        showError(streamerror);
+      }
     }
   }
 }

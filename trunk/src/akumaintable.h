@@ -9,6 +9,7 @@
 #include <KMenu>
 #include <KAction>
 #include <KLocale>
+#include <KDebug>
 
 
 class akuMainTable : public QTreeWidget
@@ -23,7 +24,7 @@ public:
   QString rebuildPath(QTreeWidgetItem*);
   QString rebuildFullPath(QTreeWidgetItem*);
   
-  QList<QStringList> filesToExtract();
+  QStringList filesToExtract();
 
 public slots:
   void setFormat(QString);
@@ -64,6 +65,5 @@ private:
 
   KMenu *mPopup;
   
-
 };
 #endif

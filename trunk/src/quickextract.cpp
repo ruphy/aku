@@ -115,7 +115,7 @@ void quickExtract::extractHere(bool status)
     QDir herepath(archivename);
     KUrl url = herepath.absolutePath();
    
-    rarProcess *process = new rarProcess(parentWidget, "rar", options, archivename, QList<QStringList>(), url.directory());
+    rarProcess *process = new rarProcess(parentWidget, "rar", options, archivename, QStringList(), url.directory());
     connect(process, SIGNAL(processCompleted(bool)), kapp, SLOT(quit()));
     process -> start(headerpass);
   }
@@ -127,7 +127,7 @@ void quickExtract::extract()
   QStringList options;
   options << "x";
   if (!headerpass.isEmpty()) options << "-p" + headerpass;
-  rarProcess *process = new rarProcess(parentWidget, "rar", options, archivename, QList<QStringList>(), khistory -> currentText());
+  rarProcess *process = new rarProcess(parentWidget, "rar", options, archivename, QStringList(), khistory -> currentText());
   connect(process, SIGNAL(processCompleted(bool)), this, SLOT(quit()));
   process -> start(headerpass);  
 }

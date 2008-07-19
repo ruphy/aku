@@ -160,7 +160,7 @@ bool rar::parse ( QTreeWidget * listv, QString bf, akuRatioWidget *ratioBar )
   float ratioNum = ratio.toFloat();
   if (ratioNum > 100.0 || ratioNum == 0.0) ratioNum = 0;
   else ratioNum = abs(ratioNum - 100);
-  kDebug() << ratioNum;
+  //kDebug() << ratioNum;
   ratioBar -> setRatio ( ratioNum );
   return fileswithpass;
 }
