@@ -31,7 +31,6 @@ MainWindow::MainWindow (QWidget* parent, Qt::WFlags flags): KXmlGuiWindow (paren
   dockComment -> setVisible(false);
   buttonComment -> setVisible(false);
 
-  
 }
 
 MainWindow::~MainWindow()

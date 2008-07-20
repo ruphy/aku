@@ -8,7 +8,6 @@ rarProcess::rarProcess(QWidget *parent, QString rararchiver, QStringList raropti
     archivename = rararchivename;
     files = rarfiles;
     destination = rardestination;
-  
     noproblem = false;
     headercrypted = false;
     toall = false;
@@ -30,11 +29,18 @@ rarProcess::~rarProcess()
 
 void rarProcess::start(QString passwordPassed)
 {
-  if ((options[0] == "v") && (options.size() == 1)) 
-  // controllo options.size per vedere se viene passata un'eventuale password di header
+  if (passwordPassed.isEmpty()) {
+    foreach (QString str, options) {
+      if (str.startsWith("-p"))
+        archivePassword = str.remove("-p");
+    }
+  }
+  else archivePassword = passwordPassed;
+
+  if (archivePassword.isEmpty())
     options << "-p-"; 
   // per gestire estrazione rapida (konqueror menu e quickextract) ... non il normale main -> extract to -> ok
-  if (!passwordPassed.isEmpty()) archivePassword = passwordPassed;
+    
   initProcess();
 }
 
@@ -52,9 +58,10 @@ void rarProcess::initProcess()
     rar aids;
     QStringList opt;
     opt << "v";
-    if (options.size() != 1)
-    //if (!options[1].isNull())
-      opt << options[1];   // options[1] è il valore -ppassword
+   
+    if (!archivePassword.isEmpty())
+      opt << "-p" + archivePassword;
+        
     thread -> start(archiver, opt << archivename);
     thread -> waitForFinished();
     globalTOC = standardOutput();
@@ -71,8 +78,6 @@ void rarProcess::initProcess()
     connect(rarprogressdialog, SIGNAL(paused()), this, SLOT(handlePaused()));
     connect(rarprogressdialog, SIGNAL(continued()), this, SLOT(handleContinued()));
     rarprogressdialog -> setArchiveName(archivename);
-    
-    if (options.size() == 1) options << "-p-";
 
     connect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
     if (fullArchive) thread -> start(archiver, QStringList() << options << archivename << destination);
@@ -210,7 +215,8 @@ void rarProcess::showProgress()
 
 void rarProcess::giveOutput(int exit, QProcess::ExitStatus)
 { 
-//  if (fileswithpassword.isEmpty()) {
+  kDebug() << fileswithpassword;
+  if (fileswithpassword.isEmpty()) {
     emit outputReady(standardOutput(), headercrypted);
     if (streamerror.isEmpty()) {
       noproblem = true;
@@ -220,16 +226,34 @@ void rarProcess::giveOutput(int exit, QProcess::ExitStatus)
       showError(streamerror);
     }
     emit processCompleted(noproblem); //check the bool
-//  }
-//  else handlePasswordedFiles();
-    kDebug() << fileswithpassword;
+  }
+  else {
+    handlePasswordedFiles();
+  }
 }
 
 void rarProcess::handlePasswordedFiles()
-{                    
-  for (int i = 0; i < fileswithpassword.size(); i++) {
-    kDebug() << fileswithpassword[i];
+{
+  dlg = new KPasswordDialog(parentWidget, KPasswordDialog::ShowKeepPassword, KDialog::User1);
+
+  connect(dlg, SIGNAL(gotPassword(const QString& , bool)), this, SLOT(setPassword(const QString &)));
+  //connect(dlg, SIGNAL(rejected()), this, SLOT(cancelPasswordRequest()));
+
+  dlg -> setButtonText(KDialog::User1, i18n("Skip this file"));
+                    
+  if (fileswithpassword.size() != 0) {
+    if (fileswithpassword.size() > 1)
+      dlg -> addCommentLine(QString(), i18n("Check") + " <i>" + i18n("remember password") + "</i> " + i18n("to use the current password for the next file(s)"));
+    dlg -> setPrompt(i18n("The file") + " <b>" + fileswithpassword[0] + " </b><i>" + i18n("is password protected") + "<br></i>" + i18n("Enter the password:"));
+    dlg -> show();
   }
+    
+}
+
+void rarProcess::setPassword(const QString& newpassword)
+{
+  kDebug() << options;
+  //thread -> start(archiver, QStringList() << options << archivename << fileswithpassword[0] << destination);
 }
 
 void rarProcess::showError(QByteArray streamerror)
@@ -237,7 +261,7 @@ void rarProcess::showError(QByteArray streamerror)
   if(!streamerror.isEmpty()) {
     QByteArray error = streamerror;
     QByteArray original(QString("Cannot create").toAscii());
-    QByteArray translated(QString("<b>" + i18n("\nCannot create") + "</b>").toAscii());
+    QByteArray translated(QString("<b>\n" + i18n("Cannot create") + "</b>").toAscii());
     error.replace(original, translated);
     original = QString("ERROR:").toAscii();
     translated = QString("<b>" + i18n("ERROR:") + "</b>").toAscii();
@@ -356,17 +380,19 @@ void rarProcess::getError()
     initProcess();
   }
 
-  else if ((QString().fromAscii(temp).contains("password incorrect ?")) && ((options[0] == "x") || (options[0] == "e"))) { 
+  else if (temp.contains("password incorrect ?") && ((options[0] == "x") || (options[0] == "e"))) { 
     // Il problema è che il testo nello standard output è asincrono
     // quindi devo gestire 1 o più righe di testo ed eventualmente estrapolare il nome del 
     // file con password.
  
     QString targetFile = QString().fromAscii(temp);
 
-    while (targetFile.indexOf("password incorrect") != -1) { 
-      int endString = (targetFile.indexOf("password incorrect") - 2); // -2 per parentesi e spazio vuoto
-      int startString = (targetFile.indexOf("CRC failed in") + 14);
-      QString filePass;
+    QString filePass;
+
+    while (targetFile.indexOf("password incorrect") != -1) {    
+      int startString = targetFile.indexOf("CRC failed in") + 14;
+      int endString = targetFile.indexOf("password incorrect") - 2; // -2 per parentesi e spazio vuoto
+      
       filePass = targetFile.mid(startString, (endString - startString));
       
       // modo barbaro ma funzionale

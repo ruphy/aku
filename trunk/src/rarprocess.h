@@ -54,6 +54,8 @@ class rarProcess : public QObject
   
     QTimer *processTimer;
 
+    KPasswordDialog *dlg;
+
     bool noproblem;
     bool headercrypted;
     bool toall;
@@ -78,6 +80,6 @@ class rarProcess : public QObject
     virtual void handlePaused();
     virtual void handleContinued();
     virtual void handlePasswordedFiles();
-    
+    virtual void setPassword(const QString&); 
 };
 #endif
