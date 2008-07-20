@@ -4,6 +4,7 @@
 #include <QWidget>
 
 #include <KPasswordDialog>
+#include <KPushButton>
 #include <KMessageBox>
 
 #include <KDebug>
@@ -79,7 +80,8 @@ class rarProcess : public QObject
     virtual void handleProcess();
     virtual void handlePaused();
     virtual void handleContinued();
-    virtual void handlePasswordedFiles();
+    virtual void handlePasswordedFiles(bool incorrectPassword = false);
     virtual void setPassword(const QString&); 
+    virtual void nextPasswordedFile();
 };
 #endif

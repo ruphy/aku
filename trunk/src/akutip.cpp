@@ -30,7 +30,7 @@ akuTip::akuTip(QWidget *parent) : QWidget(parent), d(new privateTip)
   baseLayout->addWidget(d->box);
 
   d->actionTip = new KAction(this);
-  d->actionTip -> setIcon(KIcon("edit-redo"));
+  d->actionTip -> setIcon(KIcon("lastmoves"));
   d->actionTip -> setText(i18n("Last tip"));
   d->actionTip -> setEnabled(false);
 }

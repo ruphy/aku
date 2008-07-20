@@ -25,11 +25,12 @@ MainWindow::MainWindow (QWidget* parent, Qt::WFlags flags): KXmlGuiWindow (paren
   setupPopupMenu();
   setupConnections();
   cmdLineOptions();
-  setupGUI (QSize(650,460));
   setupDocks();
+  setupGUI (QSize(650,460));
+ 
 
   dockComment -> setVisible(false);
-  buttonComment -> setVisible(false);
+  //buttonComment -> setVisible(false);
 
 }
 

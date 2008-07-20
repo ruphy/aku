@@ -232,28 +232,72 @@ void rarProcess::giveOutput(int exit, QProcess::ExitStatus)
   }
 }
 
-void rarProcess::handlePasswordedFiles()
+void rarProcess::handlePasswordedFiles(bool incorrectPassword)
 {
   dlg = new KPasswordDialog(parentWidget, KPasswordDialog::ShowKeepPassword, KDialog::User1);
+  KPushButton *buttonSkip = dlg -> button(KDialog::User1);
+  buttonSkip -> setText(i18n("Skip this file"));
+  buttonSkip -> setIcon(KIcon("arrow-right-double"));
 
+  connect(buttonSkip, SIGNAL(clicked()), this, SLOT(nextPasswordedFile()));
   connect(dlg, SIGNAL(gotPassword(const QString& , bool)), this, SLOT(setPassword(const QString &)));
   //connect(dlg, SIGNAL(rejected()), this, SLOT(cancelPasswordRequest()));
-
-  dlg -> setButtonText(KDialog::User1, i18n("Skip this file"));
                     
   if (fileswithpassword.size() != 0) {
-    if (fileswithpassword.size() > 1)
+
+    if ((fileswithpassword.size() > 1) && (!incorrectPassword))
       dlg -> addCommentLine(QString(), i18n("Check") + " <i>" + i18n("remember password") + "</i> " + i18n("to use the current password for the next file(s)"));
+    else if ((fileswithpassword.size() > 1) && (incorrectPassword))
+      dlg -> addCommentLine(QString(), i18n("Check") + " <i>" + i18n("remember password") + "</i> " + i18n("to use the current password for the next file(s)") + "\n\n<br><font color=red>" + i18n("Password incorrect") + "</font>");     
+    else if (incorrectPassword)
+      dlg -> addCommentLine(QString(), "<br><font color=red>" + i18n("Password incorrect") + "</font>");
+      
     dlg -> setPrompt(i18n("The file") + " <b>" + fileswithpassword[0] + " </b><i>" + i18n("is password protected") + "<br></i>" + i18n("Enter the password:"));
     dlg -> show();
   }
     
 }
 
+void rarProcess::nextPasswordedFile()
+{ 
+  if (dlg -> close()) {
+    fileswithpassword.removeFirst();
+      if (!fileswithpassword.isEmpty())
+        handlePasswordedFiles();
+  }
+}
+
 void rarProcess::setPassword(const QString& newpassword)
 {
-  kDebug() << options;
-  //thread -> start(archiver, QStringList() << options << archivename << fileswithpassword[0] << destination);
+  if (!newpassword.isEmpty()) {
+    // devo eliminare -p dalle opzioni
+    if (options.indexOf("-p-") != -1)
+      options.removeAt(options.indexOf("-p-"));
+    
+    thread = new threadProcess(this);
+    thread -> start(archiver, QStringList() << options << "-p" + newpassword << archivename << fileswithpassword[0] << destination);
+    thread -> waitForFinished();
+    QByteArray error = thread -> readAllStandardError();
+    QByteArray output = thread -> readAllStandardOutput();
+    
+    if (!error.isEmpty()) {
+      if (error.contains("password incorrect ?")) {
+        dlg -> close();
+        handlePasswordedFiles(true);
+      }
+    }
+    // estrazione andata a buon fine
+    else {
+      fileswithpassword.removeFirst();
+      if (!fileswithpassword.isEmpty())
+        dlg -> close();
+        handlePasswordedFiles();
+    }     
+  }
+
+  else {
+    if (dlg -> close()) handlePasswordedFiles(true);
+  }
 }
 
 void rarProcess::showError(QByteArray streamerror)
