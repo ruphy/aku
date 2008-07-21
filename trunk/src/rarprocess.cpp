@@ -65,14 +65,35 @@ void rarProcess::initProcess()
     thread -> start(archiver, opt << archivename);
     thread -> waitForFinished();
     globalTOC = standardOutput();
-
+     
+    // files password protected
+    if (archivePassword.isEmpty()) {
+      listpfiles = aids.getFilePasswordedList(globalTOC);
+    }
+    else listpfiles.clear();
+    kDebug() << listpfiles;
+    
     bool fullArchive;
     if (files.isEmpty()) {   //should we extract the entire archive?
       fullArchive = true;
       files = aids.getFileList(globalTOC);
+      // se si deve estrarre l'intero archivio, la lista dei file con password da gestire
+      // è proprio la listpfiles;
+      if (!listpfiles.isEmpty()) {
+        fileswithpassword = listpfiles;
+      }
     }
-    else fullArchive = false;
-
+    // se non devo estrarre tutto l'archivio devo comunque avere un fileswithpassword da gestire
+    else {
+      fullArchive = false;
+      if (!listpfiles.isEmpty()) {
+        foreach(QString str, files) {
+          if (listpfiles.contains(str))
+            fileswithpassword << str;
+        }
+      }
+    }
+   
     rarprogressdialog = new akuProgressDialog(parentWidget, files.size());
     connect(rarprogressdialog, SIGNAL(canceled()), this, SLOT(handleCancel()));
     connect(rarprogressdialog, SIGNAL(paused()), this, SLOT(handlePaused()));
@@ -80,8 +101,30 @@ void rarProcess::initProcess()
     rarprogressdialog -> setArchiveName(archivename);
 
     connect(thread, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(giveOutput(int, QProcess::ExitStatus)));
-    if (fullArchive) thread -> start(archiver, QStringList() << options << archivename << destination);
-    else thread -> start(archiver, QStringList() << options << archivename << files << destination);
+ 
+    if (!listpfiles.isEmpty()) {
+       // creo un file di testo contenente i nomi di tutti i file protetti da password per gestirli separatamente
+      tmpPassFile.setAutoRemove(false);
+      if (tmpPassFile.open() && (!listpfiles.isEmpty())) {
+        foreach (QString str, listpfiles) {
+          tmpPassFile.write(("*" + str + "\n").toUtf8());
+          tmpPassFile.waitForBytesWritten(-1);
+          tmpPassFile.flush();
+        }
+      }
+      options << "-x@" + tmpPassFile.fileName();
+      emit tempFiles(tmpPassFile.fileName());
+
+    }
+    else fileswithpassword.clear();  // questa QStringList contiene i nomi dei file con password da gestire
+        
+    if (fullArchive) {
+        thread -> start(archiver, QStringList() << options << archivename << destination);
+    }
+    else {       
+      thread -> start(archiver, QStringList() << options << archivename << files << destination);
+    }
+    tmpPassFile.close();
   }
 
   else if (options[0] == "a") {
@@ -212,7 +255,6 @@ void rarProcess::showProgress()
   }
 }
 
-
 void rarProcess::giveOutput(int exit, QProcess::ExitStatus)
 { 
   kDebug() << fileswithpassword;
@@ -228,6 +270,8 @@ void rarProcess::giveOutput(int exit, QProcess::ExitStatus)
     emit processCompleted(noproblem); //check the bool
   }
   else {
+    options.removeLast();
+    // elimino l'ultima stringa di options che sicuramente è "-x@nomefiletemp"
     handlePasswordedFiles();
   }
 }
@@ -248,9 +292,9 @@ void rarProcess::handlePasswordedFiles(bool incorrectPassword)
     if ((fileswithpassword.size() > 1) && (!incorrectPassword))
       dlg -> addCommentLine(QString(), i18n("Check") + " <i>" + i18n("remember password") + "</i> " + i18n("to use the current password for the next file(s)"));
     else if ((fileswithpassword.size() > 1) && (incorrectPassword))
-      dlg -> addCommentLine(QString(), i18n("Check") + " <i>" + i18n("remember password") + "</i> " + i18n("to use the current password for the next file(s)") + "\n\n<br><font color=red>" + i18n("Password incorrect") + "</font>");     
+      dlg -> addCommentLine(QString(), i18n("Check") + " <i>" + i18n("remember password") + "</i> " + i18n("to use the current password for the next file(s)") + "\n" + "<br><b><font color=red>" + i18n("Password incorrect") + "</b></font>");     
     else if (incorrectPassword)
-      dlg -> addCommentLine(QString(), "<br><font color=red>" + i18n("Password incorrect") + "</font>");
+      dlg -> addCommentLine(QString(), "<br><b><font color=red>" + i18n("Password incorrect") + "</font></b>");
       
     dlg -> setPrompt(i18n("The file") + " <b>" + fileswithpassword[0] + " </b><i>" + i18n("is password protected") + "<br></i>" + i18n("Enter the password:"));
     dlg -> show();
@@ -273,31 +317,61 @@ void rarProcess::setPassword(const QString& newpassword)
     // devo eliminare -p dalle opzioni
     if (options.indexOf("-p-") != -1)
       options.removeAt(options.indexOf("-p-"));
+   
     
-    thread = new threadProcess(this);
-    thread -> start(archiver, QStringList() << options << "-p" + newpassword << archivename << fileswithpassword[0] << destination);
-    thread -> waitForFinished();
-    QByteArray error = thread -> readAllStandardError();
-    QByteArray output = thread -> readAllStandardOutput();
-    
-    if (!error.isEmpty()) {
-      if (error.contains("password incorrect ?")) {
-        dlg -> close();
-        handlePasswordedFiles(true);
-      }
-    }
-    // estrazione andata a buon fine
-    else {
-      fileswithpassword.removeFirst();
-      if (!fileswithpassword.isEmpty())
-        dlg -> close();
-        handlePasswordedFiles();
-    }     
+    minithread = new threadProcess(this);
+    connect(minithread, SIGNAL(readyReadStandardError()), this, SLOT(miniGetError()));
+    connect(minithread, SIGNAL(readyReadStandardOutput()), this, SLOT(miniGetOutput()));
+    minithread -> start(archiver, QStringList() << options << "-p" + newpassword << archivename << fileswithpassword[0] << destination);    
   }
 
   else {
     if (dlg -> close()) handlePasswordedFiles(true);
   }
+}
+
+void rarProcess::miniGetOutput()
+{
+  QByteArray miniStd = minithread -> readAllStandardOutput();
+  if (miniStd.contains("All OK")) {
+    fileswithpassword.removeFirst();
+    if (!fileswithpassword.isEmpty())
+      dlg -> close();
+    handlePasswordedFiles();
+  }
+}
+
+void rarProcess::miniGetError()
+{
+  QByteArray miniStdError = minithread -> readAllStandardError();
+   
+  if (miniStdError.contains("password incorrect ?")) {
+       dlg -> close();
+       handlePasswordedFiles(true);
+  }
+
+//   else if (miniStdError.contains("already exists. Overwrite it")) {
+//     rar aids;
+//     threadProcess *minithread = new threadProcess(this);
+//     minithread -> start(archiver, QStringList() << "v" << archivename);
+//     minithread -> waitForFinished();
+//     QString toc = standardOutput();
+//  
+//     QString targetFile = QString().fromAscii(miniStdError); 
+//     int forParsing = targetFile.indexOf("already exists. Overwrite it"); 
+//     targetFile.remove(forParsing - 1, targetFile.length());
+//     targetFile.remove("\n");
+//     
+//     overwriteDialog *owDialog = new overwriteDialog(minithread -> proc(), parentWidget); //chiamiamo l'overwrite dialog
+// 
+//     QFileInfo details(targetFile); // generating file info
+//     owDialog -> setDestinationDetails(details.filePath());
+//     QString currentExtraction = fileswithpassword[0];
+//     QString size = rar().getSingleFileSize(toc, fileswithpassword[0]);
+//     owDialog -> setSourceDetails(currentExtraction, rar::getSingleFileModificationTime(toc, fileswithpassword[0]), size);
+//   
+//     delete owDialog;             
+//   }
 }
 
 void rarProcess::showError(QByteArray streamerror)
@@ -366,26 +440,38 @@ void rarProcess::getError()
   if(QString().fromAscii(temp).contains("already exists. Overwrite it")) {
     //rarprogressdialog -> setValue ( rarprogressdialog -> maximum()); 
     QString targetFile = QString().fromAscii(temp); 
-    int forParsing = targetFile.indexOf("already"); 
+    int forParsing = targetFile.indexOf("already exists."); 
     targetFile.remove(forParsing-1, targetFile.length());
     targetFile.remove("\n");
     
+    QString currentExtraction = files[totalFileCount];
+    
     overwriteDialog *owDialog = new overwriteDialog(thread -> proc(), parentWidget); //chiamiamo l'overwrite dialog
-
-      QFileInfo details(targetFile); // generating file info
-      owDialog -> setDestinationDetails(details.filePath());
-      QString currentExtraction = files[totalFileCount];
-      QString size = rar().getSingleFileSize(globalTOC, files[totalFileCount]);
-      owDialog -> setSourceDetails(currentExtraction, rar::getSingleFileModificationTime(globalTOC, files[totalFileCount]), size);
-      rarprogressdialog -> hide();
-      if( owDialog -> exec() == QDialog::Rejected ) handleCancel();
-      else {
-      // here we handle the "toAll option"
-        if(!owDialog->isYes()) totalFileCount++;
-        rarprogressdialog -> show();
-      }
+    
+//     kDebug() << "Uffaaaaaa";
+//     if (listpfiles.contains(currentExtraction)) {
+//       kDebug() << "FILE CON PASSWORD";
+//       owDialog -> yesOverwrite();  
+//     }  
   
-   delete owDialog;             
+    QFileInfo details(targetFile); // generating file info
+    owDialog -> setDestinationDetails(details.filePath());
+    //QString currentExtraction = files[totalFileCount];
+    //kDebug() << currentExtraction;
+    //kDebug() << rar::getSingleFileModificationTime(globalTOC, files[totalFileCount]);
+    QString size = rar().getSingleFileSize(globalTOC, files[totalFileCount]);
+    owDialog -> setSourceDetails(currentExtraction, rar::getSingleFileModificationTime(globalTOC, files[totalFileCount]), size);
+    rarprogressdialog -> hide(); // FIXME -> vedere come gestire questa cosa, segnata in Todo
+    
+    //kDebug << listpfiles;
+    if( owDialog -> exec() == QDialog::Rejected ) handleCancel();
+    else {
+    // here we handle the "toAll option"
+      if(!owDialog->isYes()) totalFileCount++;
+      rarprogressdialog -> show();
+    }
+  
+    delete owDialog;             
   }
 
   else if ((QString().fromAscii(temp).contains("password incorrect ?")) && (options[0] == "v")) { 
@@ -441,6 +527,7 @@ void rarProcess::getError()
       
       // modo barbaro ma funzionale
       targetFile.remove(targetFile.indexOf("Encrypted file"), targetFile.indexOf("incorrect ?)"));
+      kDebug() << filePass;
       fileswithpassword << filePass;
     }
 

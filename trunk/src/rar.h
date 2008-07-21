@@ -34,6 +34,7 @@ class rar
 
     QStringList getArchiveDetails();
     QStringList getFileList(QString);
+    QStringList getFilePasswordedList(QString);
     QStringList getAttributeList(QString);
     //gets the content of a folder in the archive or returns the sinle file
     QStringList getListFromPath(QString, QString);

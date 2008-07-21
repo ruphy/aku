@@ -296,6 +296,7 @@ void MainWindow::extractoToPreferred(QAction *action)
     if (!archivePassword.isEmpty()) options << "-p" + archivePassword;
     rarProcess *process = new rarProcess(this, "rar", options, archive, table -> filesToExtract(), extractWhere );
     connect(process, SIGNAL(processCompleted(bool)), this, SLOT(extractionCompleted(bool)));
+    connect(process, SIGNAL(tempFiles(QString)), this, SLOT(collectTempFiles(QString)));
     process -> start();
   }
 }

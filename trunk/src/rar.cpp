@@ -234,39 +234,60 @@ QStringList rar::getAttributeList(QString TOC)
 
 QStringList rar::getFileList(QString TOC)
 {
-  if(TOC.indexOf("Pathname/Comment") !=-1)
-  {
+  if(TOC.indexOf("Pathname/Comment") !=-1) {
     int target; //mi serve per sapere cosa eliminare dall'output
-    target = TOC.indexOf ( head_line );
-    TOC.remove ( 0,target + 79 ); //escludo tutto l'output fino al tratteggio
-    target = TOC.indexOf ( head_line );
-    TOC.remove ( target, TOC.length() ); //escludo tutto l'output oltre il secondo tratteggio
-    TOC.remove ( 0,1 );
-    TOC.remove ( TOC.length()-1,1 );
-    QStringList tempFileList = TOC.split ( "\n" ); //splitto basandomi sul carattere di newline
+    target = TOC.indexOf (head_line);
+    TOC.remove (0, target + 79); //escludo tutto l'output fino al tratteggio
+    target = TOC.indexOf(head_line);
+    TOC.remove (target, TOC.length()); //escludo tutto l'output oltre il secondo tratteggio
+    TOC.remove (0, 1);
+    TOC.remove (TOC.length() - 1, 1);
+    QStringList tempFileList = TOC.split ("\n"); //splitto basandomi sul carattere di newline
     QStringList fileList;
-    for ( int i = 0; i < tempFileList.size(); i++ )
-    {
-      if ( i%2 == 0 )
-      {
+    for ( int i = 0; i < tempFileList.size(); i++ ) {
+      if (i % 2 == 0) {
         QString tmpLine = tempFileList.at ( i );
-        tmpLine.remove ( 0,1 );
+
+        tmpLine.remove (0, 1);
         //let's make sure that the following item is not a folder already included before
         QStringList attributeCheck = tempFileList[i+1].split(" ", QString::SkipEmptyParts);
         bool alreadyIn = false;
-        if(attributeCheck[7] == "m0")
-        {
+        if(attributeCheck[7] == "m0") {
           for(int j = 0; j < fileList.size(); j++)
-            if(fileList[j].startsWith(tmpLine, Qt::CaseInsensitive) == true)
-            {
+            if (fileList[j].startsWith(tmpLine, Qt::CaseInsensitive) == true) {
               alreadyIn = true;
               break;
             }
         }
+
         if(alreadyIn == false)
           fileList << tmpLine;
+      }
+    }
+    return fileList;
+  }
+  else return QStringList();
+}
 
-
+QStringList rar::getFilePasswordedList(QString TOC)
+{
+  if(TOC.indexOf("Pathname/Comment") !=-1) {
+    int target; //mi serve per sapere cosa eliminare dall'output
+    target = TOC.indexOf (head_line);
+    TOC.remove (0, target + 79); //escludo tutto l'output fino al tratteggio
+    target = TOC.indexOf(head_line);
+    TOC.remove (target, TOC.length()); //escludo tutto l'output oltre il secondo tratteggio
+    TOC.remove (0, 1);
+    TOC.remove (TOC.length() - 1, 1);
+    QStringList tempFileList = TOC.split ("\n"); //splitto basandomi sul carattere di newline
+    QStringList fileList;
+    for ( int i = 0; i < tempFileList.size(); i++ ) {
+      if (i % 2 == 0) {
+        QString tmpLine = tempFileList.at ( i );
+        if (tmpLine[0] == QChar('*')) {
+          tmpLine.remove (0, 1);
+          fileList << tmpLine;
+        }
       }
     }
     return fileList;

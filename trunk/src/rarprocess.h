@@ -6,6 +6,7 @@
 #include <KPasswordDialog>
 #include <KPushButton>
 #include <KMessageBox>
+#include <KTemporaryFile>
 
 #include <KDebug>
 
@@ -32,12 +33,15 @@ class rarProcess : public QObject
     void processCanceled();
     void outputReady(QString, bool);
     void passwordCanceled();
+    void tempFiles(QString);
 
   public slots:
     virtual void start(QString = "");
     virtual void showProgress();
     virtual void getError();
     virtual void handleCancel();
+    virtual void miniGetError();
+    virtual void miniGetOutput();
   
   private:
     QWidget *parentWidget;
@@ -52,8 +56,11 @@ class rarProcess : public QObject
     QStringList options;
     QStringList files;
     QStringList fileswithpassword;
+    QStringList listpfiles;
   
     QTimer *processTimer;
+
+    KTemporaryFile tmpPassFile;
 
     KPasswordDialog *dlg;
 
@@ -73,6 +80,7 @@ class rarProcess : public QObject
     akuProgressDialog *rarprogressdialog;
 
     threadProcess *thread;
+    threadProcess *minithread;
 
   protected slots:
     virtual void initProcess();
