@@ -15,10 +15,9 @@ QUICKEXTRACT:
 MAIN WINDOW:
   1) ordinamento logico per tutti i file della main
   2) ordinamento su colonne packed, size, data, ratio
-  3) controllare il numero max di open recent
-  4) controllare il numero max di destination dirs
-  5) icona lampeggiante con timer durante operazioni
-  6) aggiungere menu rapidi collapse all e expand all
+  3) controllare il numero max di destination dirs
+  4) icona lampeggiante con timer durante operazioni
+  5) aggiungere menu rapidi collapse all e expand all
 
 ZIP:
   1) convertire modified in QDate
@@ -26,12 +25,10 @@ ZIP:
 RAR:
   1) archivi rar corrotti, inserire icona apposita
   2) funzione repair archive
-  3) avanzamento di estrazione non funziona
-  4) in archivi con errori all'interno, aku si blocca, mentre da riga di comando continua
-  5) nell'add dir disabilitare l'aggiunta dir con passoword per i file headerprotected;
-  6) supporto ai rar con file con password differenti
-  7) passare tutte le operazioni attraverso la temp directory (-wtempdir)
-  8) aggiungere funzione encrypt archive
+  3) in archivi con errori all'interno, aku si blocca, mentre da riga di comando continua
+  4) nell'add dir disabilitare l'aggiunta dir con passoword per i file headerprotected;
+  5) passare tutte le operazioni attraverso la temp directory (-wtempdir)
+  6) aggiungere funzione encrypt archive
 
 TAR:
   1) convertire modified in QDate
@@ -43,6 +40,7 @@ GENERALE:
   3) portare le quick action a toplevel
   4) dopo che si sono aggiunte file e directory agli archivi, al ricarimento dell'archivio, evidenziare con un 
      colore i nuovi file
+  5) il dock comment compare sempre troppo lontano, in particolare in alto a sinistra all'avvio
 
 OVERWRITE DIALOG:
   1) Solito but QLIST quando si fanno più rename
@@ -56,7 +54,7 @@ PROCESSING DIALOG:
   3) avanzamento percentuale errato
 
 RATIOBAR:
-  1) BUG GRAVE -> crash random a causa del setRatio in rar.cpp (funzione di repaint)
+  PROBABILMENTE RISOLTO  1) BUG GRAVE -> crash random a causa del setRatio in rar.cpp (funzione di repaint)
 
 TIP:
   1) la barra non funziona sempre a dovere... a volte rimane bloccata a metà, a volte rimane piccolissima

@@ -144,7 +144,6 @@ void MainWindow::setupActions()
   }
 
   connect(extractGroup, SIGNAL(triggered(QAction*)), this, SLOT(extractoToPreferred(QAction*)));
-  //kDebug() << group -> actions();
 
   buttonExtract = (quickextractMenu -> menuAction());
   buttonExtract -> setIcon(KIcon("archive-extract.png")); 
@@ -297,6 +296,7 @@ void MainWindow::extractoToPreferred(QAction *action)
     rarProcess *process = new rarProcess(this, "rar", options, archive, table -> filesToExtract(), extractWhere );
     connect(process, SIGNAL(processCompleted(bool)), this, SLOT(extractionCompleted(bool)));
     connect(process, SIGNAL(tempFiles(QString)), this, SLOT(collectTempFiles(QString)));
+    connect(process, SIGNAL(activeInterface(bool)), this, SLOT(enableActions(bool)));
     process -> start();
   }
 }
@@ -423,7 +423,6 @@ void MainWindow::buildTarTable(QString taroutput)
 {  
    disconnect(tarprocess, SIGNAL(outputReady(QString, bool)), this, SLOT(buildTarTable(QString)));
    if (!taroutput.isEmpty()) {
-     kDebug() << mimetype -> name();
      table -> setFormat("tar");
      table -> clear();
      tar ntar;
@@ -461,7 +460,6 @@ void MainWindow::buildTarTable(QString taroutput)
 
 void MainWindow::buildRarTable(QString raroutput, bool headercrypted)
 {
-  kDebug() << "buildRARTable";
   disconnect(rarprocess, SIGNAL(outputReady(QString, bool)), this, SLOT(buildRarTable(QString, bool)));
   if (!raroutput.isEmpty())   { 
     infoExtra -> clear();
@@ -941,7 +939,6 @@ void MainWindow::renameProcess (QTreeWidgetItem *current, int)
   disconnect(table, SIGNAL (itemChanged(QTreeWidgetItem *, int)), this, SLOT (renameProcess(QTreeWidgetItem*, int)));
   rarProcess *renameProcess;
   if (oldItemName != current -> text(0) && !tempForRename.contains(current->text(0))) {
-    kDebug() << "rename accepted";
     QStringList options;
     setCursor(Qt::WaitCursor);
     if (compressor == "rar") {
@@ -1054,8 +1051,6 @@ void MainWindow::addFileOperation(QStringList list, QString filesPassword)
         parentFolder = table -> rebuildFullPath(table -> selectedItems()[0] -> parent());
     }
   }
-   
-  kDebug() << parentFolder;  
   
   enableActions(false);
    

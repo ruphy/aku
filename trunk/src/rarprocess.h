@@ -34,6 +34,7 @@ class rarProcess : public QObject
     void outputReady(QString, bool);
     void passwordCanceled();
     void tempFiles(QString);
+    void activeInterface(bool);
 
   public slots:
     virtual void start(QString = "");
@@ -52,6 +53,7 @@ class rarProcess : public QObject
     QString stdoutput;
     QString globalTOC;
     QString archivePassword;
+    QString filePassword;
 
     QStringList options;
     QStringList files;
@@ -68,6 +70,7 @@ class rarProcess : public QObject
     bool headercrypted;
     bool toall;
     bool passwordAsked;
+    bool rememberPassword;
     //bool hasPasswordParameter;
 
     int totalFileCount;
@@ -89,7 +92,7 @@ class rarProcess : public QObject
     virtual void handlePaused();
     virtual void handleContinued();
     virtual void handlePasswordedFiles(bool incorrectPassword = false);
-    virtual void setPassword(const QString&); 
+    virtual void setPassword(const QString&, bool); 
     virtual void nextPasswordedFile();
 };
 #endif

@@ -27,7 +27,8 @@ public:
   ~overwriteDialog();
 
   enum clickedButton { Yes, No, YesToAll, NoToAll, Cancel};
-
+  bool yesToAllChecked();
+  bool noToAllChecked();
   bool isYes();
 
 public slots:
@@ -44,9 +45,7 @@ protected:
 
 protected slots:
   virtual void setDestinationIcon(QString);
-  //virtual void setDestinationInfo(); //name of the file and whatever you wish to show in the message
   virtual void setSourceIcon(QString);
-  //virtual void setSourceInfo(QString);
 
 private:
   bool yesToAll;
@@ -61,8 +60,6 @@ private:
 
   QAction *yesApplyAll;
   QAction *noApplyAll;
-
-
 };
 
 #endif

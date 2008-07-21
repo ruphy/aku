@@ -201,6 +201,16 @@ void overwriteDialog::setSourceDetails(QString filePath, KDateTime lastModifiedT
   //sourceDetails -> setText("<i>" + i18n("Archive path") + ": </i>" + url.path() + "<br><i>" + i18n("Modified on ") + "</i>" + lastModifiedTime.toString(KDateTime::LocalDate)+ "<br><i>" + i18n("Size") + ": </i>" + Size);
   setSourceIcon(KMimeType::iconNameForUrl(url));
 }
+ 
+bool overwriteDialog::yesToAllChecked()
+{
+  return yesToAll;
+}
+ 
+bool overwriteDialog::noToAllChecked()
+{
+  return noToAll;
+}
 
 bool overwriteDialog::isYes()
 {
