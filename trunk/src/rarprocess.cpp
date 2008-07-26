@@ -262,7 +262,7 @@ void rarProcess::showProgress()
 
 void rarProcess::giveOutput(int exit, QProcess::ExitStatus)
 { 
-  kDebug() << fileswithpassword;
+  delete rarprogressdialog;
   if (fileswithpassword.isEmpty()) {
     emit outputReady(standardOutput(), headercrypted);
     if (streamerror.isEmpty()) {

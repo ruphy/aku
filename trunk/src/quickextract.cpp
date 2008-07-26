@@ -51,13 +51,12 @@ quickExtract::quickExtract(QString args, QString value, QWidget *parent) : KDial
   opendestination -> setVisible(false);
   deletearchive -> setVisible(false);
 
-  connect (showhiddenAction, SIGNAL (toggled(bool)), this, SLOT (hiddenFiles(bool)));
-  connect (treeView, SIGNAL (currentChanged (KUrl)), this, SLOT (updateCombo(KUrl)));
-  connect (khistory, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateTreeViewSelection(QString)));
-  connect (khistory, SIGNAL(returnPressed(QString)), this, SLOT(updateTreeViewSelection(QString)));
-  connect (list , SIGNAL(urlChanged(const KUrl&)), SLOT(urlSelected(const KUrl&)));
-
   if (function == "extractTo") {
+    KConfig config;
+    KConfigGroup history(&config, "Extraction dialog");
+    QStringList list = history.readEntry("destination dirs", QStringList());
+    khistory -> setHistoryItems(list);
+
     opendestination -> setVisible(true);
     //opendestination -> setChecked(true);
     deletearchive -> setVisible(true);
@@ -80,6 +79,11 @@ quickExtract::quickExtract(QString args, QString value, QWidget *parent) : KDial
   //list -> setRowHidden(0, true); // TODO: does not work so, try using the signal setupDone from model to set rowHidden
  
   //  connect(list, SIGNAL(clicked(const QModelIndex&)), SLOT(urlSelected(const QModelIndex&)));
+  connect (showhiddenAction, SIGNAL (toggled(bool)), this, SLOT (hiddenFiles(bool)));
+  connect (treeView, SIGNAL (currentChanged (KUrl)), this, SLOT (updateCombo(KUrl)));
+  connect (khistory, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateTreeViewSelection(QString)));
+  connect (khistory, SIGNAL(returnPressed(QString)), this, SLOT(updateTreeViewSelection(QString)));
+  connect (list , SIGNAL(urlChanged(const KUrl&)), SLOT(urlSelected(const KUrl&)));
  
 
 }

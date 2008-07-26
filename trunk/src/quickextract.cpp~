@@ -67,6 +67,12 @@ quickExtract::quickExtract(QString args, QString value, QWidget *parent) : KDial
     treeView -> setColumnHidden (1, true);
     treeView -> setColumnHidden (2, true);
     checkPassword();
+ 
+    KConfig config;
+ 
+    KConfigGroup history(&config, "Extraction dialog");
+    QStringList list = history.readEntry("destination dirs", QStringList());
+    khistory -> setHistoryItems(list);
   }
 
   if (function == "addDir") {
@@ -151,9 +157,7 @@ void quickExtract::extract()
 // a causa della chiamata kapp -> quit()
 void quickExtract::quitApplication(bool noproblem)
 {
-  kDebug() << "SONO IN QUITAPPLICATION";
   if (function == "extractTo") {
-    kDebug() << "EXTRACT TO";
     if (noproblem) kapp -> quit();
     else {
       kapp -> setQuitOnLastWindowClosed(false);

@@ -24,10 +24,8 @@ MainWindow::MainWindow (QWidget* parent, Qt::WFlags flags): KXmlGuiWindow (paren
   setupActions();
   setupPopupMenu();
   setupConnections();
-  cmdLineOptions();
   setupDocks();
   setupGUI (QSize(650,460));
- 
 
   dockComment -> setVisible(false);
   //buttonComment -> setVisible(false);
@@ -39,6 +37,7 @@ MainWindow::~MainWindow()
   recentFilesAction->saveEntries( KGlobal::config()->group( "Recent Files" ));
   for (int i = 0; i < tmpFiles.size(); i++)
     QFile::remove(tmpFiles[i]);
+  kapp -> quit();
 }
 
 void MainWindow::setupDocks()
@@ -110,6 +109,12 @@ void MainWindow::setupActions()
   buttonInfo -> setEnabled(false);
   buttonInfo -> setShortcut(Qt::CTRL + Qt::Key_I);
   actionCollection() -> addAction("info", buttonInfo);
+
+  buttonEncrypt = new KAction(this);
+  buttonEncrypt -> setText(i18n("Encrypt this archive"));
+  buttonEncrypt -> setIcon(KIcon("dialog-password"));
+  buttonEncrypt -> setEnabled(false);
+  actionCollection() -> addAction("encrypt_archive", buttonEncrypt);
 
   recentFilesAction = KStandardAction::openRecent( this, SLOT(openUrl(const KUrl&)), actionCollection());
   actionCollection()->addAction("file_open_recent", recentFilesAction );
@@ -194,26 +199,6 @@ void MainWindow::setupActions()
   buttonAddFile -> setIcon(KIcon("archive-insert"));
   buttonAddFile -> setEnabled(false);
   actionCollection() -> addAction("add_file", buttonAddFile);
-  /*buttonEncryptArchive = new KAction(this);
-  buttonEncryptArchive -> setText(i18n("Encrypt this archive"));
-  buttonEncryptArchive -> setIcon(KIcon("dialog-password"));
-  actionCollection() -> addAction("encrypt_archive", buttonEncryptArchive);
-  */
-}
-
-void MainWindow::cmdLineOptions()
-{
-//    KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
-//    if (args -> isSet("extractto")) { 
-//      quickExtract *dirextract = new quickExtract(args -> arg(0), "quickExtract", this);
-//      connect(dirextract, SIGNAL(processCompleted(bool)), this, SLOT(quit()));
-//      dirextract -> show();
-//    }
-// 
-//    else {
-//      for (int i=0; i < args -> count(); i++) openUrl(args -> url(i));
-//    }
-//    args -> clear();
 }
 
 void MainWindow::setupConnections()
@@ -224,6 +209,7 @@ void MainWindow::setupConnections()
   connect (buttonAddComment, SIGNAL(triggered()), this, SLOT(addComment()));
   connect (buttonDelete, SIGNAL(triggered()), this, SLOT(deleteFile()));
   connect (buttonAddDir, SIGNAL(triggered()), this, SLOT(addDir()));
+  connect (buttonEncrypt, SIGNAL(triggered()), this, SLOT(encryptArchive()));
   connect (table, SIGNAL(itemSelectionChanged()), this, SLOT(metaBar()));
   connect (table, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(openItemUrl(QTreeWidgetItem *, int)));
   connect (buttonExtract, SIGNAL(triggered()), this, SLOT(extractArchive()));
@@ -247,6 +233,7 @@ void MainWindow::enableActions(bool enable)
   buttonDelete -> setEnabled(enable);
   popRename -> setEnabled(enable);
   buttonLock -> setEnabled(enable);
+  buttonEncrypt -> setEnabled(enable);
   if (enable) {
     setCursor(QCursor());
     table -> setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -419,6 +406,7 @@ void MainWindow::buildZipTable(QString zipoutput, bool crypted)
    buttonLock -> setEnabled(false);
    buttonAddDir -> setEnabled(false);
    buttonAddFile -> setEnabled(false);
+   buttonEncrypt -> setEnabled(false);
 }
 
 void MainWindow::buildTarTable(QString taroutput)
@@ -456,6 +444,7 @@ void MainWindow::buildTarTable(QString taroutput)
    popRename -> setEnabled(false);
    buttonAddDir -> setEnabled(false);
    buttonAddFile -> setEnabled(false);
+   buttonEncrypt -> setEnabled(false);
    // gzip e bzip non supportano il delete
    if ((mimetype -> name() == "application/x-compressed-tar") || (mimetype -> name() == "application/x-bzip-compressed-tar")) buttonDelete -> setEnabled(false);
 }
@@ -609,6 +598,7 @@ void MainWindow::handleAdvancedRar(QString filename, QString raroutput)
       infoExtrabis -> setToolTip(toolTip);
       infoExtrabis -> setVisible(true);
     }
+    buttonEncrypt -> setEnabled(false);
   }
   else if (filespassprotected) {
     infoExtra -> setPixmap(KIcon("dialog-ok").pixmap(22,18));
@@ -1210,4 +1200,19 @@ void MainWindow::completeDelete(bool ok)
 void MainWindow::collectTempFiles(QString tempFileName)
 {
   tmpFiles << tempFileName;
+}
+
+void MainWindow::encryptArchive()
+{
+  KNewPasswordDialog pwDlg(this);
+  pwDlg.setAllowEmptyPasswords(false);
+  pwDlg.setPrompt(i18n("Enter a password.<p><b>NOTE: this password will encrypt both header and files</b></p>"));
+  if (pwDlg.exec()) {
+    if(!pwDlg.password().isEmpty()) {
+      rarProcess *encProc = new rarProcess(this, "rar", QStringList() << "ch" << "-hp" + pwDlg.password(), archive);
+      archivePassword = pwDlg.password();
+      connect(encProc, SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
+      encProc -> start();
+    }
+  }
 }

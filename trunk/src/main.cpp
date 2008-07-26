@@ -9,8 +9,6 @@
 #include <KUrl>
 
 #include "mainwindow.h"
-//#include "rarprocess.h"
-//#include "quickextract.h"
 
 int main ( int argc, char *argv[] )
 {
@@ -25,6 +23,9 @@ int main ( int argc, char *argv[] )
   aboutData.addAuthor(ki18n("Francesco Grieco aka \"The Japanese GUI stylist\""),
                       ki18n("Main Developer"),
                             "fgrieco@gmail.com");
+  aboutData.addCredit(ki18n("Riccardo \"Ruphy\" Iaconelli"),
+                      ki18n("The beautiful ratiobar"), 
+                            "riccardo@kde.org");
 
   // chiamata per disattivare il report dei bugs a kde4
   aboutData.setCustomAuthorText(ki18n(0), ki18n(0));

@@ -22,8 +22,8 @@
       <Action name="add_file" />
       <Separator/>
       <Action name="lock" />
-      <Action name="add_comment" />
       <Action name="encrypt_archive" />
+      <Action name="add_comment" />
    </Menu>
    <Menu name="tools" >
       <Action name="info" />

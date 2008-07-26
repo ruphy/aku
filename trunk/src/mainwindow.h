@@ -79,6 +79,7 @@ public slots:
   virtual void addDirOperation(KUrl);
   virtual void extractoToPreferred(QAction *action);
   virtual void collectTempFiles(QString);
+  virtual void encryptArchive();
 
 private:
   QWidget *baseWindowWidget;
@@ -109,6 +110,7 @@ private:
   KAction *buttonLock;
   KAction *buttonAddFile;
   KAction *buttonAddDir;
+  KAction *buttonEncrypt;
   KAction *separator;
   KAction *separator2;
   KAction *popSelectall;
@@ -158,7 +160,6 @@ private slots:
 
 protected:
   void setupSearchBar();
-  void cmdLineOptions();
 
 protected slots:
   virtual void setupStatusBar();

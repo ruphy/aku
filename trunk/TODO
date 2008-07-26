@@ -1,15 +1,11 @@
 TODO - aKu - New Generation
 
 QUICKEXTRACT: 
-  1) aggiungere icona di cartella download in khistory
   2) raggruppare i due checkbox in "quickextract"
   3) aggiungere bottone e funzione new directory in "quickextract"
-  4) abilitare opendestination e delete archive in "quickextract"
+  4) abilitare delete archive in "quickextract"
   5) add dir with password
   6) preserve path
-  7) l'estrazione extracto e probabilmente extracthere non funziona per gli archivi header protected e aggiungere 
-     anche supporto ai file con password
-  8) quando si fa l'overwrite, a volte compare l'error dialog con la richiesta di sovrascrittura...ormai scaduta
   9) non ci sono i path di estrazione preferiti
 
 MAIN WINDOW:
@@ -28,16 +24,15 @@ RAR:
   3) in archivi con errori all'interno, aku si blocca, mentre da riga di comando continua
   4) nell'add dir disabilitare l'aggiunta dir con passoword per i file headerprotected;
   5) passare tutte le operazioni attraverso la temp directory (-wtempdir)
-  6) aggiungere funzione encrypt archive
+  7) creazione archivi splittati
+  8) apertura archivi splittati
 
 TAR:
   1) convertire modified in QDate
   2) forse è possibile implementare il rename
 
 GENERALE:
-  1) ringraziamenti a Ruphy per la ratiobar
   2) conversioni tra i formati; rar -> zip; rar -> tar e così via
-  3) portare le quick action a toplevel
   4) dopo che si sono aggiunte file e directory agli archivi, al ricarimento dell'archivio, evidenziare con un 
      colore i nuovi file
   5) il dock comment compare sempre troppo lontano, in particolare in alto a sinistra all'avvio
@@ -51,7 +46,6 @@ OVERWRITE DIALOG:
 PROCESSING DIALOG:
   1) nell'add file, add dir, la dimensione delle cose da aggiungere è errata
   2) disabilitare la ratio bar sottostante nell'add files, add dir
-  3) avanzamento percentuale errato
 
 RATIOBAR:
   PROBABILMENTE RISOLTO  1) BUG GRAVE -> crash random a causa del setRatio in rar.cpp (funzione di repaint)
@@ -62,8 +56,6 @@ TIP:
 
 EXTRACTION DIALOG:
   1) rivedere graficamente
-  2) icona di cartella nel khistorycombobox
 
 RARPROCESS:
-  1) aggiornare raccolta degli errori per i file protetti da password
-  2) emit processCompleted dopo la gestione dei file con password!
+ 
