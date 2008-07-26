@@ -52,7 +52,7 @@ int main ( int argc, char *argv[] )
 
   else if (args -> isSet("extractto")) {
     // code to extract the archive
-    quickExtract *dirextract = new quickExtract(args -> arg(0), "quickExtract", mainwindow);
+    quickExtract *dirextract = new quickExtract(args -> arg(0), "extractTo", mainwindow);
     dirextract -> show();
   }
 

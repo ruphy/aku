@@ -2,6 +2,7 @@
 
 akuErrorDialog::akuErrorDialog(QWidget *parent) : KDialog(parent)
 {
+  setModal(true);
   setButtons(Close);
   KVBox *layout = new KVBox(this);
   setMainWidget(layout);

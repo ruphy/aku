@@ -57,7 +57,7 @@ public slots:
   virtual void openDialog();
   virtual void setupConnections();
   virtual void enableActions(bool);
-  virtual void openUrl(const KUrl& url);
+  virtual void openUrl(KUrl);
   virtual void getMetaInfo(QTreeWidgetItem*);
   virtual void metaBar();
   virtual void viewInformation(bool);

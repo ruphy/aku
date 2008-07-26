@@ -63,3 +63,7 @@ TIP:
 EXTRACTION DIALOG:
   1) rivedere graficamente
   2) icona di cartella nel khistorycombobox
+
+RARPROCESS:
+  1) aggiornare raccolta degli errori per i file protetti da password
+  2) emit processCompleted dopo la gestione dei file con password!

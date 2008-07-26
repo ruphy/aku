@@ -94,5 +94,6 @@ class rarProcess : public QObject
     virtual void handlePasswordedFiles(bool incorrectPassword = false);
     virtual void setPassword(const QString&, bool); 
     virtual void nextPasswordedFile();
+    virtual void miniGiveOutput();
 };
 #endif

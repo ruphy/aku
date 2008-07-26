@@ -65,6 +65,8 @@ signals:
   void cantDelete();
   void processDialog(bool);
   void processCompleted(bool);
+  void tempFiles(QString);
+  void activeInterface(bool);
 
 };
 

@@ -46,6 +46,10 @@ quickExtract::quickExtract(QString args, QString value, QWidget *parent) : KDial
   KFilePlacesModel *model = new KFilePlacesModel(this);
   list -> setModel(model);
   list -> setAutoResizeItemsEnabled(true);
+  opendestination = new QCheckBox(i18n("Open destination path"), v1layout);
+  deletearchive = new QCheckBox(i18n("Delete archive after extracting"), v1layout);
+  opendestination -> setVisible(false);
+  deletearchive -> setVisible(false);
 
   connect (showhiddenAction, SIGNAL (toggled(bool)), this, SLOT (hiddenFiles(bool)));
   connect (treeView, SIGNAL (currentChanged (KUrl)), this, SLOT (updateCombo(KUrl)));
@@ -53,9 +57,11 @@ quickExtract::quickExtract(QString args, QString value, QWidget *parent) : KDial
   connect (khistory, SIGNAL(returnPressed(QString)), this, SLOT(updateTreeViewSelection(QString)));
   connect (list , SIGNAL(urlChanged(const KUrl&)), SLOT(urlSelected(const KUrl&)));
 
-  if (function == "quickExtract") {
-    QCheckBox *opendestination = new QCheckBox(i18n("Open destination path"), v1layout);
-    QCheckBox *deletearchive = new QCheckBox(i18n("Delete archive after extracting"), v1layout);
+  if (function == "extractTo") {
+    opendestination -> setVisible(true);
+    //opendestination -> setChecked(true);
+    deletearchive -> setVisible(true);
+    deletearchive -> setEnabled(false);
     setCaption(i18n("Extract the archive to"));
     setInitialSize(QSize(540, 350));
     treeView -> setColumnHidden (1, true);
@@ -84,18 +90,23 @@ quickExtract::~quickExtract()
 
 void quickExtract::checkPassword()
 {
-   QStringList options;
-   options << "v";
-   KUrl url(archivename);
-   passwordprocess = new rarProcess(this, "rar", options, url.pathOrUrl());
-   if (function == "extractHere") {
-     connect(passwordprocess, SIGNAL(passwordCanceled()), kapp, SLOT(quit()));
-     connect(passwordprocess, SIGNAL(processCompleted(bool)), this, SLOT(extractHere(bool)));
-   }
-   if (function == "quickExtract") {
-     connect(passwordprocess, SIGNAL(passwordCanceled()), this, SLOT(reject()));
-   }
-   passwordprocess -> start();
+  QStringList options;
+  options << "v";
+  KUrl url(archivename);
+  passwordprocess = new rarProcess(this, "rar", options, url.pathOrUrl());
+  if (function == "extractHere") {
+    connect(passwordprocess, SIGNAL(passwordCanceled()), kapp, SLOT(quit()));
+    connect(passwordprocess, SIGNAL(processCompleted(bool)), this, SLOT(extractHere(bool)));
+  }
+  if (function == "extractTo") {
+    connect(passwordprocess, SIGNAL(passwordCanceled()), this, SLOT(reject()));
+  }
+  passwordprocess -> start();
+}
+
+void quickExtract::openFolder()
+{
+  KRun::runUrl(KUrl::fromLocalFile(khistory -> currentText()), "inode/directory", 0); 
 }
 
 void quickExtract::password(QString pass)
@@ -127,15 +138,33 @@ void quickExtract::extract()
   QStringList options;
   options << "x";
   if (!headerpass.isEmpty()) options << "-p" + headerpass;
-  rarProcess *process = new rarProcess(parentWidget, "rar", options, archivename, QList<QStringList>(), khistory -> currentText());
-  connect(process, SIGNAL(processCompleted(bool)), this, SLOT(quit()));
+  rarProcess *process = new rarProcess(parentWidget, "rar", options, archivename, QStringList(), khistory -> currentText());
+  if (opendestination -> isChecked()) {
+    connect(process, SIGNAL(processCompleted(bool)), this, SLOT(openFolder()));
+  }
+  connect(process, SIGNAL(processCompleted(bool)), this, SLOT(quitApplication(bool)));
+ 
   process -> start(headerpass);  
+}
+
+// funzione necessaria per evitare che alla comparsa di errori, aku non faccia in tempo a mostrarli
+// a causa della chiamata kapp -> quit()
+void quickExtract::quitApplication(bool noproblem)
+{
+  kDebug() << "SONO IN QUITAPPLICATION";
+  if (function == "extractTo") {
+    kDebug() << "EXTRACT TO";
+    if (noproblem) kapp -> quit();
+    else {
+      kapp -> setQuitOnLastWindowClosed(false);
+    }
+  }
 }
 
 void quickExtract::slotButtonClicked(int button) 
 {
   if (button == KDialog::Ok) {
-    if (function == "quickExtract") {
+    if (function == "extractTo") {
       extract();
     }
     else if (function == "addDir") {
@@ -143,7 +172,13 @@ void quickExtract::slotButtonClicked(int button)
       accept();
     }
   }
-  else if (button == KDialog::Cancel) reject();
+  else if (button == KDialog::Cancel) {
+    if (function == "extractTo") {
+      kapp -> quit();
+    }
+    else 
+      reject();
+  }
 }
 
 void quickExtract::hiddenFiles(bool status)

@@ -308,7 +308,7 @@ void MainWindow::openDialog()
     openUrl(url);
 }
 
-void MainWindow::openUrl(const KUrl& url)
+void MainWindow::openUrl(KUrl url)
 {
   if (!KFileItem(KFileItem::Unknown, KFileItem::Unknown, url).isReadable()) return;
   mimetype = KMimeType::findByUrl(url);
@@ -372,7 +372,9 @@ void MainWindow::openUrl(const KUrl& url)
   else compressor.clear();
   // costruisco la tabella
   if (!compressor.isEmpty()) {
+    url.cleanPath();
     archive = url.pathOrUrl();
+    kDebug() << archive;
     ratioBar -> setVisible(true);
     recentFilesAction -> addUrl(url);
   }
@@ -828,6 +830,8 @@ void MainWindow::extractArchive()
   if (!filesList.isEmpty()) exdialog = new extractDialog (compressor, archive, filesList, options, this);
   else exdialog = new extractDialog (compressor, archive, QStringList(), options, this);
   connect(exdialog, SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
+  connect(exdialog, SIGNAL(tempFiles(QString)), this, SLOT(collectTempFiles(QString)));
+  connect(exdialog, SIGNAL(activeInterface(bool)), this, SLOT(enableActions(bool)));
 }
 
 void MainWindow::operationCompleted(bool value)

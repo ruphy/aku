@@ -20,6 +20,7 @@
 #include <KDialogButtonBox>
 #include <KGuiItem>
 #include <KPushButton>
+#include <KRun>
 
 #include <kfileplacesview.h>
 #include <kfileplacesmodel.h>
@@ -45,6 +46,9 @@ class quickExtract : public KDialog
    QString headerpass;
 
    QWidget *parentWidget;
+
+   QCheckBox *opendestination;
+   QCheckBox *deletearchive;
   
   public slots:
    virtual void hiddenFiles(bool);
@@ -54,6 +58,8 @@ class quickExtract : public KDialog
    virtual void checkPassword();
    virtual void extractHere(bool);
    virtual void password(QString);
+   virtual void openFolder();
+   virtual void quitApplication(bool);
   
   protected slots:
    virtual void slotButtonClicked(int button);

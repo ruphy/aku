@@ -38,8 +38,8 @@ void rarProcess::start(QString passwordPassed)
   }
   else archivePassword = passwordPassed;
 
-  //if (archivePassword.isEmpty())
-  //  options << "-p-"; 
+  if (archivePassword.isEmpty() && options[0] == "v")
+    options << "-p-"; 
   // per gestire estrazione rapida (konqueror menu e quickextract) ... non il normale main -> extract to -> ok
     
   initProcess();
@@ -122,11 +122,14 @@ void rarProcess::initProcess()
         
     if (fullArchive) {
         thread -> start(archiver, QStringList() << options << archivename << destination);
+        kDebug() << "full archive";
     }
     else {       
       thread -> start(archiver, QStringList() << options << archivename << files << destination);
+      kDebug() << "not full archive";
     }
     tmpPassFile.close();
+    kDebug() << options << archivename << destination;
   }
 
   else if (options[0] == "a") {
@@ -278,6 +281,20 @@ void rarProcess::giveOutput(int exit, QProcess::ExitStatus)
   }
 }
 
+// processCompleted in caso di archivi con file protetti
+void rarProcess::miniGiveOutput() {
+  kDebug() << "MINIGIVEOUTPUT";
+  kDebug() << streamerror;
+  if (streamerror.isEmpty()) {
+    noproblem = true;
+  }
+  else {
+    noproblem = false;
+    showError(streamerror);
+  }
+  emit processCompleted(noproblem); //check the bool
+}
+
 void rarProcess::handlePasswordedFiles(bool incorrectPassword)
 {
   dlg = new KPasswordDialog(parentWidget, KPasswordDialog::ShowKeepPassword, KDialog::User1);
@@ -290,7 +307,13 @@ void rarProcess::handlePasswordedFiles(bool incorrectPassword)
   //connect(dlg, SIGNAL(rejected()), this, SLOT(cancelPasswordRequest()));
 
   if (rememberPassword) {
-    setPassword(filePassword, true);
+      kDebug() << fileswithpassword;
+      if (!fileswithpassword.isEmpty()) {
+        setPassword(filePassword, true);
+      }   
+      else {
+        miniGiveOutput();
+      }
   }
   else {
     if (fileswithpassword.size() != 0) {
@@ -306,6 +329,7 @@ void rarProcess::handlePasswordedFiles(bool incorrectPassword)
       dlg -> setModal(true);
       dlg -> show();
     }
+    else miniGiveOutput();
   }
     
 }
@@ -313,9 +337,11 @@ void rarProcess::handlePasswordedFiles(bool incorrectPassword)
 void rarProcess::nextPasswordedFile()
 { 
   if (dlg -> close()) {
+    streamerror.append("<b>" + fileswithpassword[0] + "</b><font color=red> " + i18n("skipped") + "</font><br>");
     fileswithpassword.removeFirst();
       if (!fileswithpassword.isEmpty())
         handlePasswordedFiles();
+      else miniGiveOutput();
   }
 }
 
@@ -325,7 +351,7 @@ void rarProcess::setPassword(const QString& newpassword, bool rPassword)
     rememberPassword = true;
     filePassword = newpassword;
   }
- 
+  
   if (!newpassword.isEmpty()) {
     // devo eliminare -p dalle opzioni
     if (options.indexOf("-p-") != -1)
@@ -336,24 +362,25 @@ void rarProcess::setPassword(const QString& newpassword, bool rPassword)
     connect(minithread, SIGNAL(readyReadStandardOutput()), this, SLOT(miniGetOutput()));
     //parentWidget -> setCursor(Qt::WaitCursor);
     emit activeInterface(false);
-    minithread -> start(archiver, QStringList() << options << "-p" + newpassword << archivename << fileswithpassword[0] << destination);    
+    if (!fileswithpassword.isEmpty())
+      minithread -> start(archiver, QStringList() << options << "-p" + newpassword << archivename << fileswithpassword[0] << destination);
   }
-
   else {
     if (dlg -> close()) handlePasswordedFiles(true);
   }
+  
 }
 
 void rarProcess::miniGetOutput()
 {
   QByteArray miniStd = minithread -> readAllStandardOutput();
-  kDebug() << miniStd;
   if (miniStd.contains("All OK")) {
     fileswithpassword.removeFirst();
     if (!fileswithpassword.isEmpty()) {
       dlg -> close();
       handlePasswordedFiles();
     }
+    else miniGiveOutput();
     //parentWidget -> setCursor(QCursor());
     emit activeInterface(true);
   }
@@ -362,7 +389,7 @@ void rarProcess::miniGetOutput()
 void rarProcess::miniGetError()
 {
   QByteArray miniStdError = minithread -> readAllStandardError();
-  kDebug() << miniStdError;
+
   if (miniStdError.contains("password incorrect ?")) {
        dlg -> close();
        rememberPassword = false;
@@ -407,6 +434,14 @@ void rarProcess::miniGetError()
 
     delete owDialog;             
   }
+
+  else if (!miniStdError.contains("already exists. Overwrite it") && !miniStdError.contains("password incorrect ?") && !miniStdError.contains("[Y]es, [N]o, [A]ll") && !miniStdError.isEmpty()) {
+      streamerror.append(miniStdError);
+      kDebug() << miniStdError;
+      fileswithpassword.removeFirst();
+      handlePasswordedFiles();
+  }
+
   emit activeInterface(true);
 }
 

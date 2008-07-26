@@ -206,16 +206,23 @@ void extractDialog::extraction()
     }
     else rarprocess = new rarProcess(parentWidget, compressor, QStringList() << rarcommand << rarswitches, archivename, QStringList(), destination);
 
-    if(checkOpenDestination -> isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(openDestinationPath(bool)));
-    if(radioDeleteAlways ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchive(bool)));
-    if(radioDeleteAsk ->isChecked()) connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchiveAsk(bool)));
-    connect(rarprocess, SIGNAL(processCompleted(bool)), this, SIGNAL(processDialog(bool)));  
-    rarprocess -> start();
+    if(checkOpenDestination -> isChecked())
+      connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(openDestinationPath(bool)));
+    if(radioDeleteAlways ->isChecked())
+      connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchive(bool)));
+    if(radioDeleteAsk ->isChecked()) 
+      connect(rarprocess, SIGNAL(processCompleted(bool)), this, SLOT(deleteArchiveAsk(bool)));
+
+    connect(rarprocess, SIGNAL(activeInterface(bool)), this, SIGNAL(activeInterface(bool)));
+    connect(rarprocess, SIGNAL(tempFiles(QString)), this, SIGNAL(tempFiles(QString)));
     connect(rarprocess, SIGNAL(processCompleted(bool)), this, SIGNAL(processCompleted(bool)));
+    connect(rarprocess, SIGNAL(processCompleted(bool)), this, SIGNAL(processDialog(bool)));  
+    rarprocess -> start();    
   }
 
   // gestione dell'history combo
-  if (!tmphistory.contains(khistorycombobox -> currentText())) tmphistory << khistorycombobox -> currentText();
+  if (!tmphistory.contains(khistorycombobox -> currentText()))
+    tmphistory << khistorycombobox -> currentText();
   KConfig config;
   KConfigGroup options(&config, "Extraction dialog");
   options.writeEntry("destination dirs", tmphistory);
