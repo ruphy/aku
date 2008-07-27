@@ -34,7 +34,7 @@ MainWindow::MainWindow (QWidget* parent, Qt::WFlags flags): KXmlGuiWindow (paren
 
 MainWindow::~MainWindow()
 {
-  recentFilesAction->saveEntries( KGlobal::config()->group( "Recent Files" ));
+  recentFilesAction -> saveEntries(KGlobal::config() -> group("Recent Files"));
   for (int i = 0; i < tmpFiles.size(); i++)
     QFile::remove(tmpFiles[i]);
   kapp -> quit();
@@ -98,9 +98,9 @@ void MainWindow::setupSearchBar()
 void MainWindow::setupActions()
 {
   buttonNew = KStandardAction::openNew(this, SLOT(createNewArchive()), actionCollection());
-  actionCollection()->addAction("file_new",buttonNew );
+  actionCollection() -> addAction("file_new", buttonNew);
   buttonOpen = KStandardAction::open(this, SLOT(openDialog()), actionCollection());
-  actionCollection()->addAction("file_open", buttonOpen );
+  actionCollection() -> addAction("file_open", buttonOpen);
   KStandardAction::quit(this, SLOT(quit()), actionCollection());
   buttonInfo = new KAction(this);
   buttonInfo -> setIcon(KIcon("help-about"));
@@ -117,8 +117,8 @@ void MainWindow::setupActions()
   actionCollection() -> addAction("encrypt_archive", buttonEncrypt);
 
   recentFilesAction = KStandardAction::openRecent( this, SLOT(openUrl(const KUrl&)), actionCollection());
-  actionCollection()->addAction("file_open_recent", recentFilesAction );
-  recentFilesAction->loadEntries( KGlobal::config()->group("Recent Files"));
+  actionCollection() -> addAction("file_open_recent", recentFilesAction );
+  recentFilesAction -> loadEntries( KGlobal::config()->group("Recent Files"));
   connect(recentFilesAction, SIGNAL(triggered()), this, SLOT(openDialog()));
 
   KMenu *quickextractMenu = new KMenu(this);
@@ -222,9 +222,12 @@ void MainWindow::setupConnections()
 
 void MainWindow::enableActions(bool enable)
 {
+  buttonFind -> setEnabled(enable);
+  buttonComment -> setEnabled(enable);
   buttonInfo -> setEnabled(enable);
   buttonOpen -> setEnabled(enable);
   buttonNew -> setEnabled(enable);
+  recentFilesAction -> setEnabled(enable);
   buttonView -> setEnabled(enable);
   buttonExtract -> setEnabled(enable);
   buttonAddComment -> setEnabled(enable);
@@ -243,8 +246,10 @@ void MainWindow::enableActions(bool enable)
     table -> setSelectionMode(QAbstractItemView::NoSelection);
   }
 
-  if ((mimetype -> name() == "application/x-compressed-tar") || (mimetype -> name() == "application/x-bzip-compressed-tar")) buttonDelete -> setEnabled(false);
-  if ((mimetype -> name() == "application/x-compressed-tar") || (mimetype -> name() == "application/x-bzip-compressed-tar") || (mimetype -> name() == "application/x-tar")) popRename -> setEnabled(false);
+  if (!archive.isEmpty()) {
+    if ((mimetype -> name() == "application/x-compressed-tar") || (mimetype -> name() == "application/x-bzip-compressed-tar")) buttonDelete -> setEnabled(false);
+    if ((mimetype -> name() == "application/x-compressed-tar") || (mimetype -> name() == "application/x-bzip-compressed-tar") || (mimetype -> name() == "application/x-tar")) popRename -> setEnabled(false);
+  }
 }
 
 void MainWindow::setupPopupMenu()
@@ -822,6 +827,7 @@ void MainWindow::extractArchive()
   connect(exdialog, SIGNAL(processCompleted(bool)), this, SLOT(operationCompleted(bool)));
   connect(exdialog, SIGNAL(tempFiles(QString)), this, SLOT(collectTempFiles(QString)));
   connect(exdialog, SIGNAL(activeInterface(bool)), this, SLOT(enableActions(bool)));
+  connect(exdialog, SIGNAL(closeArchive(QString)), this, SLOT(cleanAku(QString)));
 }
 
 void MainWindow::operationCompleted(bool value)
@@ -1177,6 +1183,25 @@ void MainWindow::deleteFile()
   }
 }
 
+// funzione per delete proveniente da extract dialog e il reset di aku (es. dopo un delete archive)
+void MainWindow::cleanAku(QString name)
+{ 
+  
+  if (QFile::remove(name)) {
+    table -> clear();
+    setCaption(QString());
+    enableActions(false);
+    archive.clear();
+    tip->setTip(i18n("Archive deleted"));
+    tip->show();     
+  }
+  else {
+    tip->setTip(i18n("Cannot delete the archive"));
+    tip->show();     
+  }
+  setCursor(QCursor());
+}
+
 void MainWindow::completeDelete(bool ok)
 {
   if (ok) {
@@ -1215,4 +1240,64 @@ void MainWindow::encryptArchive()
       encProc -> start();
     }
   }
+}
+
+void MainWindow::createNewArchive()
+{
+  table -> clear();
+  setCaption(QString());
+  buttonInfo -> setChecked(false);
+  baseWindowWidget -> setVisible(false);
+  statusWidget -> setVisible(false);
+  archive.clear();
+  enableActions(false);
+  setCursor(QCursor());
+  
+  // the source of file dragging
+  sourceDock = new QDockWidget (this);
+  sourceDock -> setObjectName("sourceDock");
+  sourceDock -> setGeometry (x() + width() + 20, y(), 300, 400);
+  sourceDock -> setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
+  sourceDock -> setAllowedAreas(Qt::NoDockWidgetArea);
+  QWidget *baseWidget = new QWidget(sourceDock);
+
+  // dragSource widget
+  sourceView = new akuDragSourceWidget(baseWidget);
+  QGridLayout *layout = new QGridLayout (baseWidget);
+  layout -> addWidget(sourceView, 0, 0, 1, 1);
+  sourceDock -> setWidget(baseWidget);
+
+  // dragTarget treewidget
+  widgetForList = new QWidget(this);
+  QGridLayout *destLayout = new QGridLayout(widgetForList );
+  targetList = new dragTarget(sourceView -> sourceViewInUse(), widgetForList);
+  destLayout -> addWidget(targetList, 1, 1);
+  splitter -> addWidget(widgetForList);
+ 
+  // dockOptions
+  dockOption = new QDockWidget(i18n("New archive"), this);
+  dockOption -> setObjectName("New archive");
+  dockOption -> setAllowedAreas(Qt::NoDockWidgetArea);
+  compressionWidget = new akuCompressionWidget(this);
+  dockOption -> setWidget(compressionWidget);
+  this -> addDockWidget(Qt::LeftDockWidgetArea, dockOption);
+  dockOption -> setFloating(true);
+  sourceDock -> setFloating(true);
+  dockOption -> setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
+  dockOption -> setGeometry(x() - 305, y(), 305, 358);
+  this -> addDockWidget (Qt::RightDockWidgetArea, sourceDock);
+
+  //connect(compressionWidget, SIGNAL(creationCalled()), this, SLOT(newArchive()));
+  connect(compressionWidget, SIGNAL(canceled()), this, SLOT(closeNewArchive()));
+}
+
+void MainWindow::closeNewArchive()
+{
+  baseWindowWidget -> setVisible(true);
+  statusWidget -> setVisible(true);
+  delete widgetForList;
+  delete sourceDock;
+  delete dockOption;
+
+  enableActions(true);
 }

@@ -233,19 +233,21 @@ void extractDialog::extraction()
 void extractDialog::deleteArchive(bool ok)
 {
   if (ok) {
-    if (QFile::remove(archivename)) emit closeArchive();
-    else emit cantDelete();
+    disconnect(rarprocess, SIGNAL(processCompleted(bool)), this, SIGNAL(processCompleted(bool)));
+    emit closeArchive(archivename);
+    //else emit cantDelete();
   }
 }
 
 void extractDialog::deleteArchiveAsk(bool ok)
 {
   if (ok) {
+    disconnect(rarprocess, SIGNAL(processCompleted(bool)), this, SIGNAL(processCompleted(bool)));
     // Yes = 3
     // No = 4
     if (KMessageBox::questionYesNo(this, i18n("Do you wish to delete the unpacked archive?"), i18n("Delete archive")) == 3) {
-      if (QFile::remove(archivename)) emit closeArchive();
-      else emit cantDelete();
+      emit closeArchive(archivename);
+      //else emit cantDelete();
     }
   }
 }
@@ -253,8 +255,6 @@ void extractDialog::deleteArchiveAsk(bool ok)
 
 void extractDialog::openDestinationPath(bool open)
 {
-  kDebug() << "OPEN DESTINATION PATH";
-  //if(open) QDesktopServices::openUrl(QUrl::fromLocalFile(khistorycombobox -> currentText()));
   KRun::runUrl(KUrl::fromLocalFile(khistorycombobox -> currentText()), "inode/directory", 0); 
 }
 

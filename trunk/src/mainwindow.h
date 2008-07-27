@@ -30,6 +30,7 @@
 #include "akumaintable.h"
 #include "akutip.h"
 #include "akusearchwidget.h"
+#include "akudragsourcewidget.h"
 #include "rarprocess.h"
 #include "zipprocess.h"
 #include "tarprocess.h"
@@ -40,8 +41,10 @@
 #include "akuviewer.h"
 #include "akucomment.h"
 #include "akuaddfiledialog.h"
+#include "akucompressionwidget.h"
 #include "extractdialog.h"
 #include "quickextract.h"
+#include "dragtarget.h"
 
 
 class MainWindow : public KXmlGuiWindow
@@ -80,10 +83,14 @@ public slots:
   virtual void extractoToPreferred(QAction *action);
   virtual void collectTempFiles(QString);
   virtual void encryptArchive();
+  virtual void cleanAku(QString);
+  virtual void createNewArchive();
+  virtual void closeNewArchive();
 
 private:
   QWidget *baseWindowWidget;
   QWidget *statusWidget;
+  QWidget *widgetForList;
   
   QSplitter *splitter;
   
@@ -149,7 +156,15 @@ private:
 
   akuMetaWidget *metaWidget;
 
+  akuDragSourceWidget *sourceView;
+
+  akuCompressionWidget *compressionWidget;
+
+  dragTarget *targetList;
+
   QDockWidget *dockComment;
+  QDockWidget *sourceDock;
+  QDockWidget *dockOption;
 
   KTextEdit *editComment;
 

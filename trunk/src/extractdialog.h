@@ -61,7 +61,7 @@ private:
   rarProcess *rarprocess;
 
 signals:
-  void closeArchive();
+  void closeArchive(QString);
   void cantDelete();
   void processDialog(bool);
   void processCompleted(bool);

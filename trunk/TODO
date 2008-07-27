@@ -54,8 +54,13 @@ TIP:
   1) la barra non funziona sempre a dovere... a volte rimane bloccata a metà, a volte rimane piccolissima
      (si nota soprattutto agli add dir)
 
+NEW ARCHIVE:
+  1) selezione multipla dei file;
+  2) abilitare split archive rar;
+
 EXTRACTION DIALOG:
   1) rivedere graficamente
+  2) attivare salvataggio, caricamento e reset delle opzioni e suddividerle a seconda del tipo di compressore
 
 RARPROCESS:
  
