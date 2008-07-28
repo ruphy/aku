@@ -1,11 +1,4 @@
-
 #include "dragtarget.h"
-#include <QMessageBox>
-#include "rar.h"
-
-QAction *newFolder;
-QAction *delItem;
-QMenu *menu;
 
 dragTarget::dragTarget (dragSource *source, QWidget *parent ) : QTreeWidget ( parent )
 {
@@ -25,35 +18,35 @@ dragTarget::dragTarget (dragSource *source, QWidget *parent ) : QTreeWidget ( pa
   //setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
   //...and some list settings
   subLevel = false;
-  setAcceptDrops ( true );
-  setDragEnabled ( true );
+  setAcceptDrops(true);
+  setDragEnabled(true);
   setAutoScroll(true);
-  setDragDropMode ( QAbstractItemView::DragDrop );
-  setColumnCount ( 4 );
-  setHeaderLabels ( QStringList() <<tr ( "Item" ) <<tr ( "Path" ) <<tr ( "MimeType" ) <<tr ( "Size" ) );
-  header() -> moveSection ( 3,1 );
-  setColumnWidth ( 0,170 );
-  setDropIndicatorShown ( true );
+  setDragDropMode(QAbstractItemView::DragDrop);
+  setColumnCount (4);
+  setHeaderLabels (QStringList() << i18n("Item") << i18n("Path") << i18n("MimeType") << i18n("Size"));
+  header() -> moveSection(3, 1);
+  setColumnWidth (0, 170);
+  setDropIndicatorShown(true);
   //setAnimated ( true );
 
-  newFolder = new QAction ( tr ( "New Folder" ), this );
-  newFolder -> setIcon ( KIcon ( "folder-new" ) );
+  newFolder = new QAction(i18n("New Folder"), this);
+  newFolder -> setIcon(KIcon("folder-new"));
   //newFolder -> setShortcut(QKeySequence(tr("Ctrl+A")));
   //this -> addAction(newFolder);
-  delItem = new QAction ( tr ( "Delete Item" ), this );
-  delItem -> setIcon ( KIcon ( "edit-delete" ) );
+  delItem = new QAction(i18n("Delete Item"), this);
+  delItem -> setIcon(KIcon("edit-delete"));
   //delItem -> setShortcut(QKeySequence(tr("Del"))); //TODO check!
   //this -> addAction(delItem);
   //this-> setContextMenuPolicy(Qt::DefaultContextMenu); //se non imposto defaultcontextmenu non posso reimplementare la gestione del contextmenu
 
   //creo il menu
-  menu = new QMenu ( tr ( "Options" ),this );
-  menu -> addAction ( newFolder );
-  menu -> addAction ( delItem );
-  connect ( newFolder, SIGNAL ( triggered() ), this, SLOT ( createNewFolder() ) );
-  connect ( delItem, SIGNAL ( triggered() ), this, SLOT ( deleteItem() ) );
-  delItem -> setEnabled ( false );
-  setItemsExpandable ( true );
+  menu = new QMenu(i18n("Options"),this );
+  menu -> addAction(newFolder);
+  menu -> addAction(delItem);
+  connect(newFolder, SIGNAL(triggered()), this, SLOT(createNewFolder()));
+  connect(delItem, SIGNAL(triggered()), this, SLOT(deleteItem()));
+  delItem -> setEnabled (false);
+  setItemsExpandable(true);
   setSelectionMode(QAbstractItemView::ExtendedSelection);
   //setSelectionMode(QAbstractItemView::ExtendedSelection); //inizialmente viene gestita solo la selezione singola
 
@@ -68,155 +61,149 @@ void dragTarget::hideIndicator()
   indicator -> hide();
 }
 
-void dragTarget::showIndicator(int y )
+void dragTarget::showIndicator(int y)
 {
   indicator -> setGeometry(0, y, width(), 2);
   indicator -> show();
 }
 
-void dragTarget::dragEnterEvent ( QDragEnterEvent *event ) //everything starts from here
+void dragTarget::dragEnterEvent(QDragEnterEvent *event) //everything starts from here
 {
-  if ( event -> mouseButtons() == Qt::LeftButton )
-  {
-    if ( event -> mimeData() -> hasFormat ( "aku/newarchive" ) || event -> mimeData() -> hasFormat ( "aku/newarchive-fromHere" ) )
+  if (event -> mouseButtons() == Qt::LeftButton) {
+    if (event -> mimeData() -> hasFormat("aku/newarchive") || event -> mimeData() -> hasFormat("aku/newarchive-fromHere" ))
       event -> acceptProposedAction();
   }
-  else event -> ignore();
+  else
+    event -> ignore();
 }
 
-void dragTarget::recursiveAppend ( QTreeWidgetItem *source, QTreeWidgetItem *destination )
+void dragTarget::recursiveAppend(QTreeWidgetItem *source, QTreeWidgetItem *destination)
 {
   QTreeWidgetItem *tmp = destination;
-  for ( int i = 0; i < source -> childCount(); i++ )
-  {
-    tmp = ramifica ( source ->child ( i ) -> text ( 1 ) + source ->child ( i ) -> text ( 0 ) + "!*mimetosend:" + source ->child ( i ) -> text ( 2 ), destination );
-    recursiveAppend ( source -> child ( i ), tmp );
+  for (int i = 0; i < source -> childCount(); i++) {
+    tmp = ramifica (source -> child(i) -> text(1) + source -> child(i) -> text(0) + "!*mimetosend:" + source -> child(i) -> text(2), destination);
+    recursiveAppend(source -> child(i), tmp);
   }
 }
 
 void dragTarget::mouseReleaseEvent(QMouseEvent *e)
 {
-  puts("mouseReleaseEvent");
-  if(indicatorToRestore != NULL)
-  {
+  kDebug() << "mouseReleaseEvent";
+  if (indicatorToRestore != NULL) {
     delete indicatorToRestore; 
     indicatorToRestore = NULL;
   } 
+
   hideIndicator();
   e -> accept();
 }
 
-void dragTarget::dropEvent ( QDropEvent *event )
+void dragTarget::dropEvent (QDropEvent *event)
 {
   //-------ripristiniamo a 0 gli indicatori--------------//
-  puts("dropEvent deleting indicator");
-  if(indicatorToRestore != NULL)
-  {
+  kDebug() << "dropEvent deleting indicator";
+  if(indicatorToRestore != NULL) {
     delete indicatorToRestore;
     indicatorToRestore = NULL;
   } //cancelliamo l'indicatore
   //--------------------------------------------------------//
-  puts("indicatore cancellato");
+  kDebug() << "indicatore cancellato";
   hideIndicator();
-  puts("nascondo indicatore");
-  if ( subLevel == false )  
-  {
+  kDebug() << "nascondo indicatore";
+  if (subLevel == false) {
   //evito la duplicazione di uno stesso elemento sotto uno stesso ramo
-    puts("inizio a ramificare");
+    kDebug() << "inizio a ramificare";
     QTreeWidgetItem *ultimo;
-    if(event -> mimeData()->hasFormat("aku/newarchive"))
-      ultimo = ramifica ( QString().fromAscii ( event -> mimeData() -> data ( "aku/newarchive" ) ),this); 
+
+    if (event -> mimeData() -> hasFormat("aku/newarchive"))
+      ultimo = ramifica(QString().fromAscii(event -> mimeData() -> data("aku/newarchive")), this); 
     else
-      ultimo = ramifica ( QString().fromAscii ( event -> mimeData() -> data ( "aku/newarchive-fromHere" ) ),this);
+      ultimo = ramifica(QString().fromAscii(event -> mimeData() -> data("aku/newarchive-fromHere")), this);
     bool allow = false;
-    for ( int i = 0; i < topLevelItemCount(); i++ )
-    {
-      if ( topLevelItem ( i ) -> text ( 1 ) + topLevelItem ( i ) -> text ( 0 ) == ultimo -> text ( 1 ) + ultimo -> text ( 0 ) && topLevelItem ( i ) != ultimo )   //se esiste già nego la possibilità di allocare l'elemento
-      {
+
+    for (int i = 0; i < topLevelItemCount(); i++) {
+      if (topLevelItem(i) -> text(1) + topLevelItem(i) -> text(0) == ultimo -> text(1) + ultimo -> text(0) && topLevelItem(i) != ultimo) {  //se esiste già nego la possibilità di allocare l'elemento
         delete ultimo;
         allow = false;
         break;
       }
-      else allow = true;
+      else
+        allow = true;
     }
-    if ( allow == true )
-    {
+
+    if (allow == true) {
       //tramite la funzione retrieveChildren appendiamo anche tutti i figli della directory
-      if(event -> mimeData() -> hasFormat("aku/newarchive-fromHere"))
-      {
+      if (event -> mimeData() -> hasFormat("aku/newarchive-fromHere")) {
         //se selectedItems e' diverso da 0 sicuramente stiamo trascinando un elemento di questa stessa lista, quindi devo procedere al recupero di tutti i suoi figli prima di eliminarlo
-        for(int i = 0; i < currentItem -> childCount(); i++)
-        {
+        for (int i = 0; i < currentItem -> childCount(); i++) {
           //mi tocca simulare un mime per poter trascinare anche i figli
-          QTreeWidgetItem *item = ramifica ( currentItem-> child ( i ) -> text ( 1 ) + currentItem -> child ( i ) -> text ( 0 ) + "!*mimetosend:" + currentItem -> child ( i ) -> text ( 2 ), ultimo);
-          recursiveAppend ( currentItem -> child ( i ), item ); //passo come destinazione l'item appena creato
+          QTreeWidgetItem *item = ramifica(currentItem -> child(i) -> text(1) + currentItem -> child(i) -> text(0) + "!*mimetosend:" + currentItem -> child(i) -> text(2), ultimo);
+          recursiveAppend(currentItem -> child(i), item); //passo come destinazione l'item appena creato
         }
         delete currentItem;
         event -> acceptProposedAction();
       }
-      else retrieveChildren ( ultimo ); //altrimenti recuperiamo i figli dalle directory, perchè significa che il trascinamento avviene dall'esterno
+      else retrieveChildren(ultimo); //altrimenti recuperiamo i figli dalle directory, perchè significa che il trascinamento avviene dall'esterno
       event -> acceptProposedAction();
     }
-    else
-    {
+    else {
       event -> ignore();
       return;
     }
-
   }
-  else
-  {
+
+  else {
     //succede esattamente la stessa cosa di quello precedente, solo che con la ramificazione
     QList<QTreeWidgetItem*> selectedItems = this -> selectedItems();
     QTreeWidgetItem *ultimo;
-    if(event -> mimeData()->hasFormat("aku/newarchive"))
+
+    if(event -> mimeData() -> hasFormat("aku/newarchive"))
       ultimo = ramifica ( QString().fromAscii ( event -> mimeData() -> data ( "aku/newarchive" ) ), padre);
     else ultimo = ramifica ( QString().fromAscii ( event -> mimeData() -> data ( "aku/newarchive-fromHere" ) ), padre);
     bool allow = false;
-    for ( int i = 0; i < padre -> childCount(); i++ )
-    {
-      if ( padre -> child ( i ) -> text ( 1 ) + padre -> child ( i ) -> text ( 0 ) == ultimo -> text ( 1 ) + ultimo -> text ( 0 ) && padre -> child ( i ) != ultimo )   //se esiste già
-      {
+
+    for ( int i = 0; i < padre -> childCount(); i++ ) {
+      if ( padre -> child ( i ) -> text ( 1 ) + padre -> child ( i ) -> text ( 0 ) == ultimo -> text ( 1 ) + ultimo -> text ( 0 ) && padre -> child ( i ) != ultimo ) {  //se esiste già
         delete ultimo;
         allow = false;
         break;
       }
-      else allow = true;
+      else 
+        allow = true;
     }
-    if ( allow == true )
-    {
+
+    if (allow == true) {
       padre -> setExpanded ( true );
-      if ( selectedItems.size() != 0 )   //se stiamo trascinando un elemento della stessa lista ci riportiamo i figli
-      {
-        for ( int i = 0; i < selectedItems[0] -> childCount(); i++ )
-        {
+      if ( selectedItems.size() != 0 ) {  //se stiamo trascinando un elemento della stessa lista ci riportiamo i figli
+        for ( int i = 0; i < selectedItems[0] -> childCount(); i++ ) {
           //mi tocca simulare un mime per poter trascinare anche i figli
           QTreeWidgetItem *item = ramifica ( selectedItems[0] -> child ( i ) -> text ( 1 ) + selectedItems[0] -> child ( i ) -> text ( 0 ) + "!*mimetosend:" + selectedItems[0] -> child ( i ) -> text ( 2 ), ultimo );
           recursiveAppend ( selectedItems[0] -> child ( i ), item );
         }
         delete selectedItems[0];
       }
-      else retrieveChildren ( ultimo ); //altrimenti recuperiamo i figli dalle directory
+
+      else
+        retrieveChildren ( ultimo ); //altrimenti recuperiamo i figli dalle directory
+
       event -> acceptProposedAction();
     }
-    else
-    {
+
+    else {
       event -> ignore();
       return;
     }
-
   }
 }
 
 void dragTarget::scrollDown()
 {
   disconnect(scrollDownTimer, SIGNAL(timeout()), this, SLOT(scrollDown()));
-  puts("scrollDown chiamato");
+  kDebug() << "scrollDown chiamato";
   this -> scrollToItem(tempScroll);
   tempScroll = itemBelow(tempScroll);
   connect(scrollDownTimer, SIGNAL(timeout()), this, SLOT(scrollDown()));
-  if(tempScroll == NULL)
-  {
+  if(tempScroll == NULL) {
     disconnect(scrollDownTimer, SIGNAL(timeout()), this, SLOT(scrollDown()));
     scrollDownTimer -> stop();
   }
@@ -225,58 +212,51 @@ void dragTarget::scrollDown()
 void dragTarget::scrollUp()
 {
   disconnect(scrollUpTimer, SIGNAL(timeout()), this, SLOT(scrollUp()));
-  puts("scrollUp chiamato");
+  kDebug() << "scrollUp chiamato";
   this -> scrollToItem(tempScroll);
   tempScroll = itemAbove(tempScroll);
   connect(scrollUpTimer, SIGNAL(timeout()), this, SLOT(scrollUp()));
-  if(tempScroll == NULL)
-  {
-   disconnect(scrollUpTimer, SIGNAL(timeout()), this, SLOT(scrollUp()));
-   scrollUpTimer -> stop();
+  if (tempScroll == NULL) {
+    disconnect(scrollUpTimer, SIGNAL(timeout()), this, SLOT(scrollUp()));
+    scrollUpTimer -> stop();
   }
 }
 
 void dragTarget::dragMoveEvent ( QDragMoveEvent *event )
 {
-  if ( event -> mouseButtons() == Qt::LeftButton )
-  {
+  if (event -> mouseButtons() == Qt::LeftButton) {
     //eseguiamo lo scrollDown se ci troviamo alla fine della lista
-    if(event -> pos().y() >viewport() -> height() - 50 && event -> pos().y() <viewport() -> height()) //se ci troviamo alla fine della lista iniziamo le operazioni di scroll automatico
-    { 
+    if(event -> pos().y() >viewport() -> height() - 50 && event -> pos().y() <viewport() -> height()) { //se ci troviamo alla fine della lista iniziamo le operazioni di scroll automatico
       tempScroll = itemAt(event -> pos());
       connect(scrollDownTimer, SIGNAL(timeout()), this, SLOT(scrollDown()));
       scrollDownTimer -> start(100);
     }
-    else
-    {
+    else {
       disconnect(scrollDownTimer, SIGNAL(timeout()), this, SLOT(scrollDown()));
       scrollDownTimer -> stop();
     }
     //eseguiamo lo scrollUp se ci troviamo all'inizio della lista
-    if(event -> pos().y() < viewport() -> y() + 20 && event -> pos().y() > 0) //se ci troviamo all'inizio della lista iniziamo le operazioni di scroll automatico
-    { 
+    if(event -> pos().y() < viewport() -> y() + 20 && event -> pos().y() > 0) { //se ci troviamo all'inizio della lista iniziamo le operazioni di scroll automatico
       tempScroll = itemAt(event -> pos());
       connect(scrollUpTimer, SIGNAL(timeout()), this, SLOT(scrollUp()));
       scrollUpTimer -> start(100);
     }
-    else
-    {
+    else {
       disconnect(scrollUpTimer, SIGNAL(timeout()), this, SLOT(scrollUp()));
       scrollUpTimer -> stop();
     }
-    if(itemAt(event -> pos()) != NULL)
-    {
+
+    if(itemAt(event -> pos()) != NULL) {
       QTreeWidgetItem *current = itemAt(event -> pos() );
       showIndicator(visualItemRect(current).bottom());
-      if(indicatorToRestore != NULL && itemAt(event -> pos()) != indicatorToRestore)
-      {
+      if(indicatorToRestore != NULL && itemAt(event -> pos()) != indicatorToRestore) {
         delete indicatorToRestore; 
         indicatorToRestore = NULL;
       } 
     }
-    else
-    {
-      if(indicatorToRestore != NULL) delete indicatorToRestore;
+    else {
+      if(indicatorToRestore != NULL) 
+        delete indicatorToRestore;
       indicatorToRestore = new QTreeWidgetItem(this);
       scrollToItem(indicatorToRestore);
       showIndicator(visualItemRect(topLevelItem(topLevelItemCount()-1)).bottom());
@@ -285,29 +265,23 @@ void dragTarget::dragMoveEvent ( QDragMoveEvent *event )
 
     QList<QTreeWidgetItem*> selectedItems = this -> selectedItems(); //mi serve per accertarmi che l'utente non voglia trascinare un file sul file stesso
 
-    if ( selectedItems.size() == 0 )   //se non ci sono elementi selezionati
-    {
+    if ( selectedItems.size() == 0 ) {  //se non ci sono elementi selezionati
       //*******************************************************************//
-      if ( itemAt ( event -> pos() ) != NULL && itemAt ( event -> pos() ) -> text ( 2 ) == "inode/directory" )   //se voglio trascinare su un altro elemento che è una cartella, acconsento, TODO ma solo se la cartella non contiene già un elemento uguale
-      {
+      if ( itemAt ( event -> pos() ) != NULL && itemAt ( event -> pos() ) -> text ( 2 ) == "inode/directory" )  {  //se voglio trascinare su un altro elemento che è una cartella, acconsento, TODO ma solo se la cartella non contiene già un elemento uguale
         subLevel = true;
         padre = itemAt ( event -> pos() );
         event -> acceptProposedAction();
       }
-      else
-      {
-        if ( itemAt ( event -> pos() ) != NULL && itemAt ( event -> pos() ) -> text ( 2 ) !="inode/directory" )
-        {
-          if(itemAt( event -> pos() ) -> text(0) == "")
-          { //possiamo trascinare sull'indicatore
+      else {
+        if ( itemAt ( event -> pos() ) != NULL && itemAt ( event -> pos() ) -> text ( 2 ) != "inode/directory" ) { 
+          if(itemAt( event -> pos() ) -> text(0) == "") { //possiamo trascinare sull'indicatore
             subLevel = false;
             event -> acceptProposedAction();
           }
           else 
             event -> ignore();//se voglio trascinare su un elemento che non è una cartella, nego
         }
-        else  //se voglio semplicemente trascinare un nuovo elemento acconsento
-        {
+        else {  //se voglio semplicemente trascinare un nuovo elemento acconsento
           subLevel = false;
           event -> acceptProposedAction();
         }
@@ -315,67 +289,62 @@ void dragTarget::dragMoveEvent ( QDragMoveEvent *event )
     //*************************************************************//
     } //fine dell'if selectedItems.size()
 
-    else  //se ci sono elementi selezionati mi accerto di non trascinare su me stesso e di non trascinarmi in un mio figlio
-    {
-      if ( itemAt ( event -> pos() ) != NULL && itemAt ( event -> pos() ) -> text ( 2 ) == "inode/directory" && itemAt ( event -> pos() ) != selectedItems[0] )   //se voglio trascinare su un elemento che è una cartella e non è l'elemento stesso
-      {
+    else  { //se ci sono elementi selezionati mi accerto di non trascinare su me stesso e di non trascinarmi in un mio figlio
+      if ( itemAt ( event -> pos() ) != NULL && itemAt ( event -> pos() ) -> text ( 2 ) == "inode/directory" && itemAt ( event -> pos() ) != selectedItems[0] ) {   //se voglio trascinare su un elemento che è una cartella e non è l'elemento stesso
         QString nomeFile; //recupero il nome file dell'elemento per accertarmi di non trascinarmi in un mio figlio
         //QStringList formati = event -> mimeData() -> formats();
-        if(event -> mimeData()->hasFormat("aku/newarchive"))
+        if (event -> mimeData()->hasFormat("aku/newarchive"))
           nomeFile = event -> mimeData()->data ( "aku/newarchive" );
-        else nomeFile = event -> mimeData()->data("aku/newarchive-fromHere");
+        else 
+          nomeFile = event -> mimeData()->data("aku/newarchive-fromHere");
+
         QStringList path = nomeFile.split ( QDir().separator() );
         int target = path[path.size()-1].indexOf ( "!*mimetosend:" );
         path[path.size()-1].remove ( target, path[path.size()-1].length() );
         QString temp = path[path.size()-1]; //nome del parent (directory)
         bool checkHasSameParent = hasSameParent ( itemAt ( event -> pos() ), temp ); //con questo evito di trascinare un parent in un suo figlio
-        if ( checkHasSameParent == false )
-        {
+        if ( checkHasSameParent == false ) {
           subLevel = true;
           padre = itemAt ( event -> pos() );
           event -> acceptProposedAction();
         }
-        else
-        {
+        else  {
           event -> ignore();
           ///return;
         }
         /****************************************************************************************/
         // devo controllare di non trascinare su uno stesso parent.. perchè è inutile e rende instabile tutto :-D
         bool allowAllocation = true;
-        for ( int i = 0; i < itemAt ( event -> pos() ) -> childCount(); i++ ) //se l'elemento di destinazione ha tra i suoi figli uno con lo stesso nome di quello che sto trascinando allora nego il trascinamento
-        {
+
+        //se l'elemento di destinazione ha tra i suoi figli uno con lo stesso nome di quello che sto trascinando allora nego il trascinamento
+        for ( int i = 0; i < itemAt ( event -> pos() ) -> childCount(); i++ ) { 
           if ( itemAt ( event -> pos() ) -> child ( i )->text ( 0 ) == temp ) allowAllocation = false; //se non ha un child con lo stesso nome permettiamo l'allocazione
         }
-        if ( allowAllocation == true )
-        {
+
+        if ( allowAllocation == true ) {
           subLevel = true;
           padre = itemAt ( event -> pos() );
           event -> acceptProposedAction();
         }
-        else
-        {
-        event -> ignore(); 
+
+        else {
+          event -> ignore(); 
         ///return;
         }
       /****************************************************************************************/
       }
-      else  //altrimenti
-      {
-        if ( itemAt ( event -> pos() ) == NULL )   //se il cursore non si trova su nessun elemento vuol dire che posso allocare nella lista
-        {
+      else {
+        if ( itemAt ( event -> pos() ) == NULL ) {  //se il cursore non si trova su nessun elemento vuol dire che posso allocare nella lista
           subLevel = false;
           event -> acceptProposedAction();
         }
-        else
-        {
-          if(itemAt( event -> pos() ) -> text(0) == "")
-          { //possiamo trascinare sull'indicatore
+        else {
+          if (itemAt( event -> pos() ) -> text(0) == "") {
+            //possiamo trascinare sull'indicatore
             subLevel = false;
             event -> acceptProposedAction();
           }
-          else
-          {
+          else {
             event -> ignore(); // altrimenti ignoro
             ///return;
           }
@@ -385,11 +354,10 @@ void dragTarget::dragMoveEvent ( QDragMoveEvent *event )
     }
   }
 
-  else  //se non è iniziato il trascinamento col tasto sinistro chiudo
-  {
+  else {  //se non è iniziato il trascinamento col tasto sinistro chiudo
     event -> ignore();
     return;
-   }
+  }
 
 }
 
@@ -399,32 +367,31 @@ QTreeWidgetItem* dragTarget::ramifica ( QString path, QTreeWidgetItem *parent )
   /*se il cursore si trova sopra un elemento esistente appendiamo sotto...*/
   KIcon icon;
   //e' necessario gestire la stringa di controllo per il mime che arriva dal mime di tipo aku/newarchive
-  //rimuovo la stringa di controllo dalla stringa che servir� per ricostruire il path e il nome file, e scrivo il mimeType nella colonna appropriata
-  QString toPath = "/"; //su windows impostare C:\/
-  int target = path.indexOf ( "!*mimetosend:" );
+  //rimuovo la stringa di controllo dalla stringa che servirà per ricostruire il path e il nome file, e scrivo il mimeType nella colonna appropriata
+  QString toPath;
+  toPath = QDir().rootPath();
+  int target = path.indexOf("!*mimetosend:");
   mimeCheck = path;
-  mimeCheck.remove ( 0,target );
-  mimeCheck.remove ( "!*mimetosend:" );
-  puts("mimeCheck ricavato: "+mimeCheck.toAscii());
+  mimeCheck.remove (0, target);
+  mimeCheck.remove ("!*mimetosend:");
+  kDebug() << "mimeCheck ricavato: "+ mimeCheck.toAscii();
   icon = KIcon(KMimeType::mimeType(mimeCheck) -> iconName());///KIcon(mimeCheck);
-  path.remove ( target, path.length() );
-  //************************************************************************************************************************************//
-  if ( path.indexOf ( tr ( "*User created Folder*" ) ) == -1 )  //distinguo le cartelle normali da quelle create dall'utente (* iniziale)
-  {
+  path.remove (target, path.length());
+
+  //distinguo le cartelle normali da quelle create dall'utente (* iniziale)
+  if (path.indexOf(i18n("*User created Folder*")) == -1 ) { 
     QStringList folders = path.split ( QDir().separator(), QString::SkipEmptyParts );
     lastItemAdded = new QTreeWidgetItem ( parent );
     lastItemAdded -> setText ( 0, folders[folders.size()-1] );
-    for ( int i=0; i<folders.size() - 1; i++ )
-    {
+    for ( int i=0; i<folders.size() - 1; i++ ) {
       toPath.append ( folders[i]+QDir().separator() );
     }
   }
-  else
-  {
+  else {
     //imposto gli attributi della cartella creata dall'utente
-    toPath = tr ( "*User created Folder*" ); //questo va nel path
+    toPath = i18n("*User created Folder*"); //questo va nel path
     path.remove ( target, path.length() );
-    path.remove ( tr ( "*User created Folder*" ) );
+    path.remove (i18n( "*User created Folder*" ) );
 
     lastItemAdded = new QTreeWidgetItem ( parent );
     lastItemAdded -> setText ( 0, path ); //nome cartella
@@ -437,8 +404,8 @@ QTreeWidgetItem* dragTarget::ramifica ( QString path, QTreeWidgetItem *parent )
   lastItemAdded -> setText ( 2, mimeCheck );
   lastItemAdded -> setIcon ( 0,icon );
    //scriviamo le informazioni sulla dimensione
-  if ( lastItemAdded -> text ( 2 ) != "inode/directory" )   //se non è una cartella
-  {
+   //se non è una cartella
+  if ( lastItemAdded -> text ( 2 ) != "inode/directory" ) {
     QFile sizeInfo ( lastItemAdded -> text ( 1 ) + lastItemAdded -> text ( 0 ) );
     lastItemAdded -> setText ( 3, KLocale("").formatByteSize(sizeInfo.size()) ); //usiamo la funzione della classe rar pe la conversione della dimensione
     lastItemAdded -> setTextAlignment ( 3, Qt::AlignRight | Qt::AlignVCenter );
@@ -451,35 +418,33 @@ QTreeWidgetItem* dragTarget::ramifica ( QString path, QTreeWidgetItem *parent )
 
 QTreeWidgetItem* dragTarget::ramifica ( QString path, QTreeWidget *parent ) //overloaded function to work with toplevels
 {
-  puts("ramifico");
+  kDebug() << "ramifico";
   /*se il cursore si trova sopra un elemento esistente appendiamo sotto...*/
   KIcon icon;
   //e' necessario gestire la stringa di controllo per il mime che arriva dal mime di tipo aku/newarchive
-  //rimuovo la stringa di controllo dalla stringa che servir� per ricostruire il path e il nome file, e scrivo il mimeType nella colonna appropriata
-  QString toPath = "/"; //su windows impostare C:\/
+  //rimuovo la stringa di controllo dalla stringa che servirà per ricostruire il path e il nome file, e scrivo il mimeType nella colonna appropriata
+  QString toPath;
+  toPath = QDir().rootPath();
   int target = path.indexOf ( "!*mimetosend:" );
   mimeCheck = path;
   mimeCheck.remove ( 0,target );
   mimeCheck.remove ( "!*mimetosend:" );
   icon = KIcon(KMimeType::mimeType(mimeCheck) -> iconName());///KIcon(mimeCheck);
   path.remove ( target, path.length() );
-  //************************************************************************************************************************************//
-  if ( path.indexOf ( tr ( "*User created Folder*" ) ) == -1 )  //distinguo le cartelle normali da quelle create dall'utente (* iniziale)
-  {
+
+  if ( path.indexOf (i18n( "*User created Folder*" ) ) == -1 ) { //distinguo le cartelle normali da quelle create dall'utente (* iniziale)
     QStringList folders = path.split ( QDir().separator(), QString::SkipEmptyParts );
     lastItemAdded = new QTreeWidgetItem ( parent );
     lastItemAdded -> setText ( 0, folders[folders.size()-1] );
-    for ( int i=0; i<folders.size() - 1; i++ )
-    {
+    for ( int i=0; i<folders.size() - 1; i++ ) {
       toPath.append ( folders[i]+QDir().separator() );
     }
   }
-  else
-  {
+  else {
     //imposto gli attributi della cartella creata dall'utente
-    toPath = tr ( "*User created Folder*" ); //questo va nel path
+    toPath = i18n( "*User created Folder*" ); //questo va nel path
     path.remove ( target, path.length() );
-    path.remove ( tr ( "*User created Folder*" ) );
+    path.remove (i18n( "*User created Folder*" ) );
     lastItemAdded = new QTreeWidgetItem ( parent );
     lastItemAdded -> setText ( 0, path ); //nome cartella
     mimeCheck =  "inode/directory" ; //mimetype
@@ -492,8 +457,7 @@ QTreeWidgetItem* dragTarget::ramifica ( QString path, QTreeWidget *parent ) //ov
   lastItemAdded -> setIcon ( 0,icon );
 
   //scriviamo le informazioni sulla dimensione
-  if ( lastItemAdded -> text ( 2 ) != "inode/directory" )   //se non è una cartella
-  {
+  if ( lastItemAdded -> text ( 2 ) != "inode/directory" ) {  //se non è una cartella
     QFile sizeInfo ( lastItemAdded -> text ( 1 ) + lastItemAdded -> text ( 0 ) );
     lastItemAdded -> setText ( 3, KLocale("").formatByteSize(sizeInfo.size()) ); //usiamo la funzione della classe rar per la conversione della dimensione
     lastItemAdded -> setTextAlignment ( 3, Qt::AlignRight | Qt::AlignVCenter );
@@ -510,12 +474,12 @@ void dragTarget::mouseMoveEvent ( QMouseEvent *event ) //gestisce il trascinamen
   {
     QTreeWidgetItem *current = itemAt(event -> pos());
     showIndicator(visualItemRect(current).bottom());
-    if( this -> selectedItems().size() != 0 )
-    {
+    if ( this -> selectedItems().size() != 0 ) {
       int size = this -> selectedItems().size();
       QList<QTreeWidgetItem*> selectedItems = this -> selectedItems();
       for(int i = 0; i < size; i++) this -> setItemSelected(selectedItems[i], false); //deseleziona tutti gli altri elementi... evita un crash //NON SUPPORTIAMO ANCORA IL TRASCINAMENTO MULTIPLO
     }
+
     QDrag *drag = new QDrag ( this );
     QMimeData * mimeData = new QMimeData;
     //QList<QTreeWidgetItem*> selectedItems = this -> selectedItems();
@@ -531,8 +495,7 @@ void dragTarget::mouseMoveEvent ( QMouseEvent *event ) //gestisce il trascinamen
     drag -> setMimeData ( mimeData );
     drag -> exec ( Qt::MoveAction );
   }
-  else
-  {
+  else {
     hideIndicator();
     event -> ignore(); 
     return;
@@ -546,78 +509,73 @@ void dragTarget::createNewFolder()
   {
     //----------tramite questo controllo appendiamo un indice al nome consigliato se ci sono già delle cartelle chiamate New Folder-------//
     int count = 0;
-    for ( int i = 0; i < lastItemClicked -> childCount(); i++ )
-    {
-      if ( ( lastItemClicked -> child ( i ) -> text ( 0 ) ).indexOf ( tr ( "New Folder" ) ) != -1 ) count++;
+    for ( int i = 0; i < lastItemClicked -> childCount(); i++ )  {
+      if ( ( lastItemClicked -> child ( i ) -> text ( 0 ) ).indexOf (i18n( "New Folder" ) ) != -1 ) count++;
     }
     QString folderCount;
     QString appendCount;
-    if ( count > 0 ) folderCount.append ( "_"+appendCount.setNum ( count ) );
+    if ( count > 0 ) 
+      folderCount.append ("_" + appendCount.setNum ( count ) );
     else folderCount = "";
     //---------------------------------------------------------------------------------------------------------------//
     QTreeWidgetItem *folder = new QTreeWidgetItem ( lastItemClicked );
     QString name;
     bool allow = false;
-    while ( allow == false )
-    {
-      name = QInputDialog::getText ( this, tr ( "Folder Name" ), tr ( "Give a name for the new Folder" ), QLineEdit::Normal, tr ( "New Folder" ) +folderCount );
+    while ( allow == false ) {
+      name = QInputDialog::getText ( this, i18n( "Folder Name" ), i18n( "Give a name for the new Folder" ), QLineEdit::Normal, i18n( "New Folder" ) + folderCount );
       allow = true;
-      for ( int i = 0; i < lastItemClicked -> childCount(); i++ ) //tramite questo ciclo controlliamo che non ci sia già una cartella con lo stesso nome
-      {
-        if ( lastItemClicked -> child ( i ) -> text ( 0 ) == name )
-        {
+      //tramite questo ciclo controlliamo che non ci sia già una cartella con lo stesso nome
+      for ( int i = 0; i < lastItemClicked -> childCount(); i++ ) { 
+        if ( lastItemClicked -> child ( i ) -> text ( 0 ) == name ) {
           allow = false;
           break;
         }
       }
     }
+
     folder -> setText ( 0, name );
     folder -> setText ( 2, "inode/directory" );
-    folder -> setText ( 1, tr ( "*User created Folder*" ) );
+    folder -> setText ( 1, i18n( "*User created Folder*" ) );
     folder -> setIcon ( 0, KIcon ( "inode-directory" ) );
     lastItemClicked -> setExpanded ( true );
 
   }
-  else
-  {
+
+  else  {
     //----------tramite questo controllo appendiamo un indice al nome consigliato se ci sono già delle cartelle chiamate New Folder-------//
     int count = 0;
-    for ( int i = 0; i < topLevelItemCount(); i++ )
-    {
-      if ( ( topLevelItem ( i ) -> text ( 0 ) ).indexOf ( tr ( "New Folder" ) ) != -1 ) count++;
+    for ( int i = 0; i < topLevelItemCount(); i++ )  {
+      if ( ( topLevelItem ( i ) -> text ( 0 ) ).indexOf (i18n( "New Folder" ) ) != -1 ) count++;
     }
     QString folderCount;
     QString appendCount;
-    if ( count > 0 ) folderCount.append ( "_"+appendCount.setNum ( count ) ); //suggeriamo un nome New Folder aggiungendo un numero di distinzione
+    if ( count > 0 ) 
+      folderCount.append ("_" + appendCount.setNum ( count ) ); //suggeriamo un nome New Folder aggiungendo un numero di distinzione
     else folderCount = "";
     //---------------------------------------------------------------------------------------------------------------//
 
     QString name;
     bool allow = false;
-    while ( allow == false )
-    {
-      name = QInputDialog::getText ( this, tr ( "Folder Name" ), tr ( "Give a name for the new Folder" ), QLineEdit::Normal, tr ( "New Folder" ) +folderCount );
+    while ( allow == false ) {
+      name = QInputDialog::getText ( this, i18n( "Folder Name" ), i18n( "Give a name for the new Folder" ), QLineEdit::Normal, i18n( "New Folder" ) + folderCount );
       allow = true;
-      if ( name == "" )
-      {
+      if ( name == "" ) {
         allow = false;
         break;
       }
-      for ( int i = 0; i < topLevelItemCount(); i++ ) //tramite questo ciclo controlliamo che non ci sia già una cartella con lo stesso nome
-      {
-        if ( topLevelItem ( i ) -> text ( 0 ) == name )
-        {
+      //tramite questo ciclo controlliamo che non ci sia già una cartella con lo stesso nome
+      for ( int i = 0; i < topLevelItemCount(); i++ ) {
+        if ( topLevelItem ( i ) -> text ( 0 ) == name ) {
           allow = false;
           break;
         }
       }
     }
-    if ( allow != false )
-    {
+    if ( allow != false ) {
       QTreeWidgetItem *folder = new QTreeWidgetItem ( this );
       folder -> setText ( 0, name );
       folder -> setText ( 2, "inode/directory" );
-      folder -> setText ( 1, tr ( "*User created Folder*" ) );
+      folder -> setText ( 1, i18n( "*User created Folder*" ) );
       folder -> setIcon ( 0, KIcon ( "inode-directory" ) );
     }
   }
@@ -628,33 +586,34 @@ void dragTarget::deleteItem()
 {
   int size = this -> selectedItems().size();
   QList<QTreeWidgetItem*> selectedItems = this -> selectedItems();
-  for(int i = 0; i < size ; i++) delete selectedItems[i];
+  for(int i = 0; i < size ; i++) 
+    delete selectedItems[i];
 }
-
-
 
 void dragTarget::focusOutEvent ( QFocusEvent *event )
 {
-  if ( event -> reason() == Qt::ActiveWindowFocusReason )   //quando perde il focus a causa di un cambio di finestra deseleziono gli elementi
-  {
+  //quando perde il focus a causa di un cambio di finestra deseleziono gli elementi
+  if ( event -> reason() == Qt::ActiveWindowFocusReason ) {
     QList<QTreeWidgetItem *> selectedItems = this -> selectedItems();
-    if ( selectedItems.size() != 0 ) this -> setItemSelected ( selectedItems[0], false );
+    if ( selectedItems.size() != 0 )
+      this -> setItemSelected ( selectedItems[0], false );
   }
 }
 
-void dragTarget::contextMenuEvent ( QContextMenuEvent * event ) //ci assicuriamo che il contextMenu NewFolder non sia disponibile su un elemento che non è una cartella
+//ci assicuriamo che il contextMenu NewFolder non sia disponibile su un elemento che non è una cartella
+void dragTarget::contextMenuEvent ( QContextMenuEvent * event ) 
 {
   QList<QTreeWidgetItem*> toUnselect = this -> selectedItems();
-  if ( toUnselect.size() != 0 && itemAt ( event -> pos() ) == NULL ) this -> setItemSelected ( toUnselect[0], false ); //deselezioniamo gli elementi in modo che il contextmenu si riferisca solo alla posizione del mouse
+  if ( toUnselect.size() != 0 && itemAt ( event -> pos() ) == NULL ) 
+    this -> setItemSelected ( toUnselect[0], false ); //deselezioniamo gli elementi in modo che il contextmenu si riferisca solo alla posizione del mouse
+
   lastItemClicked = NULL; //azzero il puntatore
-  if ( itemAt ( event -> pos() ) != NULL )
-  {
-    if ( itemAt ( event -> pos() ) -> text ( 2 ) != "inode/directory")
-    {
+
+  if ( itemAt ( event -> pos() ) != NULL ) {
+    if ( itemAt ( event -> pos() ) -> text ( 2 ) != "inode/directory") {
       newFolder -> setEnabled ( false );
     }
-    else
-    {
+    else {
       //if (newFolder -> isEnabled() == false)
       newFolder -> setEnabled ( true );
     }
@@ -663,14 +622,17 @@ void dragTarget::contextMenuEvent ( QContextMenuEvent * event ) //ci assicuriamo
   else
     newFolder -> setEnabled ( true );
   //controllo anche di trovarmi su un elemento per abilitare il context menu Delete
-  if ( itemAt ( event -> pos() ) != NULL ) delItem -> setEnabled ( true );
-  else delItem -> setEnabled ( false );
+  if ( itemAt ( event -> pos() ) != NULL ) 
+    delItem -> setEnabled ( true );
+  else
+    delItem -> setEnabled ( false );
   //visualizzo il menu alla posizione dove ho cliccato
   menu -> popup ( this -> mapToGlobal ( event -> pos() ) );
   lastItemClicked = itemAt ( event -> pos() ); //memorizzo l'elemento dove è stato lanciato il contextmenu
 }
 
-void dragTarget::retrieveChildren ( QTreeWidgetItem *rootItem ) //si preoccupa di allocare tutti i figli a partire dall'elemento passato
+//si preoccupa di allocare tutti i figli a partire dall'elemento passato
+void dragTarget::retrieveChildren ( QTreeWidgetItem *rootItem )
 {
   QString rootPath = rootItem -> text ( 1 ) + rootItem -> text ( 0 ); //percorso completo del file
   QDir rootDir ( rootPath );
@@ -679,12 +641,13 @@ void dragTarget::retrieveChildren ( QTreeWidgetItem *rootItem ) //si preoccupa d
   ///QDir::Filters filtri = sourceView -> filters();
   /**if(filtri.testFlag(QDir::Hidden) == true) rootEntries = rootDir.entryList (QDir::NoDotAndDotDot | QDir::AllDirs| QDir::Hidden);
   else rootEntries = rootDir.entryList ( QDir::NoDotAndDotDot |  QDir::AllDirs); //elenchiamo le cartelle figlie**/
+
   if(sourceView -> hiddenShown() == true)
     rootEntries = rootDir.entryList (QDir::NoDotAndDotDot | QDir::AllDirs| QDir::Hidden);
   else
     rootEntries = rootDir.entryList ( QDir::NoDotAndDotDot |  QDir::AllDirs); //elenchiamo le cartelle figlie
-  for ( int i = 0; i < rootEntries.size(); i++ )
-  {
+  
+  for ( int i = 0; i < rootEntries.size(); i++ ) {
     QTreeWidgetItem *child = new QTreeWidgetItem ( rootItem );
     child -> setText ( 0, rootEntries[i] );
     child -> setText ( 1, rootPath +"/" );
@@ -694,12 +657,13 @@ void dragTarget::retrieveChildren ( QTreeWidgetItem *rootItem ) //si preoccupa d
   }
   /**if(filtri.testFlag(QDir::Hidden) == true) rootEntries = rootDir.entryList ( QDir::NoDotAndDotDot | QDir::Files |  QDir::Hidden);
   else rootEntries = rootDir.entryList (QDir::NoDotAndDotDot | QDir::Files); //elenchiamo le cartelle figlie**/
+
   if(sourceView ->hiddenShown() == true)
     rootEntries = rootDir.entryList ( QDir::NoDotAndDotDot | QDir::Files |  QDir::Hidden);
   else
     rootEntries = rootDir.entryList (QDir::NoDotAndDotDot | QDir::Files); //elenchiamo le cartelle figlie
-  for ( int i = 0; i < rootEntries.size(); i++ )
-  {
+
+  for ( int i = 0; i < rootEntries.size(); i++ ) {
     QTreeWidgetItem *child = new QTreeWidgetItem ( rootItem );
     child -> setText ( 0, rootEntries[i] );
     child -> setText ( 1, rootPath +"/" );
@@ -734,8 +698,7 @@ void dragTarget::recursivePopulate ( QTreeWidgetItem *folder ) //questa funzione
     folderEntries =  folderDir.entryList ( QDir::NoDotAndDotDot | QDir::AllDirs ); //elenchiamo le cartelle figlie
   //scansione delle cartelle
   QString joint = folderEntries.join ( " " );
-  for ( int i = 0; i < folderEntries.size(); i++ )
-  {
+  for ( int i = 0; i < folderEntries.size(); i++ )  {
     QTreeWidgetItem *child = new QTreeWidgetItem ( folder );
     child -> setText ( 0, folderEntries[i] );
     child -> setText ( 1, folderPath+"/" );
@@ -749,11 +712,10 @@ void dragTarget::recursivePopulate ( QTreeWidgetItem *folder ) //questa funzione
     folderEntries =  folderDir.entryList (  QDir::NoDotAndDotDot | QDir::Files | QDir::Hidden);
   else
     folderEntries =  folderDir.entryList ( QDir::NoDotAndDotDot | QDir::Files ); //elenchiamo i file figli
-  for ( int i = 0; i < folderEntries.size(); i++ )
-  {
+  for ( int i = 0; i < folderEntries.size(); i++ ) {
     QTreeWidgetItem *child = new QTreeWidgetItem ( folder );
     child -> setText ( 0, folderEntries[i] );
-    child -> setText ( 1, folderPath +"/" );
+    child -> setText ( 1, folderPath + "/" );
     //scriviamo le informazioni sulla dimensione
     QFile sizeInfo ( child -> text ( 1 ) + child -> text ( 0 ) );
     child -> setText ( 3, KLocale("").formatByteSize(sizeInfo.size())); //usiamo la funzione della classe rar per la conversione della dimensione
@@ -772,15 +734,11 @@ bool dragTarget::hasSameParent ( QTreeWidgetItem *children, QString target ) //m
 {
   bool esito;
   QTreeWidgetItem *tmp = children -> parent();
-  while ( tmp != NULL )
-  {
-   if ( tmp -> text ( 0 ) != target )
-   {
+  while ( tmp != NULL ) {
+   if ( tmp -> text ( 0 ) != target ) {
      esito = false; //se è diverso diciamo che non ha lo stesso parent
    }
-   else
-   {
-     //QMessageBox::information(this, "DEBUG", tmp -> text(0));
+   else  {
     esito = true;
     break;
    }

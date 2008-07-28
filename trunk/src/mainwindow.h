@@ -31,6 +31,7 @@
 #include "akutip.h"
 #include "akusearchwidget.h"
 #include "akudragsourcewidget.h"
+#include "akutooltip.h"
 #include "rarprocess.h"
 #include "zipprocess.h"
 #include "tarprocess.h"
@@ -86,6 +87,7 @@ public slots:
   virtual void cleanAku(QString);
   virtual void createNewArchive();
   virtual void closeNewArchive();
+  virtual void newArchive();
 
 private:
   QWidget *baseWindowWidget;
@@ -175,6 +177,9 @@ private slots:
 
 protected:
   void setupSearchBar();
+
+  QStringList rebuildPathForNew(dragTarget*);
+  QStringList recursiveRebuildForNew(QTreeWidgetItem*); 
 
 protected slots:
   virtual void setupStatusBar();

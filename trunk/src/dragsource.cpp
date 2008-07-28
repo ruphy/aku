@@ -1,15 +1,15 @@
 #include "dragsource.h"
-#include <QFileIconProvider>
-#include "rar.h"
-#include <QMessageBox>
-dragSource::dragSource ( QWidget *parent ) : KFileTreeView ( parent )
+
+dragSource::dragSource (QWidget *parent) : KFileTreeView (parent)
 {
   hiddens = false;
   this -> setEnabled ( false );
   this -> setContextMenuPolicy ( Qt::ActionsContextMenu );
   setRootUrl(KUrl(QDir().homePath()));
   setEditTriggers(QAbstractItemView::NoEditTriggers);
+
   setSelectionMode(QAbstractItemView::SingleSelection);
+
   setShowHiddenFiles(false);
   resizeColumnToContents ( 0 );
   setDragEnabled ( true );
@@ -28,8 +28,7 @@ dragSource::~dragSource()
 void dragSource::enterDir(QModelIndex)
 {
   KFileItem fileItem (KFileItem::Unknown, KFileItem::Unknown, currentUrl());
-  if(fileItem.isDir()) 
-  {
+  if(fileItem.isDir()) {
     setRootUrl(currentUrl());
     emit currentUrlChanged(rootUrl());
   }
@@ -49,18 +48,17 @@ void dragSource::goHome()
   emit currentUrlChanged(url);
 }
 
-void dragSource::showHiddenFiles ( bool show )
+void dragSource::showHiddenFiles (bool show)
 {
   setShowHiddenFiles(show);
   hiddens = show;
 }
 
-void dragSource::mouseMoveEvent ( QMouseEvent *event )
+void dragSource::mouseMoveEvent (QMouseEvent *event)
 {
-  if ( event -> buttons() == Qt::LeftButton )
-  {
+  if (event -> buttons() == Qt::LeftButton ) {
     filePath = currentUrl().pathOrUrl();
-    puts(filePath.toAscii());
+    kDebug() << filePath.toAscii();
     QDrag *drag = new QDrag ( this );
     QMimeData * mimeData = new QMimeData;
 
@@ -70,15 +68,15 @@ void dragSource::mouseMoveEvent ( QMouseEvent *event )
     QString iconName = KMimeType::findByPath(filePath) -> iconName();
     KIcon icon(iconName);
     QPixmap mimeIcon = icon.pixmap(32,32); //se sono riuscito a ricavare il mime setto l'icona
-    mimeData -> setImageData ( QVariant ( mimeIcon ) );
+    mimeData -> setImageData (QVariant(mimeIcon));
     filePath.append ( "!*mimetosend:"+mimeType ); //stringa di controllo per il mime
     drag -> setPixmap ( mimeIcon );
 
     /*******************************************************************************/
 
     QByteArray mimeToSend = filePath.toAscii();
-    puts(mimeToSend);
-    mimeData -> setData ( "aku/newarchive",mimeToSend );
+    kDebug() << mimeToSend;
+    mimeData -> setData ( "aku/newarchive", mimeToSend );
     drag -> setMimeData ( mimeData );
     drag -> exec ( Qt::CopyAction );
   }
@@ -90,7 +88,7 @@ bool dragSource::hiddenShown()
   return hiddens;
 }
 
-KDirModel * dragSource::modelInUse()
+KDirModel *dragSource::modelInUse()
 {
   return mod;
 }

@@ -1,13 +1,16 @@
 #ifndef DRAGSOURCE_H
 #define DRAGSOURCE_H
+
 #include <QDirModel>
 #include <QMouseEvent>
 #include <QDrag>
 #include <QMimeData>
 #include <QAction>
 #include <QFlag>
-#include <KIcon>
+
 #include <QHeaderView>
+#include <QFileIconProvider>
+#include <QMessageBox>
 
 #include <KFileTreeView>
 #include <KDirLister>
@@ -15,7 +18,9 @@
 #include <KFileItem>
 #include <KMimeType>
 #include <KUrl>
+#include <KIcon>
 
+#include "rar.h"
 
 class dragSource : public KFileTreeView
 {
@@ -36,13 +41,17 @@ public slots:
   virtual void enterDir(QModelIndex);
 
 protected:
-  virtual void mouseMoveEvent ( QMouseEvent *event );
+  virtual void mouseMoveEvent(QMouseEvent *event);
   
 private:
   KDirModel *mod;
+
   KDirLister *lister;
+
   QString filePath;
+
   QModelIndex indexForIcon;
+
   bool hiddens;
 
 signals:

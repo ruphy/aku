@@ -30,6 +30,7 @@ SET(
      dragtarget.cpp
      dragsource.cpp
      akucompressionwidget.cpp
+     akutooltip.cpp
    )
 
 KDE4_ADD_UI_FILES(aku_SRCS overwriteui.ui extractdialog.ui)

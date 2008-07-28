@@ -369,6 +369,7 @@ void MainWindow::openUrl(KUrl url)
     kDebug() << archive;
     ratioBar -> setVisible(true);
     recentFilesAction -> addUrl(url);
+    statusWidget -> setVisible(true);
   }
   else {
     tip->setTip(i18n("The file is not a supported archive") + " (" + (mimetype -> comment()) + ")");
@@ -1287,17 +1288,120 @@ void MainWindow::createNewArchive()
   dockOption -> setGeometry(x() - 305, y(), 305, 358);
   this -> addDockWidget (Qt::RightDockWidgetArea, sourceDock);
 
-  //connect(compressionWidget, SIGNAL(creationCalled()), this, SLOT(newArchive()));
+//   QString newArchiveTip;
+//   newArchiveTip = "<b>" + i18n("New Archive") + ":</b><br>" + i18n("just drag and drop files and folders you wish to add to the new archive");
+//   akuToolTip *t = new akuToolTip(newArchiveTip, this);
+//   t->show();
+
+  connect(compressionWidget, SIGNAL(creationCalled()), this, SLOT(newArchive()));
   connect(compressionWidget, SIGNAL(canceled()), this, SLOT(closeNewArchive()));
 }
 
 void MainWindow::closeNewArchive()
 {
+  kDebug() << "INIZIO CloseNewArchive";
   baseWindowWidget -> setVisible(true);
-  statusWidget -> setVisible(true);
+  //statusWidget -> setVisible(true);
   delete widgetForList;
   delete sourceDock;
   delete dockOption;
+  //enableActions(true);
+  //operationCompleted(ok);
+  kDebug() << "FINE CloseNewArchive";
+  
+  if (!archive.isEmpty())
+    openUrl(archive);
+  else
+    enableActions(true);
+}
 
-  enableActions(true);
+void MainWindow::newArchive()
+{
+  QStringList filesToAdd;
+  filesToAdd = rebuildPathForNew(targetList); //ricostruiamo i path di tutti gli elementi da aggiungere
+  kDebug() << filesToAdd;
+  if (!filesToAdd.isEmpty())
+    archive = KFileDialog::getSaveFileName(KUrl(QDir().homePath()), i18n("RAR Archive *.rar"), this, i18n("Archive Name" ));
+  else 
+    archive.clear();
+
+  kDebug() << archive;
+  if ((QFile(archive).exists() && (KMessageBox::warningYesNo(this, i18n("The file") + " <b>" + archive + "</b> " + "already exists. Do you wish to overwrite it?") == 3)) || !QFile(archive).exists()) {
+    QFile(archive).remove();
+    dockOption -> setEnabled(false);
+    targetList -> setEnabled(false);
+    QString password;
+    password = compressionWidget -> getPassword();
+    int compressionLevel;
+    compressionLevel = compressionWidget -> getCompressionLevel();
+    QStringList options;
+    options << "a" << "-ep1" << "-m" + QString().setNum(compressionLevel);
+    if (!password.isEmpty())
+      options << "-p" + password;
+    rarProcess *newArchiveProc;
+    
+//     if (compressionWidget -> isSplitRequested()) {  // TODO:highly unstable!!! check
+//       double splitSize;
+//       splitSize = compressionWidget -> getSplitSize();
+//       newArchiveProc = new rarProcess(this, "rar", options "-v" + QString().setNum(splitSize), archive, filesToAdd);
+//     }
+//     else {
+    newArchiveProc = new rarProcess(this, "rar", options, archive, filesToAdd);
+   //}
+
+    connect(newArchiveProc, SIGNAL(processCompleted(bool)), this, SLOT(closeNewArchive()));
+    connect(newArchiveProc, SIGNAL(processCanceled()), this, SLOT(closeNewArchive()));
+    newArchiveProc -> start();
+  }
+}
+
+//ricostruisce i percorsi da aggiungere all'archivio chiamando la funzione ricorsiva
+QStringList MainWindow::rebuildPathForNew (dragTarget *listForNew) 
+{
+  QStringList result;
+  for (int i = 0; i < listForNew -> topLevelItemCount(); i++)
+    result << recursiveRebuildForNew(listForNew -> topLevelItem(i));
+  return result;
+}
+
+QStringList MainWindow::recursiveRebuildForNew (QTreeWidgetItem* item)
+{
+  if (item -> childCount() != 0) {
+    QString tempCheck = item -> child(0) -> text(1); //contiene il percorso dell'elemento
+    QStringList subFolders = QDir(item -> text(1) + item -> text(0)).entryList (QStringList() << "*.*",QDir::NoDotAndDotDot | QDir::AllDirs | QDir::Files); 
+    QStringList endList;
+    for (int j = 0; j < item -> childCount(); j++)
+      endList << recursiveRebuildForNew (item -> child(j));
+
+    return endList;
+  }
+
+  else {
+    if (item -> parent() != NULL) {  //aggiungo un ap se ha una padre   
+      QTreeWidgetItem *tmp = item -> parent();
+      QStringList toReturn;
+      while (tmp != NULL) {  //ricostruiamo i parent all'indietro
+        toReturn << tmp -> text(0);
+        tmp = tmp -> parent();
+      }
+      QString parentPath; //ricostruiamo il percorso parent
+      for (int i = toReturn.size() - 1; i >= 0 ; i--) {
+        parentPath = parentPath + toReturn[i];
+        if (i != 0) parentPath.append (QDir().separator());
+      }
+      // se è un cartella del tipo *User created Folder* allora non passo nessun path di origine
+      if (item -> text(1).indexOf(QDir().separator()) != -1) {
+        return QStringList() << "-ap" + parentPath << item -> text(1) + item -> text(0); //altrimenti restituisco direttamente il percorso
+      }
+      else {
+        return QStringList() << "-ap" + parentPath << item -> text(0); //altrimenti restituisco direttamente il percorso
+      }
+    }
+    else {  //altrimenti no
+      if (!item -> text(3).isEmpty()) 
+        return QStringList() << item -> text(1) + item -> text(0);
+      else
+        return QStringList();
+    }
+  }
 }

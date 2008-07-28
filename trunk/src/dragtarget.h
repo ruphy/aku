@@ -1,6 +1,5 @@
 #ifndef DRAGTARGET_H
 #define DRAGTARGET_H
-#include "dragsource.h"
 
 #include <QTreeWidget>
 #include <QDragEnterEvent>
@@ -21,11 +20,16 @@
 #include <QLabel>
 #include <QPalette>
 #include <QHeaderView>
+
 #include <KIcon>
 #include <KMimeType>
 #include <KUrl>
 #include <KFileItem>
 #include <KLocale>
+
+#include "dragsource.h"
+#include "rar.h"
+
 class dragTarget : public QTreeWidget
 {
 Q_OBJECT
@@ -60,20 +64,32 @@ protected slots:
 
 private:
   bool subLevel;
+  bool hasSameParent(QTreeWidgetItem*, QString);
+
   QTreeWidgetItem *padre;
-  QString mimeCheck;
   QTreeWidgetItem *lastItemAdded;
   QTreeWidgetItem *lastItemClicked; //per sapere la destinazione delle azioni dei contextmenu
-  bool hasSameParent ( QTreeWidgetItem*, QString );
-  QTimer *scrollDownTimer;
-  QTimer *scrollUpTimer;
   QTreeWidgetItem *tempScroll;
   QTreeWidgetItem *backgroundToRestore;
   QTreeWidgetItem *indicatorToRestore;
   QTreeWidgetItem *currentItem;
+
+  QString mimeCheck;  
+
+  QTimer *scrollDownTimer;
+  QTimer *scrollUpTimer;
+
   QList<QTreeWidgetItem*> fadesToRestore;
+
   dragSource *sourceView;
+
   QWidget *indicator;
+
+  QAction *newFolder;
+  QAction *delItem;
+
+  QMenu *menu;
+
 };
 
 #endif
