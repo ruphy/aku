@@ -46,7 +46,9 @@ OVERWRITE DIALOG:
 PROCESSING DIALOG:
   1) nell'add file, add dir, la dimensione delle cose da aggiungere è errata
   2) disabilitare la ratio bar sottostante nell'add files, add dir
+  3) aggiungere timer di tempo trascorso
 
+ 
 RATIOBAR:
   PROBABILMENTE RISOLTO  1) BUG GRAVE -> crash random a causa del setRatio in rar.cpp (funzione di repaint)
 
@@ -57,6 +59,7 @@ TIP:
 NEW ARCHIVE:
   1) selezione multipla dei file;
   2) abilitare split archive rar;
+  3) visualizzare la dimensione dei file aggiunti
 
 EXTRACTION DIALOG:
   1) rivedere graficamente
@@ -64,3 +67,5 @@ EXTRACTION DIALOG:
 
 RARPROCESS:
  
+
+MimeType=application/x-rar;application/zip;application/x-bzip-compressed-tar;application/x-compressed-tar;application/x-tar;

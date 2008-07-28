@@ -270,7 +270,7 @@ void extractDialog::defaultSettings()
   comboOverwriteBox -> setCurrentIndex(0);
   checkKeepBroken -> setChecked(false);
   checkOpenDestination -> setChecked(false);
-  // tab Advanced
+  // tab Rar Advanced
   radioFullpath -> setChecked(true);
   radioDeleteNever -> setChecked(true);
   checkTimeCreation -> setChecked(false);
@@ -282,61 +282,67 @@ void extractDialog::defaultSettings()
 
 void extractDialog::loadSettings()
 {
-  KConfig config;
- 
+  // configurazione in comune a rar/tar/zip
+  KConfig config; 
   KConfigGroup history(&config, "Extraction dialog");
   QStringList list = history.readEntry("destination dirs", QStringList());
   khistorycombobox -> setHistoryItems(list);
   tmphistory = list;
-// 
-//   KConfigGroup options(&config, "extractOptions");
-//   // tab general
-//   comboUpdateBox -> setCurrentIndex(options.readEntry("update", 0));
-//   comboOverwriteBox -> setCurrentIndex(options.readEntry("overwrite", 0));
-//   checkKeepBroken -> setChecked(options.readEntry("broken", false));
-//   checkOpenDestination -> setChecked(options.readEntry("open", false));
-//   // tab advanced
-//     // file paths
-//   radioFullpath -> setChecked(options.readEntry("pathfull", true));
-//   radioNofullpath -> setChecked(options.readEntry("pathnofull", false));
-//   radioAbsolutepath -> setChecked(options.readEntry("pathabsolute", false));
-//     // delete archive
-//   radioDeleteNever -> setChecked(options.readEntry("deletenever", true));
-//   radioDeleteAsk -> setChecked(options.readEntry("deleteask", false));
-//   radioDeleteAlways -> setChecked(options.readEntry("deletealways", false));
-//     // file time
-//   checkTimeLast  -> setChecked(options.readEntry("timelast", false));
-//   checkTimeCreation  -> setChecked(options.readEntry("timecreation", false));
-//   checkTimeModification  -> setChecked(options.readEntry("timemodification", false));
-//     // others
-//   checkLowerCase -> setChecked(options.readEntry("lowercase", false));
-//   checkAuthenticity -> setChecked(options.readEntry("authenticity", true));
+
+  if (compressor == "rar") {
+    // configurazione RAR
+    KConfigGroup options(&config, "Rar options");
+    // tab general
+    comboUpdateBox -> setCurrentIndex(options.readEntry("update", 0));
+    comboOverwriteBox -> setCurrentIndex(options.readEntry("overwrite", 0));
+    checkKeepBroken -> setChecked(options.readEntry("broken", false));
+    checkOpenDestination -> setChecked(options.readEntry("open", false));
+    // tab advanced
+    // file paths
+    radioFullpath -> setChecked(options.readEntry("pathfull", true));
+    radioNofullpath -> setChecked(options.readEntry("pathnofull", false));
+    radioAbsolutepath -> setChecked(options.readEntry("pathabsolute", false));
+    // delete archive
+    radioDeleteNever -> setChecked(options.readEntry("deletenever", true));
+    radioDeleteAsk -> setChecked(options.readEntry("deleteask", false));
+    radioDeleteAlways -> setChecked(options.readEntry("deletealways", false));
+    // file time
+    checkTimeLast  -> setChecked(options.readEntry("timelast", false));
+    checkTimeCreation  -> setChecked(options.readEntry("timecreation", false));
+    checkTimeModification  -> setChecked(options.readEntry("timemodification", false));
+    // others
+    checkLowerCase -> setChecked(options.readEntry("lowercase", false));
+    checkAuthenticity -> setChecked(options.readEntry("authenticity", true));
+  }
 }
 
-// void extractDialog::saveSettings()
-// {
-//   KConfig config;
-//   KConfigGroup options(&config, "extractOptions");
-//   // tab general
-//   options.writeEntry("update", comboUpdateBox -> currentIndex());
-//   options.writeEntry("overwrite", comboOverwriteBox -> currentIndex()); 
-//   options.writeEntry("broken", checkKeepBroken -> isChecked());
-//   options.writeEntry("open", checkOpenDestination -> isChecked());
-//   //tab advanced
-//     // file paths
-//   options.writeEntry("pathfull", radioFullpath -> isChecked());
-//   options.writeEntry("pathnofull", radioNofullpath -> isChecked());
-//   options.writeEntry("pathabsolute", radioAbsolutepath -> isChecked());
-//     // delete archive
-//   options.writeEntry("deletenever", radioDeleteNever -> isChecked());
-//   options.writeEntry("deleteask", radioDeleteAsk-> isChecked());
-//   options.writeEntry("deletealways", radioDeleteAlways -> isChecked());
-//     // file time
-//   options.writeEntry("timelast", checkTimeLast -> isChecked());
-//   options.writeEntry("timecreation", checkTimeCreation -> isChecked());
-//   options.writeEntry("timemodification", checkTimeModification -> isChecked());
-//     // others
-//   options.writeEntry("lowercase", checkLowerCase-> isChecked());
-//   options.writeEntry("authenticity", checkAuthenticity-> isChecked());
-//   options.config() -> sync();
-// }
+void extractDialog::saveSettings()
+{
+  KConfig config;
+  // salvataggio configurazione RAR
+  if (compressor == "rar") {    
+    KConfigGroup options(&config, "Rar options");
+    // tab general
+    options.writeEntry("update", comboUpdateBox -> currentIndex());
+    options.writeEntry("overwrite", comboOverwriteBox -> currentIndex()); 
+    options.writeEntry("broken", checkKeepBroken -> isChecked());
+    options.writeEntry("open", checkOpenDestination -> isChecked());
+    //tab advanced
+    // file paths
+    options.writeEntry("pathfull", radioFullpath -> isChecked());
+    options.writeEntry("pathnofull", radioNofullpath -> isChecked());
+    options.writeEntry("pathabsolute", radioAbsolutepath -> isChecked());
+    // delete archive
+    options.writeEntry("deletenever", radioDeleteNever -> isChecked());
+    options.writeEntry("deleteask", radioDeleteAsk-> isChecked());
+    options.writeEntry("deletealways", radioDeleteAlways -> isChecked());
+    // file time
+    options.writeEntry("timelast", checkTimeLast -> isChecked());
+    options.writeEntry("timecreation", checkTimeCreation -> isChecked());
+    options.writeEntry("timemodification", checkTimeModification -> isChecked());
+    // others
+    options.writeEntry("lowercase", checkLowerCase-> isChecked());
+    options.writeEntry("authenticity", checkAuthenticity-> isChecked());
+    options.config() -> sync();
+  }
+}

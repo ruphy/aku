@@ -413,6 +413,7 @@ void MainWindow::buildZipTable(QString zipoutput, bool crypted)
    buttonAddDir -> setEnabled(false);
    buttonAddFile -> setEnabled(false);
    buttonEncrypt -> setEnabled(false);
+   buttonExtract -> setEnabled(false);
 }
 
 void MainWindow::buildTarTable(QString taroutput)
@@ -451,6 +452,7 @@ void MainWindow::buildTarTable(QString taroutput)
    buttonAddDir -> setEnabled(false);
    buttonAddFile -> setEnabled(false);
    buttonEncrypt -> setEnabled(false);
+   buttonExtract -> setEnabled(false);
    // gzip e bzip non supportano il delete
    if ((mimetype -> name() == "application/x-compressed-tar") || (mimetype -> name() == "application/x-bzip-compressed-tar")) buttonDelete -> setEnabled(false);
 }
@@ -523,7 +525,7 @@ void MainWindow::handleAdvancedZip(QString filename)
 
   if (filespassprotected) {
     infoExtra -> setPixmap(KIcon("dialog-ok").pixmap(22,18));
-    QString toolTip(i18n("This archive has one or more <b>password protected files</b>"));
+    QString toolTip(i18n("This archive has one or more <b>password protected file(s)</b>"));
     infoExtra -> setToolTip(toolTip);
   }
   else {
@@ -1201,6 +1203,7 @@ void MainWindow::cleanAku(QString name)
     tip->show();     
   }
   setCursor(QCursor());
+  statusWidget -> setVisible(false);
 }
 
 void MainWindow::completeDelete(bool ok)
@@ -1248,6 +1251,7 @@ void MainWindow::createNewArchive()
   table -> clear();
   setCaption(QString());
   buttonInfo -> setChecked(false);
+  dockComment -> setVisible(false);
   baseWindowWidget -> setVisible(false);
   statusWidget -> setVisible(false);
   archive.clear();
@@ -1299,15 +1303,10 @@ void MainWindow::createNewArchive()
 
 void MainWindow::closeNewArchive()
 {
-  kDebug() << "INIZIO CloseNewArchive";
   baseWindowWidget -> setVisible(true);
-  //statusWidget -> setVisible(true);
   delete widgetForList;
   delete sourceDock;
   delete dockOption;
-  //enableActions(true);
-  //operationCompleted(ok);
-  kDebug() << "FINE CloseNewArchive";
   
   if (!archive.isEmpty())
     openUrl(archive);
@@ -1319,7 +1318,6 @@ void MainWindow::newArchive()
 {
   QStringList filesToAdd;
   filesToAdd = rebuildPathForNew(targetList); //ricostruiamo i path di tutti gli elementi da aggiungere
-  kDebug() << filesToAdd;
   if (!filesToAdd.isEmpty())
     archive = KFileDialog::getSaveFileName(KUrl(QDir().homePath()), i18n("RAR Archive *.rar"), this, i18n("Archive Name" ));
   else 
@@ -1339,7 +1337,6 @@ void MainWindow::newArchive()
     if (!password.isEmpty())
       options << "-p" + password;
     rarProcess *newArchiveProc;
-    
 //     if (compressionWidget -> isSplitRequested()) {  // TODO:highly unstable!!! check
 //       double splitSize;
 //       splitSize = compressionWidget -> getSplitSize();
@@ -1348,7 +1345,6 @@ void MainWindow::newArchive()
 //     else {
     newArchiveProc = new rarProcess(this, "rar", options, archive, filesToAdd);
    //}
-
     connect(newArchiveProc, SIGNAL(processCompleted(bool)), this, SLOT(closeNewArchive()));
     connect(newArchiveProc, SIGNAL(processCanceled()), this, SLOT(closeNewArchive()));
     newArchiveProc -> start();

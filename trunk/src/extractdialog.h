@@ -37,7 +37,7 @@ public slots:
   virtual void closeDialog();
   virtual void defaultSettings();
   virtual void loadSettings();
-  //virtual void saveSettings();
+  virtual void saveSettings();
   virtual void updateCombo(KUrl);
   virtual void openDestinationPath(bool);
   virtual void deleteArchive(bool);
