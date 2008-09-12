@@ -20,6 +20,7 @@
 #include <KDebug>
 
 
+
 class akuRatioWidget : public QWidget
 {
 
